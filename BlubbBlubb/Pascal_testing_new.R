@@ -1,6 +1,6 @@
 #creating a variable which you can call for looking up the data in console
 input_data <- readRDS(file = "Mantle-Bcell_list.RDS.gz")
-input_data
+
 
 #looking up structure of data
 names(input_data)
@@ -20,7 +20,7 @@ View(table_names)
 
 #overview of another data file
 input_data_csv <- read.csv(file ="sample_annotation.csv", sep = ",")
-View(input_data_csv_2)
+View(input_data_csv)
 
 #tidy up the data
 ##split up the data to data frame with beta values and covarage
@@ -36,6 +36,23 @@ rm(rmv.rows)
 dim(coverage_beta_values_data_frame_manipulated)
 dim(coverage_beta_values_data_frame)
 
+#visualize data for better understanding
+
 plot(density(coverage_beta_values_data_frame_manipulated$Bcell_naive_VB_NBC_NC11_41.bed))
 
-pairs(coverage_beta_values_data_frame_manipulated[, 1:ncol(coverage_beta_values_data_frame_manipulated)], pch = 20, cex = 0.5, col = "grey")
+pairs(coverage_beta_values_data_frame_manipulated[1:10, 1:ncol(coverage_beta_values_data_frame_manipulated)], pch = 20, cex = 0.2, col = "grey")
+
+heatmap(b[1:50, 1:ncol(coverage_beta_values_data_frame_manipulated)], col = cm.colors(256))
+
+b <- data.matrix(coverage_beta_values_data_frame_manipulated)
+
+
+
+
+
+
+
+
+
+
+
