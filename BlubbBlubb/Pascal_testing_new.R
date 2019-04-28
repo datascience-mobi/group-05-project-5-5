@@ -42,9 +42,11 @@ plot(density(coverage_beta_values_data_frame_manipulated$Bcell_naive_VB_NBC_NC11
 
 pairs(coverage_beta_values_data_frame_manipulated[1:10, 1:ncol(coverage_beta_values_data_frame_manipulated)], pch = 20, cex = 0.2, col = "grey")
 
+b <- data.matrix(coverage_beta_values_data_frame_manipulated)
+
 heatmap(b[1:50, 1:ncol(coverage_beta_values_data_frame_manipulated)], col = cm.colors(256))
 
-b <- data.matrix(coverage_beta_values_data_frame_manipulated)
+
 
 
 
