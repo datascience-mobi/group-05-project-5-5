@@ -7,7 +7,7 @@ names(input_data)
 View(input_data)
 
 #copying data from general list to create a data frame of genes
-Gene_data_frame<- input_data$genes
+Gene_data_frame <- input_data$genes
 dim(Gene_data_frame)
 View(Gene_data_frame)
 
@@ -33,6 +33,11 @@ rmv.rows = apply(coverage_beta_values_data_frame, 1, function(x) {
 })  # Go through each row and sum up all missing values
 coverage_beta_values_data_frame_manipulated = coverage_beta_values_data_frame[-which(rmv.rows > 0), ]  # Removing any row with 1 or more missing values
 rm(rmv.rows)
+
+##rename columns
+rownames(coverage_beta_values_data_frame_manipulated) = c(1:53620)
+
+##look up differences
 dim(coverage_beta_values_data_frame_manipulated)
 dim(coverage_beta_values_data_frame)
 
@@ -44,17 +49,70 @@ pairs(coverage_beta_values_data_frame_manipulated[1:10, 1:ncol(coverage_beta_val
 
 b <- data.matrix(coverage_beta_values_data_frame_manipulated)
 
-heatmap(b[1:50, 1:ncol(coverage_beta_values_data_frame_manipulated)], col = cm.colors(256))
+heatmap(cor(b[1:5000, 1:10]), col = cm.colors(256))
+
+qqmath(coverage_beta_values_data_frame_manipulated[,1],coverage_beta_values_data_frame_manipulated)
+
+##trying to understand how to make a volcano plot
+
+      with(res, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot", xlim=c(-2.5,2)))
+      
+      # Add colored points: red if padj<0.05, orange of log2FC>1, green if both)
+      with(subset(res, padj<.05 ), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
+      with(subset(res, abs(log2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col="orange"))
+      with(subset(res, padj<.05 & abs(log2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col="green"))
+      
+      # Label points with the textxy function from the calibrate plot
+      library(calibrate)
+      with(subset(res, padj<.05 & abs(log2FoldChange)>1), textxy(log2FoldChange, -log10(pvalue), labs=Gene, cex=.8))
+        
+
+
+
+plot(table(coverage_beta_values_data_frame_manipulated$Bcell_naive_VB_NBC_NC11_41.bed_coverage))
+
+
+with(coverage_beta_values_data_frame_manipulated, plot(-log10(coverage_beta_values_data_frame_manipulated$Bcell_naive_VB_NBC_NC11_41.bed), -log10(coverage_beta_values_data_frame_manipulated$Bcell_naive_VB_NBC_NC11_41.bed_coverage), pch=20, main="Volcano plot", xlim=c(-2,5), col = "cornflowerblue"))
+
+##clustering: https://www.datanovia.com/en/lessons/determining-the-optimal-number-of-clusters-3-must-know-methods/
+km <- kmeans(coverage_beta_values_data_frame_manipulated$Bcell_naive_VB_NBC_NC11_41.bed, 5, nstart = 10)
+
+wss = sapply(2:7, function(k) {
+  kmeans(coverage_beta_values_data_frame_manipulated$Bcell_naive_VB_NBC_NC11_41.bed, centers = k)$tot.withinss
+})
+plot(2:7, wss, type = "b", pch = 19, xlab = "Number of clusters K", ylab = "Total within-clusters sum of squares")
+
+
+
+rownames(coverage_beta_values_data_frame_manipulated) = c(1:53620)
+
+dim(coverage_beta_values_data_frame_manipulated)
 
 
 
 
 
+##scaling
+coverage_beta_values_data_frame_manipulated2 = data.frame(scale(coverage_beta_values_data_frame_manipulated))
 
 
 
 
+hist(log10(coverage_beta_values_data_frame_manipulated[Bcell_naive_VB_S001JP51.bed_coverage[ ,1:4]]) )
+
+hist(input_data$tiling$Bcell_naive_VB_NBC_NC11_41.bed, main = "Normal B cell Tiling window", xlab = "β-Value DNA Methylation", ylab = "Frequency", col = "green")
+hist(input_data$promoters$Bcell_naive_VB_NBC_NC11_41.bed, main = "Normal B cell Promoters", xlab = "β-Value DNA Methylation", ylab = "Frequency", col = "green")
+hist(input_data$genes$Bcell_naive_VB_NBC_NC11_41.bed, main = "Normal B cell Genes", xlab = "β-Value DNA Methylation", ylab = "Frequency", col = "green")
+hist(input_data$cpgislands$Bcell_naive_VB_NBC_NC11_41.bed, main = "Normal B cell CpG Islands", xlab = "β-Value DNA Methylation", ylab = "Frequency", col = "green")
+
+hist(input_data$tiling$cancer_VB_S01FJZA1.bed, main = "Cancer cell Tiling window", xlab = "β-Value DNA Methylation", ylab = "Frequency", col = "red")
+hist(input_data$promoters$cancer_VB_S01FJZA1.bed, main = "Cancer cell Promoters", xlab = "β-Value DNA Methylation", ylab = "Frequency", col = "red")
+hist(input_data$genes$cancer_VB_S01FJZA1.bed, main = "Cancer cell Genes", xlab = "β-Value DNA Methylation", ylab = "Frequency", col = "red" )
+hist(input_data$cpgislands$cancer_VB_S01FJZA1.bed, main = "Cancer cell CpG Islands", xlab = "β-Value DNA Methylation", ylab = "Frequency", col = "red")
 
 
-
-
+mean <- rowMeans(coverage_beta_values_data_frame_manipulated[, 11:15])
+sd_row <- sd(coverage_beta_values_data_frame_manipulated[,11:15])
+hist(log10(mean), breaks = "scott")
+summary(log10(mean))
+    
