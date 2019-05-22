@@ -22,7 +22,7 @@ View(Gene_data_frame)
 #some pre-cleaning up: deleting x and y chromosome specific genes
 
 Gene_data_frame_x_y <-  Gene_data_frame[-which(Gene_data_frame$Chromosome == "chrX"), ]  
-Gene_data_frame_x_y <-  Gene_data_frame[-which(Gene_data_frame_x_y$Chromosome == "chrY"), ]
+Gene_data_frame_x_y <-  Gene_data_frame_x_y[-which(Gene_data_frame_x_y$Chromosome == "chrY"), ]
 
 #tidy up the data by spliting up the data to different data frame 
 healthy_coverage <- Gene_data_frame[, 26:30]
@@ -34,21 +34,6 @@ cancer_beta_values <- Gene_data_frame[, 16:20]
 #######################################
 
 #finding coverages in threshold ##does not work :/
-Coverage_0 <- mapply(function(x) {
-  
-  mean <- rowMeans(cancer_coverage[x, ])
-  sd <- apply(cancer_coverage[x, ], 1, sd)
-  threshold <- mean + 0.95 * sd
-  threshold2 <- mean - 0.95 * sd
-  gene_remove <- (threshold > cancer_coverage[x, ])
-  gene_remove2 <- (threshold2 < cancer_coverage[x, ])
-  
-  if(gene_remove[x, ] == FALSE){
-    gene_remove <- (gene_remove[x, ] = 0) 
-  }else{
-    
-  }
-},cancer_coverage)
 
 
 
