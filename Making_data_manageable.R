@@ -25,13 +25,22 @@ Gene_data_frame_x_y <-  Gene_data_frame[-which(Gene_data_frame$Chromosome == "ch
 Gene_data_frame_x_y <-  Gene_data_frame_x_y[-which(Gene_data_frame_x_y$Chromosome == "chrY"), ]
 
 #tidy up the data by spliting up the data to different data frame 
-healthy_coverage <- Gene_data_frame[, 26:30]
-cancer_coverage <- Gene_data_frame[, 21:25]
+healthy_coverage <- Gene_data_frame[, 21:25]
+cancer_coverage <- Gene_data_frame[, 26:30]
 healthy_beta_values <- Gene_data_frame[, 11:15]
 cancer_beta_values <- Gene_data_frame[, 16:20]
 
 ####Coverage and Beta-Value problem####
 #######################################
+
+#mean and sd value curve of every sample (sd missing so include :))
+
+mean_cancer_coverage <- rowMeans(cancer_coverage)
+hist(log10(mean_cancer_coverage), breaks = "fd")
+
+mean_healthy_coverage <- rowMeans(healthy_coverage)
+hist(log10(mean_healthy_coverage), breaks = "fd")
+
 
 #finding coverages in threshold ##does not work :/
 
