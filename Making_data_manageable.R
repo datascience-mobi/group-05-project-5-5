@@ -33,7 +33,7 @@ cancer_beta_values <- Gene_data_frame[, 16:20]
 ####Coverage and Beta-Value problem####
 #######################################
 
-#mean and sd value curve of every sample (sd missing so include :))
+#mean and sd value histogram of every gene
 
 mean_cancer_coverage <- rowMeans(cancer_coverage)
 hist(log10(mean_cancer_coverage), breaks = "fd")
@@ -41,16 +41,21 @@ hist(log10(mean_cancer_coverage), breaks = "fd")
 mean_healthy_coverage <- rowMeans(healthy_coverage)
 hist(log10(mean_healthy_coverage), breaks = "fd")
 
+sd_cancer_coverage <- apply(cancer_coverage, 1, sd)
+hist(log10(sd_cancer_coverage), breaks = "fd")
 
-#finding coverages in threshold ##does not work :/
+sd_healthy_coverage <- apply(healthy_coverage, 1, sd)
+hist(log10(sd_healthy_coverage), breaks = "fd")
 
+#include mean and sd column
 
+cancer_coverage <-  cbind(cancer_coverage, mean_cancer_coverage)
+healthy_coverage <- cbind(healthy_coverage, mean_healthy_coverage)
 
+cancer_coverage <- cbind(cancer_coverage, sd_cancer_coverage)
+healthy_coverage <- cbind(healthy_coverage, sd_healthy_coverage)
 
-
-
-
-
+####find coverage value for threshold and remove coverages in threshold
 
 
 
