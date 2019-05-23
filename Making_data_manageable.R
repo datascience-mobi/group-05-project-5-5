@@ -94,10 +94,33 @@ healthy_coverage <- cbind(healthy_coverage, sd_healthy_coverage)
 
 ####find coverage value for threshold and remove coverages in threshold
 
+sum(cancer_coverage == 0)
+
+##nestled for loops to set every value of coverage in threshold to 0
+
+for (i in 1: 53470 ) {
+  
+  for(j in 1:5 ) {
+    
+    threshold <- mean_cancer_coverage[i] + 1.64 * sd_cancer_coverage[i]
+    
+    if(cancer_coverage[i,j] >= threshold ) {
+      
+      cancer_coverage[i,j] <- 0
+    }
+    
+    if((cancer_coverage[i,j] <= mean_cancer_coverage[i]) && (cancer_coverage[i,j] <= 1000)){
+      
+      cancer_coverage[i,j] <-  0
+    }
+  }
+}
 
 
+mean_cancer_coverage <- rowMeans(cancer_coverage)
+hist(log10(mean_cancer_coverage), breaks = "fd")
 
+sum(cancer_coverage == 0)
 
-
-
+View(cancer_coverage)
 
