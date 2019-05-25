@@ -70,13 +70,15 @@ cancer_beta_values <- Gene_data_frame_x_y[, 16:20]
 ####Coverage and Beta-Value problem####
 #######################################
 
-#mean and sd value histogram of every gene
+#mean and sd value histogram of every gene + quantiles
 
 mean_cancer_coverage <- rowMeans(cancer_coverage)
 hist(log10(mean_cancer_coverage), breaks = "fd")
+abline(v = log10(quantile(mean_cancer_coverage, probs = seq(0, 1, 0.1), na.rm = TRUE)))
 
 mean_healthy_coverage <- rowMeans(healthy_coverage)
 hist(log10(mean_healthy_coverage), breaks = "fd")
+abline(v = log10(quantile(mean_healthy_coverage, probs = seq(0, 1, 0.1), na.rm = TRUE)))
 
 sd_cancer_coverage <- apply(cancer_coverage, 1, sd)
 hist(log10(sd_cancer_coverage), breaks = "fd")
@@ -84,7 +86,7 @@ hist(log10(sd_cancer_coverage), breaks = "fd")
 sd_healthy_coverage <- apply(healthy_coverage, 1, sd)
 hist(log10(sd_healthy_coverage), breaks = "fd")
 
-#include mean and sd column
+#include mean and sd column to cancer and healthy data set
 
 cancer_coverage <-  cbind(cancer_coverage, mean_cancer_coverage)
 healthy_coverage <- cbind(healthy_coverage, mean_healthy_coverage)
@@ -96,31 +98,77 @@ healthy_coverage <- cbind(healthy_coverage, sd_healthy_coverage)
 
 sum(cancer_coverage == 0)
 
-##nestled for loops to set every value of coverage in threshold to 0
+threshold <- quantile(mean_cancer_coverage, probs = seq(0.10, 0.10, 0.05), na.rm = TRUE)
+threshold2 <- quantile(mean_cancer_coverage, probs = seq(0.90, 0.90, 0.05), na.rm = TRUE)
+
+threshold3 <- quantile(mean_healthy_coverage, probs = seq(0.10, 0.10, 0.05), na.rm = TRUE)
+threshold4 <- quantile(mean_healthy_coverage, probs = seq(0.90, 0.90, 0.05), na.rm = TRUE)
+
+##nestled for loops to set every value of cancer coverage in threshold to 0
+for (i in 1: 53470 ) {
+  
+  for(j in 1:5 ) {
+    
+    if(cancer_coverage[i,j] <= threshold) {
+      
+      cancer_coverage[i,j] <- 0
+    }
+    
+    if(cancer_coverage[i,j] >= threshold2){
+      
+      cancer_coverage[i,j] <- 0
+    }
+    
+    if(cancer_coverage[i,j] == 0) {
+      
+      cancer_coverage[i,j] <- NA
+      cancer_beta_values[i,j] <- NA
+        
+    } 
+  }
+}
 
 for (i in 1: 53470 ) {
   
   for(j in 1:5 ) {
     
-    threshold <- mean_cancer_coverage[i] + 1.64 * sd_cancer_coverage[i]
-    
-    if(cancer_coverage[i,j] >= threshold ) {
+    if(healthy_coverage[i,j] <= threshold3) {
       
-      cancer_coverage[i,j] <- 0
+      healthy_coverage[i,j] <- 0
     }
     
-    if((cancer_coverage[i,j] <= mean_cancer_coverage[i]) && (cancer_coverage[i,j] <= 1000)){
+    if(healthy_coverage[i,j] >= threshold4){
       
-      cancer_coverage[i,j] <-  0
+      healthy_coverage[i,j] <- 0
     }
+    
+    if(healthy_coverage[i,j] == 0) {
+      
+      healthy_coverage[i,j] <- NA
+      healthy_beta_values[i,j] <- NA
+      
+    } 
   }
 }
-
-
+#overview after data cleaning
 mean_cancer_coverage <- rowMeans(cancer_coverage)
 hist(log10(mean_cancer_coverage), breaks = "fd")
 
-sum(cancer_coverage == 0)
+mean_healthy_coverage <- rowMeans(healthy_coverage)
+hist(log10(mean_healthy_coverage), breaks = "fd")
 
-View(cancer_coverage)
+
+rmv.rows <-  apply(cancer_beta_values, 1, function(x) {
+  sum(is.na(x))
+})  # Go through each row and sum up all missing values
+hist(rmv.rows) # The rows where there is atleast 1 missing value
+sum(rmv.rows > 2) #Rows which will be removed because of the threshold 3 NA or more
+
+
+rmv.rows2 <-  apply(healthy_beta_values, 1, function(x) {
+  sum(is.na(x))
+})  # Go through each row and sum up all missing values
+hist(rmv.rows2) # The rows where there is atleast 1 missing value
+sum(rmv.rows2 > 2) #Rows which will be removed because of the threshold 3 NA or more
+
 
