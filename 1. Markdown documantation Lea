@@ -1,0 +1,35 @@
+---
+title: "1. Markdown documentation Lea"
+output: pdf_document
+---
+## R Markdown
+
+#1. Milestone: Data Processing
+
+##Deal with NA values
+
+The NA's in the beta values need to be deleted or replaced, because otherwise these NA's can lead to errors in the downstream analysis. First we will do this for the healty samples with a detailed documentation. After this there will be the same process with the MCL samples but less documentation, because the principle is the same. To get an overview over the NA's per gene we add a new column with the numer of NA's from each gene. 
+(für beide gleichzeitig machen: healthy und MCL)
+```{r}
+healthy_beta_values$new=rowSums(is.na(healthy_data_frame))
+colnames(healthy_beta_values)[colnames(healthy_beta_values) == 'new'] <- 'Number of NA'
+```
+
+To get a visual overview of how often and how much NA's are present we plotted the data (Histogram)
+```{r}
+hist(healthy_beta_values$Number_of_NA, breaks =5, xlab = "Number of NA's", ylab = "per Genes", ylim = c(0,1000), col = "seagreen2" )
+```
+
+After this we decided that the threshold for the NA's should be 2, thus we keep the values if there are more than 50 % values and we delete them if there are more than 50 % not ailable. So every gene wich contains more than 2 NA's is deleated.
+```{r}
+
+```
+
+All remaining NA's are replaced by the mean of the associated gene.
+```{r}
+
+```
+
+
+
+
