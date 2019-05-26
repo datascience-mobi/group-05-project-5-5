@@ -150,35 +150,49 @@ healthy_coverage <- cbind(healthy_coverage, sd_healthy_coverage)
 #deal with NA's
 ##output of the number of all NA's in healthy genes
 sum(is.na(healthy_beta_values))
+sum(is.na(cancer_beta_values))
 
 ##add a new column with the number of NA's per gene
 healthy_beta_values$new=rowSums(is.na(healthy_beta_values))
 colnames(healthy_beta_values)[colnames(healthy_beta_values) == 'new'] <- 'Number_of_NA'
+cancer_beta_values$new=rowSums(is.na(cancer_beta_values))
+colnames(cancer_beta_values)[colnames(cancer_beta_values) == 'new'] <- 'Number_of_NA'
 
 ##Histogram of NA's
 ###Skala muss noch angepasst wereden
-hist(healthy_beta_values$Number_of_NA, breaks =5, xlab = "Number of NA's", ylab = "per Genes", ylim = c(0,1000), col = "seagreen2" )
-
+hist(healthy_beta_values$Number_of_NA, main = "NA's per Gene in Healthy Samples", breaks = 5, xlab = "Number of NA's", ylab = "Number of Genes", ylim = c(0,1000), col = "seagreen2" )
+hist(cancer_beta_values$Number_of_NA, main = "NA's per Gene in MCL Samples", breaks = 5, xlab = "Number of NA's", ylab = "Number of Genes",ylim = c(0,1000) , col = "indianred2")
 
 #set a threshold for the NA values and remove the gene if there are to much NA's
-healthy_beta_values<- healthy_beta_values[!(healthy_beta_values$`Number_of_NA`>2), ]
+healthy_beta_values <- healthy_beta_values[!(healthy_beta_values$`Number_of_NA`>2), ]
+cancer_beta_values <- cancer_beta_values[!(cancer_beta_values$`Number_of_NA`>2), ]
 
 ##remove column Number of NA
 healthy_beta_values = healthy_beta_values[,  -which( colnames(healthy_beta_values)  %in%  c('Number_of_NA'))]
+cancer_beta_values = cancer_beta_values[, -which( colnames(cancer_beta_values) %in% c('Number_of_NA'))]
 
 #add column with mean of each row
 healthy_beta_values$new=rowMeans(healthy_beta_values, na.rm = TRUE)
 colnames(healthy_beta_values)[colnames(healthy_beta_values) == 'new'] <- 'mean_value'
+cancer_beta_values$new=rowMeans(cancer_beta_values, na.rm = TRUE)
+colnames(cancer_beta_values)[colnames(cancer_beta_values) == 'new'] <- 'mean_value'
 
 #replace remaining NA's with the mean of the respective gene
 ...
 
-for (i in 1:52814){
-  healthy_beta_values
-}
+
 
 #remove column mean-value
 healthy_beta_values = healthy_beta_values[,  -which( colnames(healthy_beta_values)  %in%  c('mean_value'))]
+cancer_beta_values = cancer_beta_values[, -which( colnames(cancer_beta_values) %in% c('mean_value'))]
 
 #test if there are realy no more NA's
 sum(is.na(healthy_beta_values))
+sum(is.na(cancer_beta_values))
+
+#compare the 2 data frames and remove rows which are only in one of them
+ () {
+  rownames(healthy_beta_values) != rownames(cancer_beta_values)
+  healthy_beta_values <- healthy_beta_values
+  cancer_beta_values <- cancer_beta_values
+}  
