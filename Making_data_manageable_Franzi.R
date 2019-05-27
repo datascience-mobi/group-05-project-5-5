@@ -174,8 +174,8 @@ healthy_beta_values<- healthy_beta_values[!(healthy_beta_values$`Number_of_NA`>2
 healthy_beta_values = healthy_beta_values[,  -which( colnames(healthy_beta_values)  %in%  c('Number_of_NA'))]
 
 #add column with mean of each row
-healthy_beta_values$new=rowMeans(healthy_beta_values, na.rm = TRUE)
-colnames(healthy_beta_values)[colnames(healthy_beta_values) == 'new'] <- 'mean_value'
+###healthy_beta_values$new=rowMeans(healthy_beta_values, na.rm = TRUE)
+###colnames(healthy_beta_values)[colnames(healthy_beta_values) == 'new'] <- 'mean_value'
 
 #how many na do we have now?
 sum(is.na(healthy_beta_values))
@@ -184,7 +184,7 @@ sum(is.na(healthy_beta_values))
 #first transposing the data frame because working on columns, e.g getting the mean, is easier than with rows
 transposed_healthy_beta_values <- t(healthy_beta_values)
 
-#unneccessary step
+#(unneccessary step) To see where the NA's are 
 transposed_healthy_beta_values [which(is.na(transposed_healthy_beta_values))]
 
 #how many elements do we have in our new data frame?
@@ -198,15 +198,18 @@ for (i in 1:52814){
 #did we eliminate all NA's?
 sum(is.na(transposed_healthy_beta_values))
 
-#retranspose the data frame
+#retranspose 
 healthy_beta_values2 <- t(transposed_healthy_beta_values)
+#and change the class from matrix to data frame again
+healthy_beta_values2 <- data.frame(healthy_beta_values2)
+
 
 #check if the NA's are successfully replaced with the mean with histogram
 hist(healthy_beta_values$mean_value, breaks = "fd")
 hist(healthy_beta_values2$mean_value, breaks = "fd")
 
 #remove column mean-value
-healthy_beta_values = healthy_beta_values[,  -which( colnames(healthy_beta_values)  %in%  c('mean_value'))]
+###healthy_beta_values = healthy_beta_values[,  -which( colnames(healthy_beta_values)  %in%  c('mean_value'))]
 
 #test if there are really no more NA's
 sum(is.na(healthy_beta_values))
