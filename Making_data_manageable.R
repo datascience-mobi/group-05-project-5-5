@@ -139,7 +139,7 @@ threshold <-
 #cancer coverages: upper boundary
 threshold2 <-
   quantile(mean_cancer_coverage,
-           probs = seq(0.95, 0.95, 0.05),
+           probs = seq(0.999, 0.999, 0.05),
            na.rm = TRUE)
 
 #healthy coverages: lower boundary
@@ -151,7 +151,7 @@ threshold3 <-
 #healthy coverages: upper boundary
 threshold4 <-
   quantile(mean_healthy_coverage,
-           probs = seq(0.95, 0.95, 0.05),
+           probs = seq(0.999, 0.999, 0.05),
            na.rm = TRUE)
 
 ##nestled for loops to set every value of cancer coverage and cancer beta value to NA if they are in threshold
@@ -285,12 +285,12 @@ transposed_healthy_beta_values <- t(healthy_beta_values)
 transposed_cancer_beta_values <- t(cancer_beta_values)
 
 #going through all elements of the (already reduced) data frame and replace NA's with mean
-for (i in 1:47220) {
+for (i in 1:49647) {
   transposed_healthy_beta_values[is.na(transposed_healthy_beta_values[, i]), i] <-
     mean(transposed_healthy_beta_values[, i], na.rm = TRUE)
 }
 
-for (i in 1:47220) {
+for (i in 1:49647) {
   transposed_cancer_beta_values[is.na(transposed_cancer_beta_values[, i]), i] <-
     mean(transposed_cancer_beta_values[, i], na.rm = TRUE)
 }
@@ -331,9 +331,9 @@ b <-
     "ENSG00000122691"
   )
 
-cancer_beta_values[which(row.names(cancer_beta_values)== b[1]), ]
+cancer_beta_values[which(row.names(cancer_beta_values)== b[6]), ]
 
-#we deleted "ENSG00000169855" and "ENSG00000081377" --> should reinsert
+
 
 
 
