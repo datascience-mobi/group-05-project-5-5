@@ -305,3 +305,37 @@ cancer_beta_values <- t(transposed_cancer_beta_values)
 
 #check if genes of one data frame are in the other data frame
 sum(rownames(healthy_beta_values) == rownames(cancer_beta_values))
+
+#are important genes still included?
+b <-
+  c(
+    "ENSG00000176887",
+    "ENSG00000185551",
+    "ENSG00000141510",
+    "ENSG00000110092",
+    "ENSG00000106546",
+    "ENSG00000169855",
+    "ENSG00000125398",
+    "ENSG00000078399",
+    "ENSG00000039068",
+    "ENSG00000081377",
+    "ENSG00000054598",
+    "ENSG00000123689",
+    "ENSG00000211445",
+    "ENSG00000131981",
+    "ENSG00000172005",
+    "ENSG00000106236",
+    "ENSG00000007372",
+    "ENSG00000105825",
+    "ENSG00000159445",
+    "ENSG00000122691"
+  )
+
+cancer_beta_values[which(row.names(cancer_beta_values)== b[1]), ]
+
+#we deleted "ENSG00000169855" and "ENSG00000081377" --> should reinsert
+
+
+
+
+
