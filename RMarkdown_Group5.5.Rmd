@@ -1,0 +1,224 @@
+---
+title: "Are differentially methylated regions associated with mantle cell lymphoma?"
+author: "Pascal Lafrenz, Mari Hambardzumyan, Lea Herzel, Franziska Lam"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+---
+
+The alterations in cancer cell DNA methylation pattern have long been detected (Vogelstein and Feinberg, 1983). In many cancer types methylation level has also been shown to have effects on gene deregulation,  (Melnick, 2013). But not much research has been done associated with methylation in *mantle cell lymphoma* (MCL) cells. Therefore in the following project we want to address the following question.
+
+#Research question#
+
+Are differentially methylated regions associated with mantle cell lymphoma?
+
+For that purpose we received a data set and an annotation file. Below is a short summary of important key points of the data set.
+
+#Data summary#
+
+* Bisulfite-Seq data for 10 patients/samples (5 male, 5 female)
+* 5 healthy patients, 5 with MCL
+* Extracted DNA is from B-cells
+* 56175 genes across all samples
+* coverage and beta-values for each gene
+* Length of each gene
+
+Researching on MCL we found a range of genes which have been linked with this specific cancer, some of which include SOX11, p53, CCND1 etc (Queirós et al., 2016).
+
+To address the research question we broke down the project into 5 parts.
+
+#Project steps#
+
+
+
+|1. Data processing  | 2. Data normalization and visualization | 3. Data reduction  | 4. Regression and interpretation    | 5. Annotate and interpret results
+------------- | ------------- | ------------- | ------------- | -------------
+Remove x and y chromosome genes  | Transform beta-values into homeostatic M-values  | Dimensionality reduction, e.g PCA  | Apply t-test        |  
+Split data in 2 data frames (cancer vs. control, beta-values and coverage)  | Add a column for mean, median and SD for better comparisons  | Apply clustering method and visualize, e.g k-means         | Apply logistic regression        | 
+Set a threshold and examine variance for reliable coverage, replace unreliable beta–values with NA | Visualization through plots | 
+Separately inspect genes of interest for MCL | Identify batch effect magnitude in the data set
+Set a threshold and remove genes under/above threshold, imputate remaining NA’s | 
+
+
+
+## Part 1: Data processing
+
+For now we want to single out the gene data frame of the patients to inspect it separately.
+
+
+```{r}
+Gene_data_frame <- Samples$genes
+dim(Gene_data_frame)
+```
+
+There are coverage and beta-values of 56175 genes across all 10 patients. After the entire data clean-up we still want to retain 90% of that information (around 500000 genes).
+
+We are starting the data clean-up with the sex chromosomes. As in our case the genes on X and Y chromosomes are not significant for MCL, we removed them from the data frame.
+
+```{r}
+Gene_data_frame_x_y <- 
+  Gene_data_frame[-which(Gene_data_frame$Chromosome == "chrX"),]
+Gene_data_frame_x_y <- 
+  Gene_data_frame_x_y[-which(Gene_data_frame_x_y$Chromosome == "chrY"),]
+```
+
+Now we want to go through the coverage values separately to remove any unreliable values, outliers or possible systematic errors. First we separated the coverage values of healthy and diseased patients into 2 Data frames.
+
+```{r}
+healthy_coverage <- Gene_data_frame_x_y[, 21:25]
+cancer_coverage <- Gene_data_frame_x_y[, 26:30]
+healthy_beta_values <- Gene_data_frame_x_y[, 11:15]
+cancer_beta_values <- Gene_data_frame_x_y[, 16:20]
+```
+
+Then we created a histogram with mean coverage values for each gene on a log scale.
+
+```{r}
+mean_cancer_coverage <- rowMeans(cancer_coverage)
+hist(
+  log10(mean_cancer_coverage),
+  breaks = "fd",
+  main = "Cancer coverage: Mean frequency",
+  xlab = "Common logarithm of coverages",
+  col = c("black"),
+  border = "white"
+)
+abline(v = log10(quantile(
+  mean_cancer_coverage,
+  probs = seq(0, 1, 0.1),
+  na.rm = TRUE
+)),
+col = colors(256),
+lwd = 2)
+
+
+mean_healthy_coverage <- rowMeans(healthy_coverage)
+hist(
+  log10(mean_healthy_coverage),
+  breaks = "fd",
+  main = "Healthy coverage: Mean frequency",
+  xlab = "Common logarithm of coverages",
+  col = c("black"),
+  border = "white"
+)
+abline(v = log10(quantile(
+  mean_healthy_coverage,
+  probs = seq(0, 1, 0.1),
+  na.rm = TRUE
+)),
+col = colors(256),
+lwd = 2)
+```
+
+Then to check how widely spread are the coverages across the patients, we calculated the standard deviations (SD) of each gene across the patients and included the values along with the mean values in the `healthy_coverage` and `cancer_coverage` data frames respectively.
+
+```{r}
+sd_cancer_coverage <- apply(cancer_coverage, 1, sd)
+sd_healthy_coverage <- apply(healthy_coverage, 1, sd)
+
+cancer_coverage <-  cbind(cancer_coverage, mean_cancer_coverage)
+healthy_coverage <- cbind(healthy_coverage, mean_healthy_coverage)
+
+cancer_coverage <- cbind(cancer_coverage, sd_cancer_coverage)
+healthy_coverage <- cbind(healthy_coverage, sd_healthy_coverage)
+```
+
+Consequently we plotted a histogram with the SD values for each data frame.
+
+```{r}
+hist(log10(sd_cancer_coverage), breaks = "fd")
+hist(log10(sd_healthy_coverage), breaks = "fd")
+```
+
+As it was initially decided to retain 90% of the information, setting the lower coverage threshold to 5% and the upper coverage threshold to 95% fulfilled that requirement. 
+
+```{r}
+#cancer coverages: lower boundary
+threshold <-
+  quantile(mean_cancer_coverage,
+           probs = seq(0.05, 0.05, 0.05),
+           na.rm = TRUE)
+
+#cancer coverages: upper boundary
+threshold2 <-
+  quantile(mean_cancer_coverage,
+           probs = seq(0.95, 0.95, 0.05),
+           na.rm = TRUE)
+
+#healthy coverages: lower boundary
+threshold3 <-
+  quantile(mean_healthy_coverage,
+           probs = seq(0.05, 0.05, 0.05),
+           na.rm = TRUE)
+
+#healthy coverages: upper boundary
+threshold4 <-
+  quantile(mean_healthy_coverage,
+           probs = seq(0.95, 0.95, 0.05),
+           na.rm = TRUE)
+```
+
+Beta values with very low or extreme high coverages are not reliable. Therefore with the help of the predefined coverage threshold for each patient we will set the beta values of the genes which didn't fulfill the coverage requirement to NA.
+
+```{r}
+for (i in 1:53470) {
+  for (j in 1:5) {
+    if (cancer_coverage[i, j] <= threshold) {
+      cancer_coverage[i, j] <- 0
+    }
+    
+    if (cancer_coverage[i, j] >= threshold2) {
+      cancer_coverage[i, j] <- 0
+    }
+    
+    if (cancer_coverage[i, j] == 0) {
+      cancer_coverage[i, j] <- NA
+      cancer_beta_values[i, j] <- NA
+      
+    }
+  }
+}
+
+for (i in 1:53470) {
+  for (j in 1:5) {
+    if (healthy_coverage[i, j] <= threshold3) {
+      healthy_coverage[i, j] <- 0
+    }
+    
+    if (healthy_coverage[i, j] >= threshold4) {
+      healthy_coverage[i, j] <- 0
+    }
+    
+    if (healthy_coverage[i, j] == 0) {
+      healthy_coverage[i, j] <- NA
+      healthy_beta_values[i, j] <- NA
+      
+    }
+  }
+}
+```
+
+If 3 or more patients out of 5 have NA as beta values for the particular gene, the gene will be removed.
+
+```{r}
+#cancer
+rmv.rows <-  apply(cancer_beta_values, 1, function(x) {
+  sum(is.na(x))
+}) 
+hist(rmv.rows) 
+sum(rmv.rows > 3) 
+
+#healthy
+rmv.rows2 <-  apply(healthy_beta_values, 1, function(x) {
+  sum(is.na(x))
+})  
+hist(rmv.rows2) 
+sum(3 > rmv.rows2) 
+```
+
