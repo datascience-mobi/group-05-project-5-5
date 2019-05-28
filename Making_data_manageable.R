@@ -4,6 +4,7 @@
 
 
 
+
 ###### First steps to load data and manage unhandy data #######
 ###############################################################
 
@@ -61,9 +62,9 @@ dim(Gene_data_frame)
 #some pre-cleaning up: deleting x and y chromosome specific genes
 
 Gene_data_frame_x_y <-
-  Gene_data_frame[-which(Gene_data_frame$Chromosome == "chrX"), ]
+  Gene_data_frame[-which(Gene_data_frame$Chromosome == "chrX"),]
 Gene_data_frame_x_y <-
-  Gene_data_frame_x_y[-which(Gene_data_frame_x_y$Chromosome == "chrY"), ]
+  Gene_data_frame_x_y[-which(Gene_data_frame_x_y$Chromosome == "chrY"),]
 
 #tidy up the data by spliting up the data to different data frame
 healthy_coverage <- Gene_data_frame_x_y[, 21:25]
@@ -119,11 +120,11 @@ hist(log10(sd_healthy_coverage), breaks = "fd")
 
 #include mean and sd column to cancer and healthy data set
 
-cancer_coverage <-  cbind(cancer_coverage, mean_cancer_coverage)
-healthy_coverage <- cbind(healthy_coverage, mean_healthy_coverage)
+#cancer_coverage <-  cbind(cancer_coverage, mean_cancer_coverage)
+#healthy_coverage <- cbind(healthy_coverage, mean_healthy_coverage)
 
-cancer_coverage <- cbind(cancer_coverage, sd_cancer_coverage)
-healthy_coverage <- cbind(healthy_coverage, sd_healthy_coverage)
+#cancer_coverage <- cbind(cancer_coverage, sd_cancer_coverage)
+#healthy_coverage <- cbind(healthy_coverage, sd_healthy_coverage)
 
 ####find coverage value for threshold and remove coverages in threshold --> don´t loose more than 90% of information
 
@@ -132,30 +133,30 @@ sum(cancer_coverage == 0)
 #cancer coverages: lower boundary
 threshold <-
   quantile(mean_cancer_coverage,
-           probs = seq(0.05, 0.05, 0.05),
+           probs = seq(0.05, 0.05),
            na.rm = TRUE)
 
 #cancer coverages: upper boundary
 threshold2 <-
   quantile(mean_cancer_coverage,
-           probs = seq(0.999, 0.999, 0.05),
+           probs = seq(0.999, 0.999),
            na.rm = TRUE)
 
 #healthy coverages: lower boundary
 threshold3 <-
   quantile(mean_healthy_coverage,
-           probs = seq(0.05, 0.05, 0.05),
+           probs = seq(0.05, 0.05),
            na.rm = TRUE)
 
 #healthy coverages: upper boundary
 threshold4 <-
   quantile(mean_healthy_coverage,
-           probs = seq(0.999, 0.999, 0.05),
+           probs = seq(0.999, 0.999),
            na.rm = TRUE)
 
 ##nestled for loops to set every value of cancer coverage and cancer beta value to NA if they are in threshold
-for (i in 1:53470) {
-  for (j in 1:5) {
+for (i in 1:nrow(cancer_coverage)) {
+  for (j in 1:ncol(cancer_coverage)) {
     if (cancer_coverage[i, j] <= threshold) {
       cancer_coverage[i, j] <- 0
     }
@@ -172,9 +173,9 @@ for (i in 1:53470) {
   }
 }
 
-##nestled for loops to set every value of healthy coverage and cancer beta value to NA if they are in threshold
-for (i in 1:53470) {
-  for (j in 1:5) {
+##nested for loops to set every value of healthy coverage and cancer beta value to NA if they are in threshold
+for (i in 1:nrow(healthy_coverage)) {
+  for (j in 1:ncol(healthy_coverage)) {
     if (healthy_coverage[i, j] <= threshold3) {
       healthy_coverage[i, j] <- 0
     }
@@ -263,20 +264,20 @@ hist(
 
 #set a threshold for the NA values and remove the gene if there are too much NA's
 healthy_beta_values <-
-  healthy_beta_values[!(healthy_beta_values$`Number_of_NA` > 2),]
+  healthy_beta_values[!(healthy_beta_values$`Number_of_NA` > 2), ]
 cancer_beta_values <-
-  cancer_beta_values[!(cancer_beta_values$`Number_of_NA` > 2),]
+  cancer_beta_values[!(cancer_beta_values$`Number_of_NA` > 2), ]
 
 cancer_beta_values <-
-  healthy_beta_values[!(healthy_beta_values$`Number_of_NA` > 2),]
+  healthy_beta_values[!(healthy_beta_values$`Number_of_NA` > 2), ]
 healthy_beta_values <-
-  cancer_beta_values[!(cancer_beta_values$`Number_of_NA` > 2),]
+  cancer_beta_values[!(cancer_beta_values$`Number_of_NA` > 2), ]
 
 ##remove column Number_of_NA
 healthy_beta_values <-
-  healthy_beta_values[,-which(colnames(healthy_beta_values)  %in%  c('Number_of_NA'))]
+  healthy_beta_values[, -which(colnames(healthy_beta_values)  %in%  c('Number_of_NA'))]
 cancer_beta_values <-
-  cancer_beta_values[,-which(colnames(cancer_beta_values) %in% c('Number_of_NA'))]
+  cancer_beta_values[, -which(colnames(cancer_beta_values) %in% c('Number_of_NA'))]
 
 #replace remaining NA's with the mean of the respective gene
 #first transposing the data frame because working on columns, e.g getting the mean, is easier than with rows
@@ -288,12 +289,12 @@ dim(transposed_healthy_beta_values)
 dim(transposed_cancer_beta_values)
 
 #going through all elements of the (already reduced) data frame and replace NA's with mean
-for (i in 1:49647) {
+for (i in 1:ncol(transposed_healthy_beta_values)) {
   transposed_healthy_beta_values[is.na(transposed_healthy_beta_values[, i]), i] <-
     mean(transposed_healthy_beta_values[, i], na.rm = TRUE)
 }
 
-for (i in 1:49647) {
+for (i in 1:ncol(transposed_cancer_beta_values)) {
   transposed_cancer_beta_values[is.na(transposed_cancer_beta_values[, i]), i] <-
     mean(transposed_cancer_beta_values[, i], na.rm = TRUE)
 }
@@ -311,32 +312,42 @@ sum(rownames(healthy_beta_values) == rownames(cancer_beta_values))
 
 #are important genes still included?
 important_genes <-
-  c(
-    "ENSG00000176887",
-    "ENSG00000185551",
-    "ENSG00000141510",
-    "ENSG00000110092",
-    "ENSG00000106546",
-    "ENSG00000169855",
-    "ENSG00000125398",
-    "ENSG00000078399",
-    "ENSG00000039068",
-    "ENSG00000081377",
-    "ENSG00000054598",
-    "ENSG00000123689",
-    "ENSG00000211445",
-    "ENSG00000131981",
-    "ENSG00000172005",
-    "ENSG00000106236",
-    "ENSG00000007372",
-    "ENSG00000105825",
-    "ENSG00000159445",
-    "ENSG00000122691"
+  data.frame(
+    c(
+      "ENSG00000176887",
+      "ENSG00000185551",
+      "ENSG00000141510",
+      "ENSG00000110092",
+      "ENSG00000106546",
+      "ENSG00000169855",
+      "ENSG00000125398",
+      "ENSG00000078399",
+      "ENSG00000039068",
+      "ENSG00000081377",
+      "ENSG00000054598",
+      "ENSG00000123689",
+      "ENSG00000211445",
+      "ENSG00000131981",
+      "ENSG00000172005",
+      "ENSG00000106236",
+      "ENSG00000007372",
+      "ENSG00000105825",
+      "ENSG00000159445",
+      "ENSG00000122691"
+    )
   )
 
-cancer_beta_values[which(row.names(cancer_beta_values)== important_genes[6]), ]
+##we only have to check one data set because cancer and healthy have the same genes
+important_genes_in_data_set <- data.frame()
+for (i in 1:nrow(important_genes)) {
+  important_genes_in_data_set[i,] <-
+    cancer_beta_values[which(row.names(cancer_beta_values) == b[i]),]
+}
 
+##look up if there are NAs --> would be bad
+sum(is.na(important_genes_in_data_set))
 
+##hurray no NAs
 
 
 
