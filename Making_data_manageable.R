@@ -278,6 +278,9 @@ cancer_beta_values <-
 healthy_beta_values <-
   cancer_beta_values[!(cancer_beta_values$`Number_of_NA` > 2),]
 
+#check if genes of one data frame are in the other data frame
+sum(rownames(healthy_beta_values) == rownames(cancer_beta_values))
+
 ##remove column Number_of_NA
 healthy_beta_values <-
   healthy_beta_values[,-which(colnames(healthy_beta_values)  %in%  c('Number_of_NA'))]
@@ -311,9 +314,6 @@ sum(is.na(transposed_cancer_beta_values))
 #retranspose to data frame
 healthy_beta_values <- data.frame(t(transposed_healthy_beta_values))
 cancer_beta_values <- data.frame(t(transposed_cancer_beta_values))
-
-#check if genes of one data frame are in the other data frame
-sum(rownames(healthy_beta_values) == rownames(cancer_beta_values))
 
 #are important genes still included?
 important_genes <-

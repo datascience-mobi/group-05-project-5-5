@@ -17,7 +17,7 @@ The alterations in cancer cell DNA methylation pattern have long been detected (
 
 #Research question#
 
-Are differentially methylated regions associated with mantle cell lymphoma?
+Are deferentially methylated regions associated with mantle cell lymphoma?
 
 For that purpose we received a data set and an annotation file. Below is a short summary of important key points of the data set.
 
@@ -50,7 +50,7 @@ Set a threshold and remove genes under/above threshold, imputate remaining NA's 
 
 ## Part 1: Data processing
 
-For now we want to single out the gene data frame of the patients to inspect it separately. We will examine only the gene data frame and neglect the datas from tiling, promoters and cpg-islands because they are irrelevant to answer our research question.
+For now we want to single out the gene data frame of the patients to inspect it separately. We will examine only the gene data frame and neglect the data from tiling, promoters and cpg-islands because they are irrelevant to answer our research question.
 
 ```{r}
 Samples <- readRDS(file = "Mantle-Bcell_list.RDS.gz")
@@ -117,7 +117,7 @@ col = colors(256),
 lwd = 2)
 ```
 
-Then to check how widely spread are the coverages across the patients, we calculated the standard deviations (SD) of each gene across the patients and included the values along with the mean values in the `healthy_coverage` and `cancer_coverage` data frames respectively.
+Then to check how widely spread are the c overages across the patients, we calculated the standard deviations (SD) of each gene across the patients and included the values along with the mean values in the `healthy_coverage` and `cancer_coverage` data frames respectively.
 
 ```{r}
 sd_cancer_coverage <- apply(cancer_coverage, 1, sd)
@@ -229,7 +229,7 @@ sum(3 > rmv.rows2)
 
 ```
 
-Now we needed to deal with NA's in the beta-values. We decided that we want to remove each gene with 3 or more NA's in 'healthy_beta_values' or 'cancer_beta_values', because if there are not enough values our results will be not meaningfull. To do so we added a new column with the number of NA's in each gene. 
+Now we needed to deal with NA's in the beta-values. We decided that we want to remove each gene with 3 or more NA's in 'healthy_beta_values' or 'cancer_beta_values', because if there are not enough values our results will be not meaningful. To do so we added a new column with the number of NA's in each gene. 
 
 ```{r}
 healthy_beta_values$Number_of_NA <-
@@ -244,8 +244,7 @@ cancer_beta_values$Number_of_NA <-
 
 ```
 
-Then we removed the genes with to much missing values. Here it was important to remove the genes in both data frames, because a gene in only one data frame wihout values to compare is meaningless.
-
+Then we removed the genes with to much missing values. Here it was important to remove the genes in both data frames, because a gene in only one data frame without values to compare is meaningless. So we checked if the rownames are the same in both data frames after the deletion. 
 ```{r}
 healthy_beta_values <-
   healthy_beta_values[!(healthy_beta_values$`Number_of_NA` > 2),]
@@ -256,9 +255,11 @@ cancer_beta_values <-
   healthy_beta_values[!(healthy_beta_values$`Number_of_NA` > 2),]
 healthy_beta_values <-
   cancer_beta_values[!(cancer_beta_values$`Number_of_NA` > 2),]
+sum(rownames(healthy_beta_values) == rownames(cancer_beta_values))
 ```
 
 We removed the columns with the NA's-values because we did not need them anymore. 
+
 ```{r}
 healthy_beta_values <-
   healthy_beta_values[,-which(colnames(healthy_beta_values)  %in%  c('Number_of_NA'))]
@@ -268,4 +269,84 @@ cancer_beta_values <-
 
 We can not keep the remaining NA's in the beta-values because this will cause errors in our downstream analysis. But we also did not want to delete the genes, so we decided to replace the NA's with the mean value of the respective gene.
 
+?genauer auf transposed data frames eingehen?
+
+```{r}
+transposed_healthy_beta_values <- t(healthy_beta_values)
+transposed_cancer_beta_values <- t(cancer_beta_values)
+for (i in 1:ncol(transposed_healthy_beta_values)) {
+  transposed_healthy_beta_values[is.na(transposed_healthy_beta_values[, i]), i] <-
+    mean(transposed_healthy_beta_values[, i], na.rm = TRUE)
+}
+
+for (i in 1:ncol(transposed_cancer_beta_values)) {
+  transposed_cancer_beta_values[is.na(transposed_cancer_beta_values[, i]), i] <-
+    mean(transposed_cancer_beta_values[, i], na.rm = TRUE)
+}
+healthy_beta_values <- data.frame(t(transposed_healthy_beta_values))
+cancer_beta_values <- data.frame(t(transposed_cancer_beta_values))
+```
+
+We proofed that there are no more NA's left in the 2 data frames.
+
+```{r}
+sum(is.na(transposed_healthy_beta_values))
+sum(is.na(transposed_cancer_beta_values))
+```
+
+There are some important genes for MCL which have ofen a different methylation pattern in comparison to heatlhy b-cells. These genes are:
+*SOX11	ENSG00000176887	
+*NR2F2	ENSG00000185551	
+*p53  	ENSG00000141510	
+*AHR  	ENSG00000106546		
+*ROBO1	ENSG00000169855		
+*SOX9 	ENSG00000125398		
+*HOXA9	ENSG00000078399		
+*CDH1 	ENSG00000039068		
+*CDC14B	ENSG00000081377		
+*FOXC1	ENSG00000054598	
+*G0S2	  ENSG00000123689		
+*GPX3	  ENSG00000211445		
+*LGALS3	ENSG00000131981		
+*MAL  	ENSG00000172005		
+*NPTX2	ENSG00000106236		 
+*PAX6	  ENSG00000007372		
+*TFPI2	ENSG00000105825		
+*THEM4	ENSG00000159445		
+*TWIST1	ENSG00000122691		
+
+To be sure we did not removed these genes in our data processing we tested if they are still all in our data frames. Because each of the 2 data frames contains the same genes it is enough to check if they are part of one of them.
+
+```{r}
+important_genes <-
+  data.frame(
+    c(
+      "ENSG00000176887",
+      "ENSG00000185551",
+      "ENSG00000141510",
+      "ENSG00000110092",
+      "ENSG00000106546",
+      "ENSG00000169855",
+      "ENSG00000125398",
+      "ENSG00000078399",
+      "ENSG00000039068",
+      "ENSG00000081377",
+      "ENSG00000054598",
+      "ENSG00000123689",
+      "ENSG00000211445",
+      "ENSG00000131981",
+      "ENSG00000172005",
+      "ENSG00000106236",
+      "ENSG00000007372",
+      "ENSG00000105825",
+      "ENSG00000159445",
+      "ENSG00000122691"
+    )
+  )
+important_genes_in_data_set <- data.frame()
+for (i in 1:nrow(important_genes)) {
+  important_genes_in_data_set[i, ] <-
+    cancer_beta_values[which(row.names(cancer_beta_values) == b[i]), ]
+}
+```
 
