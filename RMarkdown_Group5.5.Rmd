@@ -2,8 +2,9 @@
 title: "Are differentially methylated regions associated with mantle cell lymphoma?"
 author: "Pascal Lafrenz, Mari Hambardzumyan, Lea Herzel, Franziska Lam"
 output:
-  html_document: default
+  word_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -51,8 +52,8 @@ Set a threshold and remove genes under/above threshold, imputate remaining NA’
 
 For now we want to single out the gene data frame of the patients to inspect it separately.
 
-
 ```{r}
+Samples <- readRDS(file = "Mantle-Bcell_list.RDS.gz")
 Gene_data_frame <- Samples$genes
 dim(Gene_data_frame)
 ```
