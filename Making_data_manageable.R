@@ -5,6 +5,7 @@
 
 
 
+
 ###### First steps to load data and manage unhandy data #######
 ###############################################################
 
@@ -62,9 +63,9 @@ dim(Gene_data_frame)
 #some pre-cleaning up: deleting x and y chromosome specific genes
 
 Gene_data_frame_x_y <-
-  Gene_data_frame[-which(Gene_data_frame$Chromosome == "chrX"),]
+  Gene_data_frame[-which(Gene_data_frame$Chromosome == "chrX"), ]
 Gene_data_frame_x_y <-
-  Gene_data_frame_x_y[-which(Gene_data_frame_x_y$Chromosome == "chrY"),]
+  Gene_data_frame_x_y[-which(Gene_data_frame_x_y$Chromosome == "chrY"), ]
 
 #tidy up the data by spliting up the data to different data frame
 healthy_coverage <- Gene_data_frame_x_y[, 21:25]
@@ -113,10 +114,13 @@ col = colors(256),
 lwd = 2)
 
 sd_cancer_coverage <- apply(cancer_coverage, 1, sd)
-hist(log10(sd_cancer_coverage), breaks = "fd")
+hist(log10(sd_cancer_coverage), breaks = "fd", col = "indianred2")
 
 sd_healthy_coverage <- apply(healthy_coverage, 1, sd)
-hist(log10(sd_healthy_coverage), breaks = "fd")
+hist(log10(sd_healthy_coverage),
+     breaks = "fd",
+     col = "seagreen2
+     ")
 
 #include mean and sd column to cancer and healthy data set
 
@@ -181,6 +185,7 @@ for (i in 1:nrow(healthy_coverage)) {
     }
     
     if (healthy_coverage[i, j] >= threshold4) {
+      
       healthy_coverage[i, j] <- 0
     }
     
@@ -264,20 +269,20 @@ hist(
 
 #set a threshold for the NA values and remove the gene if there are too much NA's
 healthy_beta_values <-
-  healthy_beta_values[!(healthy_beta_values$`Number_of_NA` > 2), ]
+  healthy_beta_values[!(healthy_beta_values$`Number_of_NA` > 2),]
 cancer_beta_values <-
-  cancer_beta_values[!(cancer_beta_values$`Number_of_NA` > 2), ]
+  cancer_beta_values[!(cancer_beta_values$`Number_of_NA` > 2),]
 
 cancer_beta_values <-
-  healthy_beta_values[!(healthy_beta_values$`Number_of_NA` > 2), ]
+  healthy_beta_values[!(healthy_beta_values$`Number_of_NA` > 2),]
 healthy_beta_values <-
-  cancer_beta_values[!(cancer_beta_values$`Number_of_NA` > 2), ]
+  cancer_beta_values[!(cancer_beta_values$`Number_of_NA` > 2),]
 
 ##remove column Number_of_NA
 healthy_beta_values <-
-  healthy_beta_values[, -which(colnames(healthy_beta_values)  %in%  c('Number_of_NA'))]
+  healthy_beta_values[,-which(colnames(healthy_beta_values)  %in%  c('Number_of_NA'))]
 cancer_beta_values <-
-  cancer_beta_values[, -which(colnames(cancer_beta_values) %in% c('Number_of_NA'))]
+  cancer_beta_values[,-which(colnames(cancer_beta_values) %in% c('Number_of_NA'))]
 
 #replace remaining NA's with the mean of the respective gene
 #first transposing the data frame because working on columns, e.g getting the mean, is easier than with rows
@@ -340,16 +345,11 @@ important_genes <-
 ##we only have to check one data set because cancer and healthy have the same genes
 important_genes_in_data_set <- data.frame()
 for (i in 1:nrow(important_genes)) {
-  important_genes_in_data_set[i,] <-
-    cancer_beta_values[which(row.names(cancer_beta_values) == b[i]),]
+  important_genes_in_data_set[i, ] <-
+    cancer_beta_values[which(row.names(cancer_beta_values) == b[i]), ]
 }
 
 ##look up if there are NAs --> would be bad
 sum(is.na(important_genes_in_data_set))
 
 ##hurray no NAs
-
-
-
-
-

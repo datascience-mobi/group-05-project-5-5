@@ -1,5 +1,5 @@
 ---
-title: "Are differentially methylated regions associated with mantle cell lymphoma?"
+title: "Are differentially methylated regions within genes associated with mantle cell lymphoma?"
 author: "Pascal Lafrenz, Mari Hambardzumyan, Lea Herzel, Franziska Lam"
 output:
   word_document: default
@@ -41,16 +41,16 @@ To address the research question we broke down the project into 5 parts.
 |1. Data processing  | 2. Data normalization and visualization | 3. Data reduction  | 4. Regression and interpretation    | 5. Annotate and interpret results
 ------------- | ------------- | ------------- | ------------- | -------------
 Remove x and y chromosome genes  | Transform beta-values into homeostatic M-values  | Dimensionality reduction, e.g PCA  | Apply t-test        |  
-Split data in 2 data frames (cancer vs. control, beta-values and coverage)  | Add a column for mean, median and SD for better comparisons  | Apply clustering method and visualize, e.g k-means         | Apply logistic regression        | 
-Set a threshold and examine variance for reliable coverage, replace unreliable beta–values with NA | Visualization through plots | 
+Split data in 4 data frames (cancer vs. control, beta-values and coverage)  | Add a column for mean, median and SD for better comparisons  | Apply clustering method and visualize, e.g k-means         | Apply logistic regression        | 
+Set a threshold and examine variance for reliable coverage, replace unreliable beta-values with NA | Visualization through plots | 
 Separately inspect genes of interest for MCL | Identify batch effect magnitude in the data set
-Set a threshold and remove genes under/above threshold, imputate remaining NA’s | 
+Set a threshold and remove genes under/above threshold, imputate remaining NA's | 
 
 
 
 ## Part 1: Data processing
 
-For now we want to single out the gene data frame of the patients to inspect it separately.
+For now we want to single out the gene data frame of the patients to inspect it separately. We will examine only the gene data frame and neglect the datas from tiling, promoters and cpg-islands because they are irrelevant to answer our research question.
 
 ```{r}
 Samples <- readRDS(file = "Mantle-Bcell_list.RDS.gz")
@@ -69,7 +69,7 @@ Gene_data_frame_x_y <-
   Gene_data_frame_x_y[-which(Gene_data_frame_x_y$Chromosome == "chrY"),]
 ```
 
-Now we want to go through the coverage values separately to remove any unreliable values, outliers or possible systematic errors. First we separated the coverage values of healthy and diseased patients into 2 Data frames.
+Now we want to go through the coverage values separately to remove any unreliable values, outliers or possible systematic errors. First we separated the coverage values of healthy and diseased patients into 2 Data frames. We did the same separation into 2 data frames with the beta-values because we will need these later.
 
 ```{r}
 healthy_coverage <- Gene_data_frame_x_y[, 21:25]
@@ -78,7 +78,7 @@ healthy_beta_values <- Gene_data_frame_x_y[, 11:15]
 cancer_beta_values <- Gene_data_frame_x_y[, 16:20]
 ```
 
-Then we created a histogram with mean coverage values for each gene on a log scale.
+Then we created a histogram with mean coverage values for each gene on a log scale and added 10 quantiles from 10 % to 100 %.
 
 ```{r}
 mean_cancer_coverage <- rowMeans(cancer_coverage)
@@ -165,11 +165,11 @@ threshold4 <-
            na.rm = TRUE)
 ```
 
-Beta values with very low or extreme high coverages are not reliable. Therefore with the help of the predefined coverage threshold for each patient we will set the beta values of the genes which didn't fulfill the coverage requirement to NA.
+Beta-values with very low or extreme high coverages are not reliable. Therefore with the help of the predefined coverage threshold for each patient we will set the beta values of the genes which didn't fulfill the coverage requirement to NA.
 
 ```{r}
-for (i in 1:53470) {
-  for (j in 1:5) {
+for (i in 1:nrow(cancer_coverage)) {
+  for (j in 1:ncol(cancer_coverage)) {
     if (cancer_coverage[i, j] <= threshold) {
       cancer_coverage[i, j] <- 0
     }
@@ -186,8 +186,8 @@ for (i in 1:53470) {
   }
 }
 
-for (i in 1:53470) {
-  for (j in 1:5) {
+for (i in 1:nrow(healthy_coverage)) {
+  for (j in 1:ncol(healthy_coverage)) {
     if (healthy_coverage[i, j] <= threshold3) {
       healthy_coverage[i, j] <- 0
     }
@@ -222,4 +222,50 @@ rmv.rows2 <-  apply(healthy_beta_values, 1, function(x) {
 hist(rmv.rows2) 
 sum(3 > rmv.rows2) 
 ```
+
+?Erfolg der Datenbereinigung mit Histogrammen belegen/veranschaulichen?
+
+```{r}
+
+```
+
+Now we needed to deal with NA's in the beta-values. We decided that we want to remove each gene with 3 or more NA's in 'healthy_beta_values' or 'cancer_beta_values', because if there are not enough values our results will be not meaningfull. To do so we added a new column with the number of NA's in each gene. 
+
+```{r}
+healthy_beta_values$Number_of_NA <-
+  rowSums(is.na(healthy_beta_values))
+cancer_beta_values$Number_of_NA <-
+  rowSums(is.na(cancer_beta_values))
+```
+
+?Visualize number of NA's in a histogram? 
+
+```{r}
+
+```
+
+Then we removed the genes with to much missing values. Here it was important to remove the genes in both data frames, because a gene in only one data frame wihout values to compare is meaningless.
+
+```{r}
+healthy_beta_values <-
+  healthy_beta_values[!(healthy_beta_values$`Number_of_NA` > 2),]
+cancer_beta_values <-
+  cancer_beta_values[!(cancer_beta_values$`Number_of_NA` > 2),]
+
+cancer_beta_values <-
+  healthy_beta_values[!(healthy_beta_values$`Number_of_NA` > 2),]
+healthy_beta_values <-
+  cancer_beta_values[!(cancer_beta_values$`Number_of_NA` > 2),]
+```
+
+We removed the columns with the NA's-values because we did not need them anymore. 
+```{r}
+healthy_beta_values <-
+  healthy_beta_values[,-which(colnames(healthy_beta_values)  %in%  c('Number_of_NA'))]
+cancer_beta_values <-
+  cancer_beta_values[,-which(colnames(cancer_beta_values) %in% c('Number_of_NA'))]
+```
+
+We can not keep the remaining NA's in the beta-values because this will cause errors in our downstream analysis. But we also did not want to delete the genes, so we decided to replace the NA's with the mean value of the respective gene.
+
 
