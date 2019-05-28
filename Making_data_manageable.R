@@ -310,7 +310,7 @@ cancer_beta_values <- data.frame(t(transposed_cancer_beta_values))
 sum(rownames(healthy_beta_values) == rownames(cancer_beta_values))
 
 #are important genes still included?
-b <-
+important_genes <-
   c(
     "ENSG00000176887",
     "ENSG00000185551",
@@ -334,7 +334,7 @@ b <-
     "ENSG00000122691"
   )
 
-cancer_beta_values[which(row.names(cancer_beta_values)== b[6]), ]
+cancer_beta_values[which(row.names(cancer_beta_values)== important_genes[6]), ]
 
 
 
