@@ -57,7 +57,6 @@ table_names <- data.frame(Name = Name, y = Name2)
 #copying "genes" data from general list to create a data frame of genes
 Gene_data_frame <- Samples$genes
 dim(Gene_data_frame)
-View(Gene_data_frame)
 
 #some pre-cleaning up: deleting x and y chromosome specific genes
 
@@ -284,6 +283,10 @@ cancer_beta_values <-
 transposed_healthy_beta_values <- t(healthy_beta_values)
 transposed_cancer_beta_values <- t(cancer_beta_values)
 
+#how many elements do we have in our new data frame?
+dim(transposed_healthy_beta_values)
+dim(transposed_cancer_beta_values)
+
 #going through all elements of the (already reduced) data frame and replace NA's with mean
 for (i in 1:49647) {
   transposed_healthy_beta_values[is.na(transposed_healthy_beta_values[, i]), i] <-
@@ -299,9 +302,9 @@ for (i in 1:49647) {
 sum(is.na(transposed_healthy_beta_values))
 sum(is.na(transposed_cancer_beta_values))
 
-#retranspose the data frame
-healthy_beta_values <- t(transposed_healthy_beta_values)
-cancer_beta_values <- t(transposed_cancer_beta_values)
+#retranspose to data frame
+healthy_beta_values <- data.frame(t(transposed_healthy_beta_values))
+cancer_beta_values <- data.frame(t(transposed_cancer_beta_values))
 
 #check if genes of one data frame are in the other data frame
 sum(rownames(healthy_beta_values) == rownames(cancer_beta_values))
