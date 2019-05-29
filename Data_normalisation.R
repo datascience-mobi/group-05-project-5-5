@@ -1,25 +1,38 @@
 
+
 # trasforming beta values to M values and creating a separate dataframe with those values
 
-cancer_m_values <- data.frame(log2(cancer_beta_values/(1- cancer_beta_values)))
-healthy_m_values <- data.frame(log2(healthy_beta_values/(1- healthy_beta_values)))
+cancer_m_values <-
+  data.frame(log2(cancer_beta_values / (1 - cancer_beta_values)))
+healthy_m_values <-
+  data.frame(log2(healthy_beta_values / (1 - healthy_beta_values)))
 
 # changing the ending of patients names from .bed to .M for better overview
 
 # changing healthy patients names
-names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_NBC_NC11_41.bed"] <- "Bcell_naive_VB_NBC_NC11_41.M"
-names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_NBC_NC11_83.bed"] <- "Bcell_naive_VB_NBC_NC11_83.M"
-names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_S001JP51.bed"] <- "Bcell_naive_VB_S001JP51.M"
-names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_S00DM851.bed"] <- "Bcell_naive_VB_S00DM851.M"
-names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_S01ECGA1.bed"] <- "Bcell_naive_VB_S01ECGA1.M"
+names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_NBC_NC11_41.bed"] <-
+  "Bcell_naive_VB_NBC_NC11_41.M"
+names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_NBC_NC11_83.bed"] <-
+  "Bcell_naive_VB_NBC_NC11_83.M"
+names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_S001JP51.bed"] <-
+  "Bcell_naive_VB_S001JP51.M"
+names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_S00DM851.bed"] <-
+  "Bcell_naive_VB_S00DM851.M"
+names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_S01ECGA1.bed"] <-
+  "Bcell_naive_VB_S01ECGA1.M"
 
 # changing cancer patients names
 
-names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FE8A1.bed"] <- "cancer_VB_S01FE8A1.M"
-names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FF6A1.bed"] <- "cancer_VB_S01FF6A1.M"
-names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FH2A1.bed"] <- "cancer_VB_S01FH2A1.M"
-names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FJZA1.bed"] <- "cancer_VB_S01FJZA1.M"
-names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FKXA1.bed"] <- "cancer_VB_S01FKXA1.M"
+names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FE8A1.bed"] <-
+  "cancer_VB_S01FE8A1.M"
+names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FF6A1.bed"] <-
+  "cancer_VB_S01FF6A1.M"
+names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FH2A1.bed"] <-
+  "cancer_VB_S01FH2A1.M"
+names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FJZA1.bed"] <-
+  "cancer_VB_S01FJZA1.M"
+names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FKXA1.bed"] <-
+  "cancer_VB_S01FKXA1.M"
 
 # calculating mean, sd values and plotting a histogramm for each
 
@@ -30,8 +43,7 @@ hist(
   breaks = "fd",
   main = "Cancer M values: Mean frequency",
   xlab = "Common logarithm of M values",
-  col = c("black"),
-  border = "white"
+  col = "indianred2"
 )
 abline(v = log10(quantile(
   mean_cancer_m_values,
@@ -48,8 +60,7 @@ hist(
   breaks = "fd",
   main = "Healthy M values: Mean frequency",
   xlab = "Common logarithm of coverages",
-  col = c("black"),
-  border = "white"
+  col = "seagreen2"
 )
 abline(v = log10(quantile(
   mean_healthy_m_values,
@@ -60,23 +71,27 @@ col = colors(256),
 lwd = 2)
 
 sd_cancer_m_values <- apply(cancer_m_values, 1, sd)
-hist(log10(sd_cancer_m_values),
-     breaks = "fd",
-     main = "Cancer M values: SD frequency",
-     xlab = "Common logarithm of M values",
-     col = "indianred2"
+hist(
+  log10(sd_cancer_m_values),
+  breaks = "fd",
+  main = "Cancer M values: SD frequency",
+  xlab = "Common logarithm of M values",
+  col = "indianred2"
 )
 
 sd_healthy_m_values <- apply(healthy_m_values, 1, sd)
-hist(log10(sd_healthy_m_values),
-     breaks = "fd",
-     col = "seagreen2",
-     main = "Healthy M values: SD frequency",
-     xlab = "Common logarithm of M values",
+hist(
+  log10(sd_healthy_m_values),
+  breaks = "fd",
+  col = "seagreen2",
+  main = "Healthy M values: SD frequency",
+  xlab = "Common logarithm of M values",
 )
 
 
 #include mean and sd values to the original dataframes
 
-complete_cancer_m_values <- cbind.data.frame(cancer_m_values, mean_cancer_m_values, sd_cancer_m_values)
-complete_healthy_m_values <- cbind.data.frame(healthy_m_values, mean_healthy_m_values, sd_healthy_m_values)
+complete_cancer_m_values <-
+  cbind.data.frame(cancer_m_values, mean_cancer_m_values, sd_cancer_m_values)
+complete_healthy_m_values <-
+  cbind.data.frame(healthy_m_values, mean_healthy_m_values, sd_healthy_m_values)
