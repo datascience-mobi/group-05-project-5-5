@@ -6,6 +6,8 @@
 
 
 
+
+
 ###### First steps to load data and manage unhandy data #######
 ###############################################################
 
@@ -114,13 +116,20 @@ col = colors(256),
 lwd = 2)
 
 sd_cancer_coverage <- apply(cancer_coverage, 1, sd)
-hist(log10(sd_cancer_coverage), breaks = "fd", col = "indianred2")
+hist(log10(sd_cancer_coverage),
+     breaks = "fd",
+     main = "Cancer coverage: SD frequency",
+     xlab = "Common logarithm of coverages",
+     col = "indianred2"
+)
 
 sd_healthy_coverage <- apply(healthy_coverage, 1, sd)
 hist(log10(sd_healthy_coverage),
      breaks = "fd",
-     col = "seagreen2
-     ")
+     col = "seagreen2",
+     main = "Healthy coverage: SD frequency",
+     xlab = "Common logarithm of coverages",
+)
 
 #include mean and sd column to cancer and healthy data set
 
@@ -185,7 +194,6 @@ for (i in 1:nrow(healthy_coverage)) {
     }
     
     if (healthy_coverage[i, j] >= threshold4) {
-      
       healthy_coverage[i, j] <- 0
     }
     
@@ -215,7 +223,8 @@ abline(v = log10(quantile(
   na.rm = TRUE
 )),
 col = colors(256),
-lwd = 2)
+lwd = 2
+)
 
 #healthy
 mean_healthy_coverage <- rowMeans(healthy_coverage)
@@ -233,7 +242,8 @@ abline(v = log10(quantile(
   na.rm = TRUE
 )),
 col = colors(256),
-lwd = 2)
+lwd = 2
+)
 
 ####
 
