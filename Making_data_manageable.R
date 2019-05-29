@@ -85,7 +85,7 @@ hist(
   main = "Cancer coverage: Mean frequency",
   xlab = "Common logarithm of coverages",
   col = "indianred2",
-  border = "gray30"
+  border = "gray20"
 )
 abline(v = log10(quantile(
   mean_cancer_coverage,
@@ -104,7 +104,7 @@ hist(
   main = "Healthy coverage: Mean frequency",
   xlab = "Common logarithm of coverages",
   col = "seagreen2",
-  border = "gray30"
+  border = "gray20"
 )
 abline(v = log10(quantile(
   mean_healthy_coverage,
