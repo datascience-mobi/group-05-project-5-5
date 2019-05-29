@@ -86,8 +86,7 @@ hist(
   breaks = "fd",
   main = "Cancer coverage: Mean frequency",
   xlab = "Common logarithm of coverages",
-  col = c("black"),
-  border = "white"
+  col = "indianred2"
 )
 abline(v = log10(quantile(
   mean_cancer_coverage,
@@ -104,8 +103,7 @@ hist(
   breaks = "fd",
   main = "Healthy coverage: Mean frequency",
   xlab = "Common logarithm of coverages",
-  col = c("black"),
-  border = "white"
+    col = "seagreen2"
 )
 abline(v = log10(quantile(
   mean_healthy_coverage,
@@ -231,16 +229,20 @@ cancer_beta_values$Number_of_NA <-
 
 Then we removed the genes with to much missing values. Here it was important to remove the genes in both data frames, because a gene in only one data frame without values to compare is meaningless. So we checked if the rownames are the same in both data frames after the deletion. 
 ```{r}
-healthy_beta_values <-
-  healthy_beta_values[!(healthy_beta_values$`Number_of_NA` > 2),]
-cancer_beta_values <-
-  cancer_beta_values[!(cancer_beta_values$`Number_of_NA` > 2),]
+healthy_beta_values_2 <- data.frame()
+cancer_beta_values_2 <- data.frame()
+healthy_beta_values_2 <-
+  healthy_beta_values[!(healthy_beta_values$Number_of_NA > 2),]
+cancer_beta_values_2 <-
+  cancer_beta_values_2[!(cancer_beta_values$Number_of_NA > 2),]
 
-cancer_beta_values <-
-  healthy_beta_values[!(healthy_beta_values$`Number_of_NA` > 2),]
-healthy_beta_values <-
-  cancer_beta_values[!(cancer_beta_values$`Number_of_NA` > 2),]
-sum(rownames(healthy_beta_values) == rownames(cancer_beta_values))
+cancer_beta_values_2 <-
+  cancer_beta_values_2[!(healthy_beta_values$Number_of_NA > 2),]
+healthy_beta_values_2 <-
+  healthy_beta_values_2[!(cancer_beta_values$Number_of_NA > 2),]
+
+cancer_beta_values <- cancer_beta_values_2
+healthy_beta_values <- healthy_beta_values_2
 ```
 
 We removed the columns with the NA's-values because we did not need them anymore. 
@@ -333,6 +335,7 @@ for (i in 1:nrow(important_genes)) {
   important_genes_in_data_set[i, ] <-
     cancer_beta_values[which(row.names(cancer_beta_values) == important_genes[i, ]), ]
 }
+sum(is.na(important_genes_in_data_set))
 ```
 
 
