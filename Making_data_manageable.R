@@ -4,6 +4,9 @@
 ###### First steps to load data and manage unhandy data #######
 ###############################################################
 
+#Lea change environment
+#setwd("C:/Users/Lea/Documents/Studium MoBi/4. Semester (SS 19)/Data Analysis Project/Git Hub/Dataset _ Mantle vs. B-cell")
+
 #Load sample data
 Samples <- readRDS(file = "Mantle-Bcell_list.RDS.gz")
 
@@ -81,14 +84,16 @@ hist(
   breaks = "fd",
   main = "Cancer coverage: Mean frequency",
   xlab = "Common logarithm of coverages",
-  col = "indianred2"
+  col = "indianred2",
+  border = "gray30"
 )
 abline(v = log10(quantile(
   mean_cancer_coverage,
   probs = seq(0, 1, 0.1),
   na.rm = TRUE
 )),
-col = colors(256),
+#col = colors(256),
+col = "black",
 lwd = 2)
 
 
@@ -98,14 +103,16 @@ hist(
   breaks = "fd",
   main = "Healthy coverage: Mean frequency",
   xlab = "Common logarithm of coverages",
-  col = "seagreen2"
+  col = "seagreen2",
+  border = "gray30"
 )
 abline(v = log10(quantile(
   mean_healthy_coverage,
   probs = seq(0, 1, 0.1),
   na.rm = TRUE
 )),
-col = colors(256),
+#col = colors(256),
+col = "black",
 lwd = 2)
 
 sd_cancer_coverage <- apply(cancer_coverage, 1, sd)
