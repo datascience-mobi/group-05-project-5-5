@@ -2,9 +2,9 @@
 title: "Are differentially methylated regions within genes associated with mantle cell lymphoma?"
 author: "Pascal Lafrenz, Mari Hambardzumyan, Lea Herzel, Franziska Lam"
 output:
+  html_document: default
   word_document: default
   pdf_document: default
-  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -117,17 +117,11 @@ col = colors(256),
 lwd = 2)
 ```
 
-Then to check how widely spread are the c overages across the patients, we calculated the standard deviations (SD) of each gene across the patients and included the values along with the mean values in the `healthy_coverage` and `cancer_coverage` data frames respectively.
+Then to check how widely spread are the coverages across the patients, we calculated the standard deviations (SD) of each gene across the patients.
 
 ```{r}
 sd_cancer_coverage <- apply(cancer_coverage, 1, sd)
 sd_healthy_coverage <- apply(healthy_coverage, 1, sd)
-
-cancer_coverage <-  cbind(cancer_coverage, mean_cancer_coverage)
-healthy_coverage <- cbind(healthy_coverage, mean_healthy_coverage)
-
-cancer_coverage <- cbind(cancer_coverage, sd_cancer_coverage)
-healthy_coverage <- cbind(healthy_coverage, sd_healthy_coverage)
 ```
 
 Consequently we plotted a histogram with the SD values for each data frame.
