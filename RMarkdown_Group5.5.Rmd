@@ -375,7 +375,7 @@ healthy_beta_values <- data.frame(t(transposed_healthy_beta_values))
 cancer_beta_values <- data.frame(t(transposed_cancer_beta_values))
 ```
 
-We proofed that there are no more NA's left in the 2 data frames.
+We proofed that there are no more NA's left in the cancer and healthy data frames.
 
 ```{r}
 sum(is.na(transposed_healthy_beta_values))
