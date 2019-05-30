@@ -84,7 +84,7 @@ hist(
   breaks = "fd",
   main = "Cancer coverage: Mean frequency",
   xlab = "Common logarithm of coverages",
-  col = "indianred2",
+  col = "indianred1",
   border = "gray20"
 )
 abline(v = log10(quantile(
@@ -94,7 +94,8 @@ abline(v = log10(quantile(
 )),
 #col = colors(256),
 col = "black",
-lwd = 2)
+lty = 5,
+lwd = 1)
 
 
 mean_healthy_coverage <- rowMeans(healthy_coverage)
@@ -113,6 +114,7 @@ abline(v = log10(quantile(
 )),
 #col = colors(256),
 col = "black",
+lty = 5,
 lwd = 2)
 
 sd_cancer_coverage <- apply(cancer_coverage, 1, sd)
@@ -121,7 +123,7 @@ hist(
   breaks = "fd",
   main = "Cancer coverage: SD frequency",
   xlab = "Common logarithm of coverages",
-  col = "indianred2"
+  col = "indianred1"
 )
 
 sd_healthy_coverage <- apply(healthy_coverage, 1, sd)
@@ -130,7 +132,7 @@ hist(
   breaks = "fd",
   col = "seagreen2",
   main = "Healthy coverage: SD frequency",
-  xlab = "Common logarithm of coverages",
+  xlab = "Common logarithm of coverages"
 )
 
 #include mean and sd column to cancer and healthy data set
@@ -217,15 +219,17 @@ hist(
   breaks = "fd",
   main = "Cancer coverage: Mean frequency",
   xlab = "Common logarithm of coverages",
-  col = "indianred2"
+  col = "indianred1",
+  border = "gray20"
 )
 abline(v = log10(quantile(
   mean_cancer_coverage,
   probs = seq(0, 1, 0.1),
   na.rm = TRUE
 )),
-col = colors(256),
-lwd = 2)
+col = "black",
+lty = 5,
+lwd = 1)
 
 #healthy
 mean_healthy_coverage <- rowMeans(healthy_coverage)
@@ -234,15 +238,17 @@ hist(
   breaks = "fd",
   main = "Healthy coverage: Mean frequency",
   xlab = "Common logarithm of coverages",
-  col = "seagreen2"
+  col = "seagreen2",
+  border = "gray20"
 )
 abline(v = log10(quantile(
   mean_healthy_coverage,
   probs = seq(0, 1, 0.1),
   na.rm = TRUE
 )),
-col = colors(256),
-lwd = 2)
+col = "black",
+lty = 5,
+lwd = 1)
 
 remove(
   list = c(
@@ -270,25 +276,66 @@ cancer_beta_values$Number_of_NA_cancer <-
 cancer_beta_values$Number_of_NA_healthy <-
   rowSums(is.na(healthy_beta_values))
 
+#NA_healthy_beta_values <- rowSums(is.na(healthy_beta_values))
+#NA_cancer_beta_values <- rowSums(is.na(cancer_beta_values))
+
 ##Histogram of NA's
 ###maybe we can work out the scales :/
 hist(
-  healthy_beta_values$Number_of_NA_healthy,
+  NA_healthy_beta_values,
   main =  "NA's per Gene in Healthy Samples",
   breaks = 5,
   xlab = "Number of NA's",
   ylab = "Number of Genes",
-  col = "seagreen2"
+  col = "seagreen2",
+  border = "gray20"
 )
+"abline(v = log10(quantile(
+  healthy_beta_values$Number_of_NA_healthy,
+  probs = seq(0, 1, 0.1)
+)),
+col = "black",
+lty = 5,
+lwd = 1)"
+hist(
+  healthy_beta_values$Number_of_NA_healthy,
+  main =  "NA's per Gene in Healthy Samples (zoomed in)",
+  breaks = 4,
+  xlim = c(1,5),
+  ylim = c(0,500),
+  xlab = "Number of NA's",
+  ylab = "Number of Genes",
+  col = "seagreen2",
+  border = "gray20"
+)
+
 hist(
   cancer_beta_values$Number_of_NA_cancer,
   main =  "NA's per Gene in MCL Samples",
   breaks = 5,
   xlab = "Number of NA's",
   ylab = "Number of Genes",
-  col = "indianred2"
+  col = "indianred1",
+  border = "gray20"
 )
-
+"abline(v = log10(quantile(
+  cancer_beta_values$Number_of_NA_cancer,
+  probs = seq(0, 1, 0.25)
+)),
+col = "black",
+lty = 5,
+lwd = 1)"
+hist(
+  cancer_beta_values$Number_of_NA_cancer,
+  main =  "NA's per Gene in MCL Samples (zoomed in)",
+  breaks = 4,
+  xlim = c(1,5),
+  ylim = c(0,500),
+  xlab = "Number of NA's",
+  ylab = "Number of Genes",
+  col = "indianred1",
+  border = "gray20"
+)
 #set a threshold for the NA values and remove the gene if there are too much NA's
 healthy_beta_values <-
   healthy_beta_values[-which(
