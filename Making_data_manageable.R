@@ -1,6 +1,7 @@
 
 
 
+
 ###### First steps to load data and manage unhandy data #######
 ###############################################################
 
@@ -63,9 +64,9 @@ dim(Gene_data_frame)
 #some pre-cleaning up: deleting x and y chromosome specific genes
 
 Gene_data_frame_x_y <-
-  Gene_data_frame[-which(Gene_data_frame$Chromosome == "chrX"), ]
+  Gene_data_frame[-which(Gene_data_frame$Chromosome == "chrX"),]
 Gene_data_frame_x_y <-
-  Gene_data_frame_x_y[-which(Gene_data_frame_x_y$Chromosome == "chrY"), ]
+  Gene_data_frame_x_y[-which(Gene_data_frame_x_y$Chromosome == "chrY"),]
 
 #tidy up the data by spliting up the data to different data frame
 healthy_coverage <- Gene_data_frame_x_y[, 21:25]
@@ -87,15 +88,16 @@ hist(
   col = "indianred1",
   border = "gray20"
 )
-abline(v = log10(quantile(
-  mean_cancer_coverage,
-  probs = seq(0, 1, 0.1),
-  na.rm = TRUE
-)),
-col = "black",
-lty = 5,
-lwd = 1)
-
+abline(
+  v = log10(quantile(
+    mean_cancer_coverage,
+    probs = seq(0, 1, 0.1),
+    na.rm = TRUE
+  )),
+  col = "black",
+  lty = 5,
+  lwd = 1
+)
 
 mean_healthy_coverage <- rowMeans(healthy_coverage)
 hist(
@@ -106,14 +108,16 @@ hist(
   col = "seagreen2",
   border = "gray20"
 )
-abline(v = log10(quantile(
-  mean_healthy_coverage,
-  probs = seq(0, 1, 0.1),
-  na.rm = TRUE
-)),
-col = "black",
-lty = 5,
-lwd = 1)
+abline(
+  v = log10(quantile(
+    mean_healthy_coverage,
+    probs = seq(0, 1, 0.1),
+    na.rm = TRUE
+  )),
+  col = "black",
+  lty = 5,
+  lwd = 1
+)
 
 sd_cancer_coverage <- apply(cancer_coverage, 1, sd)
 hist(
@@ -123,6 +127,16 @@ hist(
   xlab = "Common logarithm of coverages",
   col = "indianred1",
   border = "gray20"
+)
+abline(
+  v = log10(quantile(
+    sd_cancer_coverage,
+    probs = seq(0, 1, 0.1),
+    na.rm = TRUE
+  )),
+  col = "black",
+  lty = 5,
+  lwd = 1
 )
 
 sd_healthy_coverage <- apply(healthy_coverage, 1, sd)
@@ -134,7 +148,16 @@ hist(
   col = "seagreen2",
   border = "gray20"
 )
-
+abline(
+  v = log10(quantile(
+    sd_healthy_coverage,
+    probs = seq(0, 1, 0.1),
+    na.rm = TRUE
+  )),
+  col = "black",
+  lty = 5,
+  lwd = 1
+)
 #include mean and sd column to cancer and healthy data set
 
 #cancer_coverage <-  cbind(cancer_coverage, mean_cancer_coverage)
@@ -222,14 +245,16 @@ hist(
   col = "indianred1",
   border = "gray20"
 )
-abline(v = log10(quantile(
-  mean_cancer_coverage,
-  probs = seq(0, 1, 0.1),
-  na.rm = TRUE
-)),
-col = "black",
-lty = 5,
-lwd = 1)
+abline(
+  v = log10(quantile(
+    mean_cancer_coverage,
+    probs = seq(0, 1, 0.1),
+    na.rm = TRUE
+  )),
+  col = "black",
+  lty = 5,
+  lwd = 1
+)
 
 #healthy
 mean_healthy_coverage <- rowMeans(healthy_coverage)
@@ -241,14 +266,16 @@ hist(
   col = "seagreen2",
   border = "gray20"
 )
-abline(v = log10(quantile(
-  mean_healthy_coverage,
-  probs = seq(0, 1, 0.1),
-  na.rm = TRUE
-)),
-col = "black",
-lty = 5,
-lwd = 1)
+abline(
+  v = log10(quantile(
+    mean_healthy_coverage,
+    probs = seq(0, 1, 0.1),
+    na.rm = TRUE
+  )),
+  col = "black",
+  lty = 5,
+  lwd = 1
+)
 
 remove(
   list = c(
@@ -299,8 +326,8 @@ hist(
   cancer_beta_values$Number_of_NA_cancer,
   main =  "NA's per Gene in MCL Samples (zoomed in)",
   breaks = 4,
-  xlim = c(1,5),
-  ylim = c(0,2500),
+  xlim = c(1, 5),
+  ylim = c(0, 2500),
   xlab = "Number of NA's",
   ylab = "Number of Genes",
   col = "indianred1",
@@ -327,8 +354,8 @@ hist(
   healthy_beta_values$Number_of_NA_healthy,
   main =  "NA's per Gene in Healthy Samples (zoomed in)",
   breaks = 4,
-  xlim = c(1,5),
-  ylim = c(0,2500),
+  xlim = c(1, 5),
+  ylim = c(0, 2500),
   xlab = "Number of NA's",
   ylab = "Number of Genes",
   col = "seagreen2",
@@ -341,24 +368,24 @@ cancer_beta_values <-
   cancer_beta_values[-which(
     cancer_beta_values$Number_of_NA_cancer >= 3 |
       cancer_beta_values$Number_of_NA_healthy >= 3
-  ),]
+  ), ]
 healthy_beta_values <-
   healthy_beta_values[-which(
     healthy_beta_values$Number_of_NA_cancer >= 3 |
       healthy_beta_values$Number_of_NA_healthy >= 3
-  ),]
+  ), ]
 
 #check if genes of one data frame are in the other data frame
 sum(rownames(healthy_beta_values) != rownames(cancer_beta_values))
 
 ##remove column Number_of_NA
 cancer_beta_values <-
-  cancer_beta_values[,-which(
+  cancer_beta_values[, -which(
     colnames(cancer_beta_values) %in% c("Number_of_NA_cancer", "Number_of_NA_healthy")
   )]
 
 healthy_beta_values <-
-  healthy_beta_values[,-which(
+  healthy_beta_values[, -which(
     colnames(healthy_beta_values)  %in%  c("Number_of_NA_cancer", "Number_of_NA_healthy")
   )]
 
@@ -425,8 +452,8 @@ important_genes <-
 ##we only have to check one data set because cancer and healthy have the same genes
 important_genes_in_data_set <- data.frame()
 for (i in 1:nrow(important_genes)) {
-  important_genes_in_data_set[i, ] <-
-    cancer_beta_values[which(row.names(cancer_beta_values) == important_genes[i, ]), ]
+  important_genes_in_data_set[i,] <-
+    cancer_beta_values[which(row.names(cancer_beta_values) == important_genes[i,]),]
 }
 
 ##look up if there are NAs --> would be bad
@@ -435,4 +462,3 @@ sum(is.na(important_genes_in_data_set))
 ##hurray no NAs
 
 remove(important_genes_in_data_set)
-
