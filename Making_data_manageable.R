@@ -282,7 +282,7 @@ cancer_beta_values$Number_of_NA_healthy <-
 ##Histogram of NA's
 ###maybe we can work out the scales :/
 hist(
-  NA_healthy_beta_values,
+  healthy_beta_values$Number_of_NA_healty,
   main =  "NA's per Gene in Healthy Samples",
   breaks = 5,
   xlab = "Number of NA's",
