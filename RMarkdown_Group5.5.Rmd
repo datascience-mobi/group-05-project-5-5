@@ -78,7 +78,7 @@ healthy_beta_values <- Gene_data_frame_x_y[, 11:15]
 cancer_beta_values <- Gene_data_frame_x_y[, 16:20]
 ```
 
-Then we created a histogram with mean coverage values for each gene on a log scale and added 10 quantiles from 10 % to 100 %.
+Then we created a histogram with mean coverage values for each gene on a common log scale and added 10 quantiles from 0 % to 100 %.
 
 ```{r}
 mean_cancer_coverage <- rowMeans(cancer_coverage)
@@ -119,7 +119,9 @@ lty = 5,
 lwd = 1)
 ```
 
-To check how widely spread are the coverages across the patients, we calculated the standard deviations (SD) of each gene across the patients. We plotted the SD-values for cancer and healthy samples on a histogram with a log scale.
+It was essential that we used a common logarithm scale because our coverages were wide spread over a great range and we did not want to seperate the histograms. But it is easy to see that we have two groups of mean coverage values in healthy coverage histogram. In cancer coverage histogram it was harder to decide how to handle the mean values between 10 and 100 coverages. We concluded that we also had two major mean value groups. But overall it is seen that most of our data had a strong coverage value and that we could later adapt our analysis to it. Not even one fifth of the beta values had less than 100 coverages. As previous said, healthy beta values had stronger coverages than cancer beta values. We need to see if this will effect our downstream analysis.
+
+To check how widely spread the coverages across the patients are, we calculated the standard deviations (SD) of each gene across the patients. We plotted the SD-values for cancer and healthy samples on a histogram with a log scale and again quantiles from 0 % to 100 %.
 
 ```{r}
 sd_cancer_coverage <- apply(cancer_coverage, 1, sd)
@@ -130,6 +132,15 @@ hist(log10(sd_cancer_coverage),
      col = "indianred1",
      border = "gray20"
 )
+abline(v = log10(quantile(
+  sd_cancer_coverage,
+  probs = seq(0, 1, 0.1),
+  na.rm = TRUE
+)),
+col = "black",
+lty = 5,
+lwd = 1)
+
 sd_healthy_coverage <- apply(healthy_coverage, 1, sd)
 hist(log10(sd_healthy_coverage),
      breaks = "fd",
@@ -138,9 +149,18 @@ hist(log10(sd_healthy_coverage),
      col = "seagreen2",
      border = "gray20"
 )
+abline(v = log10(quantile(
+  sd_healthy_coverage,
+  probs = seq(0, 1, 0.1),
+  na.rm = TRUE
+)),
+col = "black",
+lty = 5,
+lwd = 1)
 ```
+Again we can distinguish between two major SD groups in both histograms. It is important to mention, that 90 % of mean cancer coverages SD had way under SD = 10,000. In contrast, the 90 % quantile of mean healthy coverages SD was only slightly under SD = 10,000. A low standard deviation would be optimal but we had to accept our outcome of wide spread standard deviation because most of the data is acceptable spreaded.
 
-By setting the lower coverage threshold to 5 % and the upper to 99.9 %, we fulfilled our initial requirement of retaining around 90 % of the information. 
+By setting the lower coverage threshold to 5 % and the upper to 99.9 %, we fulfilled our initial requirement of retaining around 90 % of the information. This is proven later. 
 
 ```{r}
 threshold <-
@@ -244,7 +264,7 @@ lwd = 1)
 
 ```
 
-Now we needed to deal with NA's in the beta-values, because they represent no information and they could cause errors in our further analysis. We have many NA's but we cannot remove every gene with a NA because this would lead to a loss of too much information.
+Now we needed to deal with NA's in the beta-values, because they represent no information and they could cause errors in our further analysis. We had many NA's but we cannot remove every gene with a NA because this would lead to a loss of too much information.
 
 ```{r}
 sum(is.na(cancer_beta_values))
@@ -265,7 +285,7 @@ healthy_beta_values$Number_of_NA_cancer <-
   rowSums(is.na(cancer_beta_values))
 ```
 
-To visualize the number of NA's in the beta-values we plotted differnt histograms.
+To visualize the number of NA's in the beta-values we plotted different histograms.
 
 ```{r}
 hist(
@@ -346,8 +366,7 @@ healthy_beta_values <-
 ```
 
 We can not keep the remaining NA's in the beta-values because this will cause errors in our downstream analysis. But we also did not want to delete the genes, so we decided to replace the NA's with the mean value of the respective gene.
-
-?genauer auf transposed data frames eingehen?
+To cut things short and to make it a little easier for our next analysis, we transposed both beta value data frames (cancer and healthy). Afterwards we transposed both data frames back for further analysis.
 
 ```{r}
 transposed_cancer_beta_values <- t(cancer_beta_values)
@@ -433,12 +452,12 @@ for (i in 1:nrow(important_genes)) {
 sum(is.na(important_genes_in_data_set))
 ```
 
+Now, we can test if we fulfilled our initial requirement of retaining around 90 % of the information.
 
-
-
-
-
-
+```{r}
+dim(cancer_beta_values)/dim(Gene_data_frame_x_y)
+```
+It so happens that we kept slightly over 90 % of the information (91.1%). That is more than we expected and therefore our quality control was successful.
 
 
 
