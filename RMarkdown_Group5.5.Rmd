@@ -457,7 +457,8 @@ Now, we can test if we fulfilled our initial requirement of retaining around 90 
 ```{r}
 dim(cancer_beta_values)/dim(Gene_data_frame_x_y)
 ```
-It so happens that we kept slightly over 90 % of the information (91.1%). That is more than we expected and therefore our quality control was successful.
+It so happens that we kept slightly over 90 % of the information (91.1 %). That is more than we expected and therefore our quality control was successful. 
+We can continue to our next step: data normalization and visualization.
 
 
 
