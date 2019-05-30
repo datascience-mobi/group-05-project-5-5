@@ -115,7 +115,7 @@ abline(v = log10(quantile(
 #col = colors(256),
 col = "black",
 lty = 5,
-lwd = 2)
+lwd = 1)
 
 sd_cancer_coverage <- apply(cancer_coverage, 1, sd)
 hist(
@@ -123,16 +123,18 @@ hist(
   breaks = "fd",
   main = "Cancer coverage: SD frequency",
   xlab = "Common logarithm of coverages",
-  col = "indianred1"
+  col = "indianred1",
+  border = "gray20"
 )
 
 sd_healthy_coverage <- apply(healthy_coverage, 1, sd)
 hist(
   log10(sd_healthy_coverage),
   breaks = "fd",
-  col = "seagreen2",
   main = "Healthy coverage: SD frequency",
-  xlab = "Common logarithm of coverages"
+  xlab = "Common logarithm of coverages",
+  col = "seagreen2",
+  border = "gray20"
 )
 
 #include mean and sd column to cancer and healthy data set
@@ -262,53 +264,24 @@ remove(
 
 #deal with NA's
 ##output of the number of all NA's in healthy genes
-sum(is.na(healthy_beta_values))
 sum(is.na(cancer_beta_values))
+sum(is.na(healthy_beta_values))
 
 ##add a new column with the number of NA's per gene
-healthy_beta_values$Number_of_NA_healthy <-
-  rowSums(is.na(healthy_beta_values))
-healthy_beta_values$Number_of_NA_cancer <-
-  rowSums(is.na(cancer_beta_values))
-
 cancer_beta_values$Number_of_NA_cancer <-
   rowSums(is.na(cancer_beta_values))
 cancer_beta_values$Number_of_NA_healthy <-
   rowSums(is.na(healthy_beta_values))
 
+healthy_beta_values$Number_of_NA_healthy <-
+  rowSums(is.na(healthy_beta_values))
+healthy_beta_values$Number_of_NA_cancer <-
+  rowSums(is.na(cancer_beta_values))
 #NA_healthy_beta_values <- rowSums(is.na(healthy_beta_values))
 #NA_cancer_beta_values <- rowSums(is.na(cancer_beta_values))
 
 ##Histogram of NA's
 ###maybe we can work out the scales :/
-hist(
-  healthy_beta_values$Number_of_NA_healty,
-  main =  "NA's per Gene in Healthy Samples",
-  breaks = 5,
-  xlab = "Number of NA's",
-  ylab = "Number of Genes",
-  col = "seagreen2",
-  border = "gray20"
-)
-"abline(v = log10(quantile(
-  healthy_beta_values$Number_of_NA_healthy,
-  probs = seq(0, 1, 0.1)
-)),
-col = "black",
-lty = 5,
-lwd = 1)"
-hist(
-  healthy_beta_values$Number_of_NA_healthy,
-  main =  "NA's per Gene in Healthy Samples (zoomed in)",
-  breaks = 4,
-  xlim = c(1,5),
-  ylim = c(0,500),
-  xlab = "Number of NA's",
-  ylab = "Number of Genes",
-  col = "seagreen2",
-  border = "gray20"
-)
-
 hist(
   cancer_beta_values$Number_of_NA_cancer,
   main =  "NA's per Gene in MCL Samples",
@@ -318,67 +291,98 @@ hist(
   col = "indianred1",
   border = "gray20"
 )
-"abline(v = log10(quantile(
-  cancer_beta_values$Number_of_NA_cancer,
-  probs = seq(0, 1, 0.25)
-)),
-col = "black",
-lty = 5,
-lwd = 1)"
+#abline(v = log10(quantile(
+#  cancer_beta_values$Number_of_NA_cancer,
+#  probs = seq(0, 1, 0.25)
+#)),
+#col = "black",
+#lty = 5,
+#lwd = 1)
 hist(
   cancer_beta_values$Number_of_NA_cancer,
   main =  "NA's per Gene in MCL Samples (zoomed in)",
   breaks = 4,
   xlim = c(1,5),
-  ylim = c(0,500),
+  ylim = c(0,2500),
   xlab = "Number of NA's",
   ylab = "Number of Genes",
   col = "indianred1",
   border = "gray20"
 )
+
+hist(
+  healthy_beta_values$Number_of_NA_healty,
+  main =  "NA's per Gene in Healthy Samples",
+  breaks = 5,
+  xlab = "Number of NA's",
+  ylab = "Number of Genes",
+  col = "seagreen2",
+  border = "gray20"
+)
+#abline(v = log10(quantile(
+#  healthy_beta_values$Number_of_NA_healthy,
+#  probs = seq(0, 1, 0.1)
+#)),
+#col = "black",
+#lty = 5,
+#lwd = 1)
+hist(
+  healthy_beta_values$Number_of_NA_healthy,
+  main =  "NA's per Gene in Healthy Samples (zoomed in)",
+  breaks = 4,
+  xlim = c(1,5),
+  ylim = c(0,2500),
+  xlab = "Number of NA's",
+  ylab = "Number of Genes",
+  col = "seagreen2",
+  border = "gray20"
+)
+
+
 #set a threshold for the NA values and remove the gene if there are too much NA's
-healthy_beta_values <-
-  healthy_beta_values[-which(
-    healthy_beta_values$Number_of_NA_cancer >= 3 |
-      healthy_beta_values$Number_of_NA_healthy >= 3
-  ),]
 cancer_beta_values <-
   cancer_beta_values[-which(
     cancer_beta_values$Number_of_NA_cancer >= 3 |
       cancer_beta_values$Number_of_NA_healthy >= 3
+  ),]
+healthy_beta_values <-
+  healthy_beta_values[-which(
+    healthy_beta_values$Number_of_NA_cancer >= 3 |
+      healthy_beta_values$Number_of_NA_healthy >= 3
   ),]
 
 #check if genes of one data frame are in the other data frame
 sum(rownames(healthy_beta_values) != rownames(cancer_beta_values))
 
 ##remove column Number_of_NA
-healthy_beta_values <-
-  healthy_beta_values[,-which(
-    colnames(healthy_beta_values)  %in%  c("Number_of_NA_cancer", "Number_of_NA_healthy")
-  )]
 cancer_beta_values <-
   cancer_beta_values[,-which(
     colnames(cancer_beta_values) %in% c("Number_of_NA_cancer", "Number_of_NA_healthy")
   )]
 
+healthy_beta_values <-
+  healthy_beta_values[,-which(
+    colnames(healthy_beta_values)  %in%  c("Number_of_NA_cancer", "Number_of_NA_healthy")
+  )]
+
 #replace remaining NA's with the mean of the respective gene
 #first transposing the data frame because working on columns, e.g getting the mean, is easier than with rows
-transposed_healthy_beta_values <- t(healthy_beta_values)
 transposed_cancer_beta_values <- t(cancer_beta_values)
+transposed_healthy_beta_values <- t(healthy_beta_values)
 
 #how many elements do we have in our new data frame?
 dim(transposed_healthy_beta_values)
 dim(transposed_cancer_beta_values)
 
 #going through all elements of the (already reduced) data frame and replace NA's with mean
-for (i in 1:ncol(transposed_healthy_beta_values)) {
-  transposed_healthy_beta_values[is.na(transposed_healthy_beta_values[, i]), i] <-
-    mean(transposed_healthy_beta_values[, i], na.rm = TRUE)
-}
-
 for (i in 1:ncol(transposed_cancer_beta_values)) {
   transposed_cancer_beta_values[is.na(transposed_cancer_beta_values[, i]), i] <-
     mean(transposed_cancer_beta_values[, i], na.rm = TRUE)
+}
+
+for (i in 1:ncol(transposed_healthy_beta_values)) {
+  transposed_healthy_beta_values[is.na(transposed_healthy_beta_values[, i]), i] <-
+    mean(transposed_healthy_beta_values[, i], na.rm = TRUE)
 }
 
 #did we eliminate all NA's?
