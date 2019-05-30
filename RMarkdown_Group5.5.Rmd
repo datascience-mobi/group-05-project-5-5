@@ -261,13 +261,18 @@ sum(is.na(healthy_beta_values))
 sum(is.na(cancer_beta_values))
 ```
 
-We decided that we want to remove each gene with 3 or more NA's in 'healthy_beta_values' or 'cancer_beta_values', because if there are not enough values our results will be not meaningful. To do so we added a new column with the number of NA's in each gene. 
+We decided that we want to remove each gene with 3 or more NA's in 'healthy_beta_values' or 'cancer_beta_values', because if there are not enough values our results will be not meaningful. To do so we added two new columns to each data frame. One column is for the number of NA's per gene in healthy samples and one for the number of NA's per gene in cancer samples. We need both columns in both data frames because it makes it easier to remove the rows with too much NA's later.
 
 ```{r}
-healthy_beta_values$Number_of_NA <-
+healthy_beta_values$Number_of_NA_healthy <-
   rowSums(is.na(healthy_beta_values))
-cancer_beta_values$Number_of_NA <-
+healthy_beta_values$Number_of_NA_cancer <-
   rowSums(is.na(cancer_beta_values))
+
+cancer_beta_values$Number_of_NA_cancer <-
+  rowSums(is.na(cancer_beta_values))
+cancer_beta_values$Number_of_NA_healthy <-
+  rowSums(is.na(healthy_beta_values))
 ```
 
 To visualize the number of NA's in the beta-values we plotted differnt histograms.
@@ -317,35 +322,37 @@ hist(
 ```
 
 The first histogram of cancer/healthy is to get an overview over all numbers of missing values per gene. Most genes in 'cancer_beta_values' and 'healthy_beta_values' have no NA's. That is good, because it means we have much information in our analysis and our results will be more meaningful.
-We wanted to see the differences between 2 or more NA's per gene better. To do so we reduced the range of the axis. Now it is visible that in 'healty_beta_values' a little amount of genes have 5 NA's. In comparison to that 'cancer_beta_values' have more genes with 5 NA's but less genes with 2, 3 or 4 NA's.
+We wanted to see the differences between 2, 3, 4 and 5 NA's per gene better. To do so we reduced the range of the axis. Now it is visible that in 'healty_beta_values' a little amount of genes have 5 NA's. In comparison to that 'cancer_beta_values' have more genes with 5 NA's but less genes with 2, 3 or 4 NA's.
 $$~$$
 
-Then we removed the genes with to much missing values. Here it was important to remove the genes in both data frames, because a gene in only one data frame without values to compare is meaningless. So we checked if the rownames are the same in both data frames after the deletion and it was true.
+Then we removed the genes with 3 or more missing values. Here it was important to remove the genes in both data frames, because a gene in only one data frame without values to compare is meaningless. After the deletion we checked if the rownames are the same in both data frames and it was the case. This is important because otherwise the wrong rows would be compared later and the results would be completely wrong. 
 
 ```{r}
-healthy_beta_values_2 <- data.frame()
-cancer_beta_values_2 <- data.frame()
-healthy_beta_values_2 <-
-  healthy_beta_values[!(healthy_beta_values$Number_of_NA > 2),]
-cancer_beta_values_2 <-
-  cancer_beta_values_2[!(cancer_beta_values$Number_of_NA > 2),]
+healthy_beta_values <-
+  healthy_beta_values[-which(
+    healthy_beta_values$Number_of_NA_cancer >= 3 |
+      healthy_beta_values$Number_of_NA_healthy >= 3
+  ),]
+cancer_beta_values <-
+  cancer_beta_values[-which(
+    cancer_beta_values$Number_of_NA_cancer >= 3 |
+      cancer_beta_values$Number_of_NA_healthy >= 3
+  ),]
 
-cancer_beta_values_2 <-
-  cancer_beta_values_2[!(healthy_beta_values$Number_of_NA > 2),]
-healthy_beta_values_2 <-
-  healthy_beta_values_2[!(cancer_beta_values$Number_of_NA > 2),]
-
-cancer_beta_values <- cancer_beta_values_2
-healthy_beta_values <- healthy_beta_values_2
+sum(rownames(healthy_beta_values) != rownames(cancer_beta_values))
 ```
 
 We removed the columns with the NA's-values because we did not need them anymore. 
 
 ```{r}
 healthy_beta_values <-
-  healthy_beta_values[,-which(colnames(healthy_beta_values)  %in%  c('Number_of_NA'))]
+  healthy_beta_values[,-which(
+    colnames(healthy_beta_values)  %in%  c("Number_of_NA_cancer", "Number_of_NA_healthy")
+  )]
 cancer_beta_values <-
-  cancer_beta_values[,-which(colnames(cancer_beta_values) %in% c('Number_of_NA'))]
+  cancer_beta_values[,-which(
+    colnames(cancer_beta_values) %in% c("Number_of_NA_cancer", "Number_of_NA_healthy")
+  )]
 ```
 
 We can not keep the remaining NA's in the beta-values because this will cause errors in our downstream analysis. But we also did not want to delete the genes, so we decided to replace the NA's with the mean value of the respective gene.
