@@ -92,7 +92,6 @@ abline(v = log10(quantile(
   probs = seq(0, 1, 0.1),
   na.rm = TRUE
 )),
-#col = colors(256),
 col = "black",
 lty = 5,
 lwd = 1)
@@ -112,7 +111,6 @@ abline(v = log10(quantile(
   probs = seq(0, 1, 0.1),
   na.rm = TRUE
 )),
-#col = colors(256),
 col = "black",
 lty = 5,
 lwd = 1)
@@ -148,7 +146,7 @@ hist(
 ####find coverage value for threshold and remove coverages in threshold --> don´t loose more than 90% of information
 
 sum(cancer_coverage == 0)
-
+sum(healthy_coverage == 0)
 #cancer coverages: lower boundary
 threshold <-
   quantile(mean_cancer_coverage,
@@ -281,7 +279,6 @@ healthy_beta_values$Number_of_NA_cancer <-
 #NA_cancer_beta_values <- rowSums(is.na(cancer_beta_values))
 
 ##Histogram of NA's
-###maybe we can work out the scales :/
 hist(
   cancer_beta_values$Number_of_NA_cancer,
   main =  "NA's per Gene in MCL Samples",
