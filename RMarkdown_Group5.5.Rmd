@@ -86,8 +86,8 @@ hist(
   breaks = "fd",
   main = "Cancer coverage: Mean frequency",
   xlab = "Common logarithm of coverages",
-  col = "indianred2",
-  border = "gray30"
+  col = "indianred1",
+  border = "gray20"
 )
 abline(v = log10(quantile(
   mean_cancer_coverage,
@@ -95,7 +95,8 @@ abline(v = log10(quantile(
   na.rm = TRUE
 )),
 col = "black",
-lwd = 2)
+lty = 5,
+lwd = 1)
 
 
 mean_healthy_coverage <- rowMeans(healthy_coverage)
@@ -105,7 +106,7 @@ hist(
   main = "Healthy coverage: Mean frequency",
   xlab = "Common logarithm of coverages",
     col = "seagreen2",
-    border = "gray30"
+    border = "gray20"
 )
 abline(v = log10(quantile(
   mean_healthy_coverage,
@@ -113,7 +114,8 @@ abline(v = log10(quantile(
   na.rm = TRUE
 )),
 col = "black",
-lwd = 2)
+lty = 5,
+lwd = 1)
 ```
 
 Then to check how widely spread are the coverages across the patients, we calculated the standard deviations (SD) of each gene across the patients.
@@ -130,13 +132,13 @@ hist(log10(sd_cancer_coverage),
      breaks = "fd",
      main = "Cancer coverage: SD frequency",
      xlab = "Common logarithm of coverages",
-     col = "indianred2"
+     col = "indianred1"
 )
 hist(log10(sd_healthy_coverage),
      breaks = "fd",
-     col = "seagreen2",
      main = "Healthy coverage: SD frequency",
      xlab = "Common logarithm of coverages",
+     col = "seagreen2"
 )
 ```
 
@@ -208,13 +210,58 @@ for (i in 1:nrow(healthy_coverage)) {
 }
 ```
 
-?Erfolg der Datenbereinigung mit Histogrammen belegen/veranschaulichen? (211-228)
+To proof the success of our data cleanup we plotted the cancer and healthy coverage histograms again. In both cases it is seen that the shapes of the bars are still the same, but the low coverage values are deleted.
 
 ```{r}
+mean_cancer_coverage <- rowMeans(cancer_coverage)
+hist(
+  log10(mean_cancer_coverage),
+  breaks = "fd",
+  main = "Cancer coverage: Mean frequency",
+  xlab = "Common logarithm of coverages",
+  col = "indianred1",
+  border = "gray20"
+)
+abline(v = log10(quantile(
+  mean_cancer_coverage,
+  probs = seq(0, 1, 0.1),
+  na.rm = TRUE
+)),
+#col = colors(256),
+col = "black",
+lty = 5,
+lwd = 1)
+
+
+mean_healthy_coverage <- rowMeans(healthy_coverage)
+hist(
+  log10(mean_healthy_coverage),
+  breaks = "fd",
+  main = "Healthy coverage: Mean frequency",
+  xlab = "Common logarithm of coverages",
+  col = "seagreen2",
+  border = "gray20"
+)
+abline(v = log10(quantile(
+  mean_healthy_coverage,
+  probs = seq(0, 1, 0.1),
+  na.rm = TRUE
+)),
+#col = colors(256),
+col = "black",
+lty = 5,
+lwd = 1)
 
 ```
 
-Now we needed to deal with NA's in the beta-values. We decided that we want to remove each gene with 3 or more NA's in 'healthy_beta_values' or 'cancer_beta_values', because if there are not enough values our results will be not meaningful. To do so we added a new column with the number of NA's in each gene. 
+Now we needed to deal with NA's in the beta-values, because they represent no information and they could cause errors in our further analysis. We have many NA's but we cannot remove every gene with a NA because this would lead to a loss of too much information.
+
+```{r}
+sum(is.na(healthy_beta_values))
+sum(is.na(cancer_beta_values))
+```
+
+We decided that we want to remove each gene with 3 or more NA's in 'healthy_beta_values' or 'cancer_beta_values', because if there are not enough values our results will be not meaningful. To do so we added a new column with the number of NA's in each gene. 
 
 ```{r}
 healthy_beta_values$Number_of_NA <-
@@ -223,13 +270,58 @@ cancer_beta_values$Number_of_NA <-
   rowSums(is.na(cancer_beta_values))
 ```
 
-?Visualize number of NA's in a histogram? 
+To visualize the number of NA's in the beta-values we plotted differnt histograms.
 
 ```{r}
+hist(
+  cancer_beta_values$Number_of_NA_cancer,
+  main =  "NA's per Gene in MCL Samples",
+  breaks = 5,
+  xlab = "Number of NA's",
+  ylab = "Number of Genes",
+  col = "indianred1",
+  border = "gray20"
+)
+hist(
+  cancer_beta_values$Number_of_NA_cancer,
+  main =  "NA's per Gene in MCL Samples (zoomed in)",
+  breaks = 4,
+  xlim = c(1,5),
+  ylim = c(0,500),
+  xlab = "Number of NA's",
+  ylab = "Number of Genes",
+  col = "indianred1",
+  border = "gray20"
+)
 
+hist(
+  healthy_beta_values$Number_of_NA_healthy,
+  main =  "NA's per Gene in Healthy Samples",
+  breaks = 5,
+  xlab = "Number of NA's",
+  ylab = "Number of Genes",
+  col = "seagreen2",
+  border = "gray20"
+)
+hist(
+  healthy_beta_values$Number_of_NA_healthy,
+  main =  "NA's per Gene in Healthy Samples (zoomed in)",
+  breaks = 4,
+  xlim = c(1,5),
+  ylim = c(0,500),
+  xlab = "Number of NA's",
+  ylab = "Number of Genes",
+  col = "seagreen2",
+  border = "gray20"
+)
 ```
 
-Then we removed the genes with to much missing values. Here it was important to remove the genes in both data frames, because a gene in only one data frame without values to compare is meaningless. So we checked if the rownames are the same in both data frames after the deletion. 
+The first histogram of cancer/healthy is to get an overview over all numbers of missing values per gene. Most genes in 'cancer_beta_values' and 'healthy_beta_values' have no NA's. That is good, because it means we have much information in our analysis and our results will be more meaningful.
+We wanted to see the differences between 2 or more NA's per gene better. To do so we reduced the range of the axis. Now it is visible that in 'healty_beta_values' a little amount of genes have 5 NA's. In comparison to that 'cancer_beta_values' have more genes with 5 NA's but less genes with 2, 3 or 4 NA's.
+$$~$$
+
+Then we removed the genes with to much missing values. Here it was important to remove the genes in both data frames, because a gene in only one data frame without values to compare is meaningless. So we checked if the rownames are the same in both data frames after the deletion and it was true.
+
 ```{r}
 healthy_beta_values_2 <- data.frame()
 cancer_beta_values_2 <- data.frame()
@@ -284,25 +376,28 @@ sum(is.na(transposed_cancer_beta_values))
 ```
 
 There are some important genes for MCL which have ofen a different methylation pattern in comparison to heatlhy b-cells. These genes are:
-*SOX11	ENSG00000176887	
-*NR2F2	ENSG00000185551	
-*p53  	ENSG00000141510	
-*AHR  	ENSG00000106546		
-*ROBO1	ENSG00000169855		
-*SOX9 	ENSG00000125398		
-*HOXA9	ENSG00000078399		
-*CDH1 	ENSG00000039068		
-*CDC14B	ENSG00000081377		
-*FOXC1	ENSG00000054598	
-*G0S2	  ENSG00000123689		
-*GPX3	  ENSG00000211445		
-*LGALS3	ENSG00000131981		
-*MAL  	ENSG00000172005		
-*NPTX2	ENSG00000106236		 
-*PAX6	  ENSG00000007372		
-*TFPI2	ENSG00000105825		
-*THEM4	ENSG00000159445		
-*TWIST1	ENSG00000122691		
+
+Gene     |Ensembl
+---------|----------------
+SOX11	   |ENSG00000176887	
+NR2F2	   |ENSG00000185551	
+p53  	   |ENSG00000141510	
+AHR  	   |ENSG00000106546		
+ROBO1	   |ENSG00000169855		
+SOX9 	   |ENSG00000125398		
+HOXA9	   |ENSG00000078399		
+CDH1 	   |ENSG00000039068		
+CDC14B	 |ENSG00000081377		
+FOXC1	   |ENSG00000054598	
+G0S2	   |ENSG00000123689		
+GPX3	   |ENSG00000211445		
+LGALS3	 |ENSG00000131981		
+MAL  	   |ENSG00000172005		
+NPTX2	   |ENSG00000106236		 
+PAX6	   |ENSG00000007372		
+TFPI2	   |ENSG00000105825		
+THEM4	   |ENSG00000159445		
+TWIST1	 |ENSG00000122691		
 
 To be sure we did not removed these genes in our data processing we tested if they are still all in our data frames. Because each of the 2 data frames contains the same genes it is enough to check if they are part of one of them.
 
