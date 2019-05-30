@@ -43,7 +43,8 @@ hist(
   breaks = "fd",
   main = "Cancer M values: Mean frequency",
   xlab = "Common logarithm of M values",
-  col = "indianred2"
+  col = "indianred1",
+  border = "gray20"
 )
 abline(v = log10(quantile(
   mean_cancer_m_values,
@@ -60,7 +61,8 @@ hist(
   breaks = "fd",
   main = "Healthy M values: Mean frequency",
   xlab = "Common logarithm of coverages",
-  col = "seagreen2"
+  col = "seagreen2",
+  border = "gray20"
 )
 abline(v = log10(quantile(
   mean_healthy_m_values,
@@ -76,7 +78,8 @@ hist(
   breaks = "fd",
   main = "Cancer M values: SD frequency",
   xlab = "Common logarithm of M values",
-  col = "indianred2"
+  col = "indianred1",
+  border = "gray20"
 )
 
 sd_healthy_m_values <- apply(healthy_m_values, 1, sd)
@@ -86,6 +89,7 @@ hist(
   col = "seagreen2",
   main = "Healthy M values: SD frequency",
   xlab = "Common logarithm of M values",
+  border = "gray20"
 )
 
 
