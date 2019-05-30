@@ -46,7 +46,7 @@ Set a threshold and examine variance for reliable coverage, replace unreliable b
 Separately inspect genes of interest for MCL | Identify batch effect magnitude in the data set
 Set a threshold and remove genes under/above threshold, imputate remaining NA's | 
 
-
+$$~$$
 
 ## Part 1: Data processing
 
@@ -58,9 +58,10 @@ Gene_data_frame <- Samples$genes
 dim(Gene_data_frame)
 ```
 
-There are coverage and beta-values of 56175 genes across all 10 patients. After the entire data clean-up we still want to retain around 90% of that information (~500000 genes).
-$$~$$
-We are starting the data clean-up with the sex chromosomes. In our case we have different numbers of female/male patients in healthy/cancer sample groups. As in female X chromosome inactivation  the majority of the genes on one X chromosome are silenced, this would lead to significant differences in the methylation profiles between female/male patients (Sharp et al., 2011). Therefore, we remove gene data of sex chromosomes. 
+There are much information from 56175 genes across all 10 patients. Mostly we are interested in the coverage and the beta values. After the entire data clean-up we still want to retain around 90% of our beta value information (~500000 genes).
+
+We are starting the data clean-up with the sex chromosomes. In our case we have different numbers of female/male patients in healthy/cancer sample groups. In female X chromosome inactivation leads to the silencing of the majority of genes on one X, this would lead to significant differences in the methylation profiles between female/male patients (Sharp et al., 2011). Therefore, we remove gene data of sex chromosomes. 
+
 ```{r}
 Gene_data_frame_x_y <- 
   Gene_data_frame[-which(Gene_data_frame$Chromosome == "chrX"),]
@@ -68,7 +69,7 @@ Gene_data_frame_x_y <-
   Gene_data_frame_x_y[-which(Gene_data_frame_x_y$Chromosome == "chrY"),]
 ```
 
-Now we want to go through the coverage values separately to remove any unreliable values, outliers or possible systematic errors. First we separated the coverage values of healthy and cancer patients into 2 data frames. We did the same separation into 2 data frames with the beta-values because we will need these later.
+Now we want to go through the coverage values separately to remove any unreliable values, outliers and possible systematic errors. First we separated the coverage values of healthy and cancer patients into 2 data frames. We did the same separation into 2 data frames with the beta-values because we will need these later. All the  other information will be neglectd till the interpretation. 
 
 ```{r}
 healthy_coverage <- Gene_data_frame_x_y[, 21:25]
@@ -118,55 +119,46 @@ lty = 5,
 lwd = 1)
 ```
 
-Then to check how widely spread are the coverages across the patients, we calculated the standard deviations (SD) of each gene across the patients.
+To check how widely spread are the coverages across the patients, we calculated the standard deviations (SD) of each gene across the patients. We plotted the SD-values for cancer and healthy samples on a histogram with a log scale.
 
 ```{r}
 sd_cancer_coverage <- apply(cancer_coverage, 1, sd)
-sd_healthy_coverage <- apply(healthy_coverage, 1, sd)
-```
-
-Consequently, we plotted a histogram with the SD values for each data frame.
-
-```{r}
 hist(log10(sd_cancer_coverage),
      breaks = "fd",
      main = "Cancer coverage: SD frequency",
      xlab = "Common logarithm of coverages",
-     col = "indianred1"
+     col = "indianred1",
+     border = "gray20"
 )
+sd_healthy_coverage <- apply(healthy_coverage, 1, sd)
 hist(log10(sd_healthy_coverage),
      breaks = "fd",
      main = "Healthy coverage: SD frequency",
      xlab = "Common logarithm of coverages",
-     col = "seagreen2"
+     col = "seagreen2",
+     border = "gray20"
 )
 ```
 
 By setting the lower coverage threshold to 5 % and the upper to 99.9 %, we fulfilled our initial requirement of retaining around 90 % of the information. 
 
 ```{r}
-#cancer coverages: lower boundary
 threshold <-
   quantile(mean_cancer_coverage,
-           probs = seq(0.05, 0.05, 0.05),
+           probs = seq(0.05, 0.05),
            na.rm = TRUE)
-
-#cancer coverages: upper boundary
 threshold2 <-
   quantile(mean_cancer_coverage,
-           probs = seq(0.95, 0.95, 0.05),
+           probs = seq(0.999, 0.999),
            na.rm = TRUE)
 
-#healthy coverages: lower boundary
 threshold3 <-
   quantile(mean_healthy_coverage,
-           probs = seq(0.05, 0.05, 0.05),
+           probs = seq(0.05, 0.05),
            na.rm = TRUE)
-
-#healthy coverages: upper boundary
 threshold4 <-
   quantile(mean_healthy_coverage,
-           probs = seq(0.95, 0.95, 0.05),
+           probs = seq(0.999, 0.999),
            na.rm = TRUE)
 ```
 
@@ -227,7 +219,6 @@ abline(v = log10(quantile(
   probs = seq(0, 1, 0.1),
   na.rm = TRUE
 )),
-#col = colors(256),
 col = "black",
 lty = 5,
 lwd = 1)
@@ -247,7 +238,6 @@ abline(v = log10(quantile(
   probs = seq(0, 1, 0.1),
   na.rm = TRUE
 )),
-#col = colors(256),
 col = "black",
 lty = 5,
 lwd = 1)
@@ -257,22 +247,22 @@ lwd = 1)
 Now we needed to deal with NA's in the beta-values, because they represent no information and they could cause errors in our further analysis. We have many NA's but we cannot remove every gene with a NA because this would lead to a loss of too much information.
 
 ```{r}
-sum(is.na(healthy_beta_values))
 sum(is.na(cancer_beta_values))
+sum(is.na(healthy_beta_values))
 ```
 
 We decided that we want to remove each gene with 3 or more NA's in 'healthy_beta_values' or 'cancer_beta_values', because if there are not enough values our results will be not meaningful. To do so we added two new columns to each data frame. One column is for the number of NA's per gene in healthy samples and one for the number of NA's per gene in cancer samples. We need both columns in both data frames because it makes it easier to remove the rows with too much NA's later.
 
 ```{r}
-healthy_beta_values$Number_of_NA_healthy <-
-  rowSums(is.na(healthy_beta_values))
-healthy_beta_values$Number_of_NA_cancer <-
-  rowSums(is.na(cancer_beta_values))
-
 cancer_beta_values$Number_of_NA_cancer <-
   rowSums(is.na(cancer_beta_values))
 cancer_beta_values$Number_of_NA_healthy <-
   rowSums(is.na(healthy_beta_values))
+
+healthy_beta_values$Number_of_NA_healthy <-
+  rowSums(is.na(healthy_beta_values))
+healthy_beta_values$Number_of_NA_cancer <-
+  rowSums(is.na(cancer_beta_values))
 ```
 
 To visualize the number of NA's in the beta-values we plotted differnt histograms.
@@ -292,7 +282,7 @@ hist(
   main =  "NA's per Gene in MCL Samples (zoomed in)",
   breaks = 4,
   xlim = c(1,5),
-  ylim = c(0,500),
+  ylim = c(0,2500),
   xlab = "Number of NA's",
   ylab = "Number of Genes",
   col = "indianred1",
@@ -313,7 +303,7 @@ hist(
   main =  "NA's per Gene in Healthy Samples (zoomed in)",
   breaks = 4,
   xlim = c(1,5),
-  ylim = c(0,500),
+  ylim = c(0,2500),
   xlab = "Number of NA's",
   ylab = "Number of Genes",
   col = "seagreen2",
@@ -323,36 +313,36 @@ hist(
 
 The first histogram of cancer/healthy is to get an overview over all numbers of missing values per gene. Most genes in 'cancer_beta_values' and 'healthy_beta_values' have no NA's. That is good, because it means we have much information in our analysis and our results will be more meaningful.
 We wanted to see the differences between 2, 3, 4 and 5 NA's per gene better. To do so we reduced the range of the axis. Now it is visible that in 'healty_beta_values' a little amount of genes have 5 NA's. In comparison to that 'cancer_beta_values' have more genes with 5 NA's but less genes with 2, 3 or 4 NA's.
-$$~$$
+
 
 Then we removed the genes with 3 or more missing values. Here it was important to remove the genes in both data frames, because a gene in only one data frame without values to compare is meaningless. After the deletion we checked if the rownames are the same in both data frames and it was the case. This is important because otherwise the wrong rows would be compared later and the results would be completely wrong. 
 
 ```{r}
-healthy_beta_values <-
-  healthy_beta_values[-which(
-    healthy_beta_values$Number_of_NA_cancer >= 3 |
-      healthy_beta_values$Number_of_NA_healthy >= 3
-  ),]
 cancer_beta_values <-
   cancer_beta_values[-which(
     cancer_beta_values$Number_of_NA_cancer >= 3 |
       cancer_beta_values$Number_of_NA_healthy >= 3
   ),]
-
+healthy_beta_values <-
+  healthy_beta_values[-which(
+    healthy_beta_values$Number_of_NA_cancer >= 3 |
+      healthy_beta_values$Number_of_NA_healthy >= 3
+  ),]
 sum(rownames(healthy_beta_values) != rownames(cancer_beta_values))
 ```
 
 We removed the columns with the NA's-values because we did not need them anymore. 
 
 ```{r}
-healthy_beta_values <-
-  healthy_beta_values[,-which(
-    colnames(healthy_beta_values)  %in%  c("Number_of_NA_cancer", "Number_of_NA_healthy")
-  )]
 cancer_beta_values <-
   cancer_beta_values[,-which(
     colnames(cancer_beta_values) %in% c("Number_of_NA_cancer", "Number_of_NA_healthy")
   )]
+healthy_beta_values <-
+  healthy_beta_values[,-which(
+    colnames(healthy_beta_values)  %in%  c("Number_of_NA_cancer", "Number_of_NA_healthy")
+  )]
+
 ```
 
 We can not keep the remaining NA's in the beta-values because this will cause errors in our downstream analysis. But we also did not want to delete the genes, so we decided to replace the NA's with the mean value of the respective gene.
@@ -360,26 +350,27 @@ We can not keep the remaining NA's in the beta-values because this will cause er
 ?genauer auf transposed data frames eingehen?
 
 ```{r}
-transposed_healthy_beta_values <- t(healthy_beta_values)
 transposed_cancer_beta_values <- t(cancer_beta_values)
-for (i in 1:ncol(transposed_healthy_beta_values)) {
-  transposed_healthy_beta_values[is.na(transposed_healthy_beta_values[, i]), i] <-
-    mean(transposed_healthy_beta_values[, i], na.rm = TRUE)
-}
+transposed_healthy_beta_values <- t(healthy_beta_values)
 
 for (i in 1:ncol(transposed_cancer_beta_values)) {
   transposed_cancer_beta_values[is.na(transposed_cancer_beta_values[, i]), i] <-
     mean(transposed_cancer_beta_values[, i], na.rm = TRUE)
 }
-healthy_beta_values <- data.frame(t(transposed_healthy_beta_values))
+for (i in 1:ncol(transposed_healthy_beta_values)) {
+  transposed_healthy_beta_values[is.na(transposed_healthy_beta_values[, i]), i] <-
+    mean(transposed_healthy_beta_values[, i], na.rm = TRUE)
+}
+
 cancer_beta_values <- data.frame(t(transposed_cancer_beta_values))
+healthy_beta_values <- data.frame(t(transposed_healthy_beta_values))
 ```
 
 We proofed that there are no more NA's left in the cancer and healthy data frames.
 
 ```{r}
-sum(is.na(transposed_healthy_beta_values))
 sum(is.na(transposed_cancer_beta_values))
+sum(is.na(transposed_healthy_beta_values))
 ```
 
 There are some important genes for MCL which have ofen a different methylation pattern in comparison to heatlhy b-cells. These genes are:
