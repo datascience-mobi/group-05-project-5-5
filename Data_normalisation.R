@@ -44,14 +44,15 @@ hist(
   main = "Cancer M values: Mean frequency",
   xlab = "Common logarithm of M values",
   col = "indianred1",
-  border = "gray20"
+  border = "gray20",
+  xlim = c(-1, 1)
 )
 abline(v = log10(quantile(
   mean_cancer_m_values,
   probs = seq(0, 1, 0.1),
   na.rm = TRUE
 )),
-col = colors(256),
+col = "black",
 lwd = 2)
 
 
@@ -62,14 +63,15 @@ hist(
   main = "Healthy M values: Mean frequency",
   xlab = "Common logarithm of coverages",
   col = "seagreen2",
-  border = "gray20"
+  border = "gray20",
+  xlim = c(-1, 1)
 )
 abline(v = log10(quantile(
   mean_healthy_m_values,
   probs = seq(0, 1, 0.1),
   na.rm = TRUE
 )),
-col = colors(256),
+col = "black",
 lwd = 2)
 
 sd_cancer_m_values <- apply(cancer_m_values, 1, sd)
@@ -99,3 +101,42 @@ complete_cancer_m_values <-
   cbind.data.frame(cancer_m_values, mean_cancer_m_values, sd_cancer_m_values)
 complete_healthy_m_values <-
   cbind.data.frame(healthy_m_values, mean_healthy_m_values, sd_healthy_m_values)
+
+#showing mean cancer m-values vs. mean healthy m-values
+ggplot() +
+  geom_point(
+    mapping = aes(
+      x = complete_cancer_m_values$mean_cancer_m_values,
+      y = complete_cancer_m_values$mean_cancer_m_values
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 100
+  ) +
+  geom_smooth(
+    mapping = aes(
+      x = complete_cancer_m_values$mean_cancer_m_values,
+      y = complete_cancer_m_values$mean_cancer_m_values
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 100
+  )
+
+#showing SD of cancer m-values vs. SD of healthy m-values
+ggplot() +
+  geom_point(
+    mapping = aes(
+      x = complete_cancer_m_values$sd_cancer_m_values,
+      y = complete_cancer_m_values$sd_cancer_m_values
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 100
+  ) +
+  geom_smooth(
+    mapping = aes(
+      x = complete_cancer_m_values$sd_cancer_m_values,
+      y = complete_cancer_m_values$sd_cancer_m_values
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 100
+  )
+
