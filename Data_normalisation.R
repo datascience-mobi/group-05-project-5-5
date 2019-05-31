@@ -103,6 +103,9 @@ complete_healthy_m_values <-
   cbind.data.frame(healthy_m_values, mean_healthy_m_values, sd_healthy_m_values)
 
 #showing mean cancer m-values vs. mean healthy m-values
+install.packages("tidyverse")
+library("tidyverse")
+
 ggplot() +
   geom_point(
     mapping = aes(
@@ -122,9 +125,6 @@ ggplot() +
   )
 
 #showing SD of cancer m-values vs. SD of healthy m-values
-install.packages("tidyverse")
-library("tidyverse")
-
 ggplot() +
   geom_point(
     mapping = aes(
