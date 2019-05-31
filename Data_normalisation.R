@@ -122,6 +122,9 @@ ggplot() +
   )
 
 #showing SD of cancer m-values vs. SD of healthy m-values
+install.packages("tidyverse")
+library("tidyverse")
+
 ggplot() +
   geom_point(
     mapping = aes(
