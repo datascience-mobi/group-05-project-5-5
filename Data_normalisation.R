@@ -1,5 +1,6 @@
 
 
+
 # trasforming beta values to M values and creating a separate dataframe with those values
 
 cancer_m_values <-
@@ -104,42 +105,41 @@ complete_healthy_m_values <-
 
 #showing mean cancer m-values vs. mean healthy m-values
 install.packages("tidyverse")
-library("tidyverse")
+library(tidyverse)
 
 ggplot() +
   geom_point(
     mapping = aes(
       x = complete_cancer_m_values$mean_cancer_m_values,
-      y = complete_cancer_m_values$mean_cancer_m_values
+      y = complete_healthy_m_values$mean_healthy_m_values
     ),
     na.rm = TRUE,
-    alpha = 1 / 100
+    alpha = 1 / 10
   ) +
   geom_smooth(
     mapping = aes(
       x = complete_cancer_m_values$mean_cancer_m_values,
-      y = complete_cancer_m_values$mean_cancer_m_values
+      y = complete_healthy_m_values$mean_healthy_m_values
     ),
     na.rm = TRUE,
-    alpha = 1 / 100
-  )
+    alpha = 1 / 10
+  ) +
+  labs(x = "Mean cancer m-values",
+       y = "Mean healthy m-values",
+       title = "Comparison of mean m-values") +
+  theme_bw()
 
 #showing SD of cancer m-values vs. SD of healthy m-values
 ggplot() +
   geom_point(
     mapping = aes(
       x = complete_cancer_m_values$sd_cancer_m_values,
-      y = complete_cancer_m_values$sd_cancer_m_values
+      y = complete_healthy_m_values$sd_healthy_m_values
     ),
     na.rm = TRUE,
-    alpha = 1 / 100
+    alpha = 1 / 10
   ) +
-  geom_smooth(
-    mapping = aes(
-      x = complete_cancer_m_values$sd_cancer_m_values,
-      y = complete_cancer_m_values$sd_cancer_m_values
-    ),
-    na.rm = TRUE,
-    alpha = 1 / 100
-  )
-
+  labs(x = "Mean cancer m-values",
+       y = "Mean healthy m-values",
+       title = "Comparison of SD of m-values") +
+  theme_bw()
