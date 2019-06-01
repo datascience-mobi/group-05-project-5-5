@@ -1,7 +1,7 @@
 
 
 
-# trasforming beta values to M values and creating a separate dataframe with those values
+# transforming beta values to M values and creating a separate dataframe with those values
 
 cancer_m_values <-
   data.frame(log2(cancer_beta_values / (1 - cancer_beta_values)))
@@ -23,7 +23,6 @@ names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_S01ECGA1.bed"
   "Bcell_naive_VB_S01ECGA1.M"
 
 # changing cancer patients names
-
 names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FE8A1.bed"] <-
   "cancer_VB_S01FE8A1.M"
 names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FF6A1.bed"] <-
@@ -36,8 +35,6 @@ names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FKXA1.bed"] <-
   "cancer_VB_S01FKXA1.M"
 
 # calculating mean, sd values and plotting a histogramm for each
-
-
 mean_cancer_m_values <- rowMeans(cancer_m_values)
 hist(
   log10(mean_cancer_m_values),
@@ -55,7 +52,6 @@ abline(v = log10(quantile(
 )),
 col = "black",
 lwd = 2)
-
 
 mean_healthy_m_values <- rowMeans(healthy_m_values)
 hist(
@@ -127,7 +123,9 @@ ggplot() +
   labs(x = "Mean cancer m-values",
        y = "Mean healthy m-values",
        title = "Comparison of mean m-values") +
-  theme_bw()
+  theme_bw() +
+  xlim(-15, 10) + 
+  ylim(-15, 10)
 
 #showing SD of cancer m-values vs. SD of healthy m-values
 ggplot() +
@@ -142,4 +140,52 @@ ggplot() +
   labs(x = "Mean cancer m-values",
        y = "Mean healthy m-values",
        title = "Comparison of SD of m-values") +
-  theme_bw()
+  theme_bw() 
+
+#comparing mean beta values and mean m values 
+#cancer
+ggplot() +
+  geom_point(
+    mapping = aes(
+      x = complete_cancer_m_values$mean_cancer_m_values,
+      y = rowMeans(cancer_beta_values)
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  geom_smooth(
+    mapping = aes(
+      x = complete_cancer_m_values$mean_cancer_m_values,
+      y = rowMeans(cancer_beta_values)
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  labs(x = "Mean cancer beta values",
+       y = "Mean cancer m values",
+       title = "Comparison of mean values") +
+  theme_bw() 
+
+#healthy
+ggplot() +
+  geom_point(
+    mapping = aes(
+      x = complete_healthy_m_values$mean_healthy_m_values,
+      y = rowMeans(healthy_beta_values)
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  geom_smooth(
+    mapping = aes(
+      x = complete_healthy_m_values$mean_healthy_m_values,
+      y = rowMeans(healthy_beta_values)
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  labs(x = "Mean healthy beta values",
+       y = "Mean healthy m values",
+       title = "Comparison of mean values") +
+  theme_bw() 
+ 
