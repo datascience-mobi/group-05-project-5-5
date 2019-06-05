@@ -103,6 +103,50 @@ complete_healthy_m_values <-
 install.packages("tidyverse")
 library(tidyverse)
 
+complete_cancer_m_values_gene <- complete_cancer_m_values[c(
+  "ENSG00000176887",
+  "ENSG00000185551",
+  "ENSG00000141510",
+  "ENSG00000110092",
+  "ENSG00000106546",
+  "ENSG00000169855",
+  "ENSG00000125398",
+  "ENSG00000078399",
+  "ENSG00000039068",
+  "ENSG00000081377",
+  "ENSG00000054598",
+  "ENSG00000123689",
+  "ENSG00000211445",
+  "ENSG00000131981",
+  "ENSG00000172005",
+  "ENSG00000106236",
+  "ENSG00000007372",
+  "ENSG00000105825",
+  "ENSG00000159445",
+  "ENSG00000122691"), ]
+    
+complete_healthy_m_values_gene <- complete_healthy_m_values[c(
+  "ENSG00000176887",
+  "ENSG00000185551",
+  "ENSG00000141510",
+  "ENSG00000110092",
+  "ENSG00000106546",
+  "ENSG00000169855",
+  "ENSG00000125398",
+  "ENSG00000078399",
+  "ENSG00000039068",
+  "ENSG00000081377",
+  "ENSG00000054598",
+  "ENSG00000123689",
+  "ENSG00000211445",
+  "ENSG00000131981",
+  "ENSG00000172005",
+  "ENSG00000106236",
+  "ENSG00000007372",
+  "ENSG00000105825",
+  "ENSG00000159445",
+  "ENSG00000122691"), ]
+
 ggplot() +
   geom_point(
     mapping = aes(
@@ -111,6 +155,12 @@ ggplot() +
     ),
     na.rm = TRUE,
     alpha = 1 / 10
+  ) +
+  geom_point(
+    mapping = aes(
+      x = complete_cancer_m_values_gene$mean_cancer_m_values,
+      y = complete_healthy_m_values_gene$mean_healthy_m_values
+    ), colour = "red", size = 2, 
   ) +
   geom_smooth(
     mapping = aes(
@@ -124,9 +174,10 @@ ggplot() +
        y = "Mean healthy m-values",
        title = "Comparison of mean m-values") +
   theme_bw() +
-  xlim(-15, 10) + 
-  ylim(-15, 10)
-
+  xlim(-12, 9) + 
+  ylim(-12, 9) +
+  geom_abline(mapping = NULL, data = NULL, slope = 1, intercept = 0, colour = "yellow2") 
+ 
 #showing SD of cancer m-values vs. SD of healthy m-values
 ggplot() +
   geom_point(
@@ -137,8 +188,14 @@ ggplot() +
     na.rm = TRUE,
     alpha = 1 / 10
   ) +
-  labs(x = "Mean cancer m-values",
-       y = "Mean healthy m-values",
+  geom_point(
+    mapping = aes(
+      x = complete_cancer_m_values_gene$sd_cancer_m_values,
+      y = complete_healthy_m_values_gene$sd_healthy_m_values
+    ), colour = "red", size = 2, 
+  ) +
+  labs(x = "SD cancer m-values",
+       y = "SD healthy m-values",
        title = "Comparison of SD of m-values") +
   theme_bw() 
 
