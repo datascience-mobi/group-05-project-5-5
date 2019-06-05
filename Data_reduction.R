@@ -46,3 +46,15 @@ names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FJZA1.bed"] <-
   "cancer_VB_S01FJZA1.M"
 names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FKXA1.bed"] <-
   "cancer_VB_S01FKXA1.M"
+
+
+#data reduction with PCA
+#cancer
+cancer_m_values.pca <- prcomp(cancer_m_values)
+summary(cancer_m_values.pca)
+
+#healthy
+
+healthy_m_values.pca <-prcomp(healthy_m_values)
+summary(healthy_m_values.pca)
+
