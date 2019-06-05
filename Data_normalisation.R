@@ -1,6 +1,5 @@
 
 
-
 # transforming beta values to M values and creating a separate dataframe with those values
 
 cancer_m_values <-
@@ -176,7 +175,7 @@ ggplot() +
   theme_bw() +
   xlim(-12, 9) + 
   ylim(-12, 9) +
-  geom_abline(mapping = NULL, data = NULL, slope = 1, intercept = 0, colour = "yellow2") 
+  geom_abline(mapping = NULL, data = NULL, slope = 1, intercept = 0, colour = "yellow2")
  
 #showing SD of cancer m-values vs. SD of healthy m-values
 ggplot() +
