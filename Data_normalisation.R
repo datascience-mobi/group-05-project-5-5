@@ -1,6 +1,8 @@
 
 
 
+
+
 # transforming beta values to M values and creating a separate dataframe with those values
 
 cancer_m_values <-
@@ -123,8 +125,9 @@ complete_cancer_m_values_gene <- complete_cancer_m_values[c(
   "ENSG00000007372",
   "ENSG00000105825",
   "ENSG00000159445",
-  "ENSG00000122691"), ]
-    
+  "ENSG00000122691"
+), ]
+
 complete_healthy_m_values_gene <- complete_healthy_m_values[c(
   "ENSG00000176887",
   "ENSG00000185551",
@@ -145,7 +148,8 @@ complete_healthy_m_values_gene <- complete_healthy_m_values[c(
   "ENSG00000007372",
   "ENSG00000105825",
   "ENSG00000159445",
-  "ENSG00000122691"), ]
+  "ENSG00000122691"
+), ]
 
 ggplot() +
   geom_point(
@@ -160,7 +164,9 @@ ggplot() +
     mapping = aes(
       x = complete_cancer_m_values_gene$mean_cancer_m_values,
       y = complete_healthy_m_values_gene$mean_healthy_m_values
-    ), colour = "red", size = 2, 
+    ),
+    colour = "red",
+    size = 2,
   ) +
   geom_smooth(
     mapping = aes(
@@ -174,10 +180,16 @@ ggplot() +
        y = "Mean healthy m-values",
        title = "Comparison of mean m-values") +
   theme_bw() +
-  xlim(-12, 9) + 
+  xlim(-12, 9) +
   ylim(-12, 9) +
-  geom_abline(mapping = NULL, data = NULL, slope = 1, intercept = 0, colour = "yellow2") 
- 
+  geom_abline(
+    mapping = NULL,
+    data = NULL,
+    slope = 1,
+    intercept = 0,
+    colour = "yellow2"
+  )
+
 #showing SD of cancer m-values vs. SD of healthy m-values
 ggplot() +
   geom_point(
@@ -192,14 +204,16 @@ ggplot() +
     mapping = aes(
       x = complete_cancer_m_values_gene$sd_cancer_m_values,
       y = complete_healthy_m_values_gene$sd_healthy_m_values
-    ), colour = "red", size = 2, 
+    ),
+    colour = "red",
+    size = 2,
   ) +
   labs(x = "SD cancer m-values",
        y = "SD healthy m-values",
        title = "Comparison of SD of m-values") +
-  theme_bw() 
+  theme_bw()
 
-#comparing mean beta values and mean m values 
+#comparing mean beta values and mean m values
 #cancer
 ggplot() +
   geom_point(
@@ -221,7 +235,7 @@ ggplot() +
   labs(x = "Mean cancer beta values",
        y = "Mean cancer m values",
        title = "Comparison of mean values") +
-  theme_bw() 
+  theme_bw()
 
 #healthy
 ggplot() +
@@ -244,5 +258,4 @@ ggplot() +
   labs(x = "Mean healthy beta values",
        y = "Mean healthy m values",
        title = "Comparison of mean values") +
-  theme_bw() 
- 
+  theme_bw()
