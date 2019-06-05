@@ -194,43 +194,56 @@ threshold4 <-
            probs = seq(0.999, 0.999),
            na.rm = TRUE)
 
-##nested for loops to set every value of cancer coverage and cancer beta value to NA if they are in threshold
+##define a function to set every value of cancer coverage and cancer beta value to NA if they are in threshold and apply for the entire dataframe
+
+cancer_threshold_function <- function(cancer_coverage) {
+  if(cancer_coverage <= threshold) {
+    return(0)}
+  else {return(cancer_coverage)}
+  
+  if(cancer_coverage >= threshold2) {
+    return(0)}
+  else{return(cancer_coverage)}
+}
+
+cancer_coverage <- apply(cancer_coverage, MARGIN = c(1,2), FUN = cancer_threshold_function)
+
+
 for (i in 1:nrow(cancer_coverage)) {
   for (j in 1:ncol(cancer_coverage)) {
-    if (cancer_coverage[i, j] <= threshold) {
-      cancer_coverage[i, j] <- 0
-    }
-    
-    if (cancer_coverage[i, j] >= threshold2) {
-      cancer_coverage[i, j] <- 0
-    }
-    
     if (cancer_coverage[i, j] == 0) {
       cancer_coverage[i, j] <- NA
       cancer_beta_values[i, j] <- NA
-      
     }
   }
 }
 
-##nested for loops to set every value of healthy coverage and cancer beta value to NA if they are in threshold
+
+##define a function to set every value of healthy coverage and healthy beta value to NA if they are in threshold and apply for the entire dataframe
+
+healthy_threshold_function <- function(healthy_coverage) {
+  if(healthy_coverage <= threshold3) {
+    return(0)}
+  else {return(healthy_coverage)}
+  
+  if(healthy_coverage >= threshold4) {
+    return(0)}
+  else{return(healthy_coverage)}
+}
+
+healthy_coverage <- apply(healthy_coverage, MARGIN = c(1,2), FUN = healthy_threshold_function)
+
+
 for (i in 1:nrow(healthy_coverage)) {
   for (j in 1:ncol(healthy_coverage)) {
-    if (healthy_coverage[i, j] <= threshold3) {
-      healthy_coverage[i, j] <- 0
-    }
-    
-    if (healthy_coverage[i, j] >= threshold4) {
-      healthy_coverage[i, j] <- 0
-    }
-    
     if (healthy_coverage[i, j] == 0) {
       healthy_coverage[i, j] <- NA
       healthy_beta_values[i, j] <- NA
-      
     }
   }
 }
+
+
 
 remove(list = c("threshold", "threshold2", "threshold3", "threshold4"))
 #overview after data clean up
@@ -462,3 +475,4 @@ sum(is.na(important_genes_in_data_set))
 ##hurray no NAs
 
 remove(important_genes_in_data_set)
+
