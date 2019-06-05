@@ -1,8 +1,5 @@
 
 
-
-
-
 # transforming beta values to M values and creating a separate dataframe with those values
 
 cancer_m_values <-
