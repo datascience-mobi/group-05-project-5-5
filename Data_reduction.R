@@ -46,3 +46,34 @@ names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FJZA1.bed"] <-
   "cancer_VB_S01FJZA1.M"
 names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FKXA1.bed"] <-
   "cancer_VB_S01FKXA1.M"
+
+
+#data reduction with PCA
+
+#merging both m value dataframes (healthy and cancer) into one again for PCA
+complete_m_values <- cbind(healthy_m_values, cancer_m_values)
+View(complete_m_values)
+ 
+#Apply PCA on data frame "complete_m_values" with all m values. For that, the matrix needs to be transposed first
+#(variables are scaled to have i) standard deviation one and ii) mean zero)
+complete_m_values.pca <- prcomp(t(complete_m_values))
+summary(complete_m_values.pca)
+
+#visualize pca
+plot(complete_m_values.pca$x[,1], complete_m_values.pca$x[,2])
+
+
+#adding an extra column with the category of sample with which we can color the pc dots in a ggplot according to their sample group
+pcs_of_m_values <- data.frame(cbind(complete_m_values.pca$x, Samples = c("Control", "Control", "Control", "Control", "Control", "MCL", "MCL", "MCL", "MCL", "MCL")))
+
+
+ggplot(pcs_of_m_values, aes(PC1,PC2, group=Samples)) +
+  geom_point (aes(shape=Samples, color=Samples, size=4))
+
+#finding the top 25 most important genes (with the biggest influence). Therefore we will look at the loading scores (saved in "rotation") of the genes on PC1. Because it's not important
+#whether it is positive or negative we will look at the absolute values and rank these
+
+loading_scores <- complete_m_values.pca$rotation[,1]
+ranked_gene_loading <- sort(abs(loading_scores), decreasing = TRUE)
+top_25_genes <- names(ranked_gene_loading[1:25])
+View(top_25_genes)
