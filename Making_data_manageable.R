@@ -221,11 +221,11 @@ for (i in 1:nrow(cancer_coverage)) {
 ##define a function to set every value of healthy coverage and healthy beta value to NA if they are in threshold and apply for the entire dataframe
 
 healthy_threshold_function <- function(healthy_coverage) {
-  if(healthy_coverage <= threshold3) {
+  if(healthy_coverage <= threshold_healthy_lower) {
     return(0)}
   else {return(healthy_coverage)}
   
-  if(healthy_coverage >= threshold4) {
+  if(healthy_coverage >= threshold_healthy_upper) {
     return(0)}
   else{return(healthy_coverage)}
 }
