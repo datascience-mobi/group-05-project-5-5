@@ -51,7 +51,8 @@ abline(v = log10(quantile(
   na.rm = TRUE
 )),
 col = "black",
-lwd = 2)
+lty = 5,
+lwd = 1)
 
 mean_healthy_m_values <- rowMeans(healthy_m_values)
 hist(
@@ -69,7 +70,8 @@ abline(v = log10(quantile(
   na.rm = TRUE
 )),
 col = "black",
-lwd = 2)
+lty = 5,
+lwd = 1)
 
 sd_cancer_m_values <- apply(cancer_m_values, 1, sd)
 hist(
@@ -108,6 +110,7 @@ library(ggrepel)
 
 #extracting values of important genes (defined earlier) therefore we can highlight important genes in diagram
 #cancer
+
 complete_cancer_m_values_gene <- complete_cancer_m_values[c(
   "ENSG00000176887",
   "ENSG00000185551",
