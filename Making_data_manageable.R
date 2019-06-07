@@ -171,25 +171,25 @@ abline(
 sum(cancer_coverage == 0)
 sum(healthy_coverage == 0)
 #cancer coverages: lower boundary
-threshold_cancer_lower <-
+threshold <-
   quantile(mean_cancer_coverage,
            probs = seq(0.05, 0.05),
            na.rm = TRUE)
 
 #cancer coverages: upper boundary
-threshold_cancer_upper <-
+threshold2 <-
   quantile(mean_cancer_coverage,
            probs = seq(0.999, 0.999),
            na.rm = TRUE)
 
 #healthy coverages: lower boundary
-threshold_healthy_lower <-
+threshold3 <-
   quantile(mean_healthy_coverage,
            probs = seq(0.05, 0.05),
            na.rm = TRUE)
 
 #healthy coverages: upper boundary
-threshold_healthy_upper <-
+threshold4 <-
   quantile(mean_healthy_coverage,
            probs = seq(0.999, 0.999),
            na.rm = TRUE)
@@ -197,11 +197,11 @@ threshold_healthy_upper <-
 ##define a function to set every value of cancer coverage and cancer beta value to NA if they are in threshold and apply for the entire dataframe
 
 cancer_threshold_function <- function(cancer_coverage) {
-  if(cancer_coverage <= threshold_cancer_lower) {
+  if(cancer_coverage <= threshold) {
     return(0)}
   else {return(cancer_coverage)}
   
-  if(cancer_coverage >= threshold_cancer_upper) {
+  if(cancer_coverage >= threshold2) {
     return(0)}
   else{return(cancer_coverage)}
 }
@@ -212,6 +212,7 @@ cancer_coverage <- apply(cancer_coverage, MARGIN = c(1,2), FUN = cancer_threshol
 for (i in 1:nrow(cancer_coverage)) {
   for (j in 1:ncol(cancer_coverage)) {
     if (cancer_coverage[i, j] == 0) {
+      cancer_coverage[i, j] <- NA
       cancer_beta_values[i, j] <- NA
     }
   }
@@ -221,11 +222,11 @@ for (i in 1:nrow(cancer_coverage)) {
 ##define a function to set every value of healthy coverage and healthy beta value to NA if they are in threshold and apply for the entire dataframe
 
 healthy_threshold_function <- function(healthy_coverage) {
-  if(healthy_coverage <= threshold_healthy_lower) {
+  if(healthy_coverage <= threshold3) {
     return(0)}
   else {return(healthy_coverage)}
   
-  if(healthy_coverage >= threshold_healthy_upper) {
+  if(healthy_coverage >= threshold4) {
     return(0)}
   else{return(healthy_coverage)}
 }
@@ -236,6 +237,7 @@ healthy_coverage <- apply(healthy_coverage, MARGIN = c(1,2), FUN = healthy_thres
 for (i in 1:nrow(healthy_coverage)) {
   for (j in 1:ncol(healthy_coverage)) {
     if (healthy_coverage[i, j] == 0) {
+      healthy_coverage[i, j] <- NA
       healthy_beta_values[i, j] <- NA
     }
   }
@@ -243,7 +245,7 @@ for (i in 1:nrow(healthy_coverage)) {
 
 
 
-remove(list = c("threshold_cancer_lower", "threshold_cancer_upper", "threshold_healthy_lower", "threshold_healthy_upper"))
+remove(list = c("threshold", "threshold2", "threshold3", "threshold4"))
 #overview after data clean up
 
 #cancer
