@@ -17,9 +17,20 @@ The alterations in cancer cell DNA methylation pattern have long been detected (
 
 # Research question
 
-Are differentially methylated regions associated with mantle cell lymphoma?
+Are differentially methylated regions within genes associated with mantle cell lymphoma?
 
 For that purpose we received a data set and an annotation file. Below is a short summary of important key points of the data set.
+
+# Introduction
+
+MCL is a B cell lymphoma which has its origin in the inner mantle zone of the lymph nodes (Hiddemann and Bartram, 2010). The most characteristic mutation in MCL is the translocation between the long arm of chromosome 11 and the long arm of chromosome 14 (t(11;14)(q13;q32)) (Hiddemann and Bartram, 2010). This mutation affects the heavy chains of immunoglobuline and leads to a cycline D1 (CCD1) overexpression (Hiddemann and Bartram, 2010). Cyclin D1 is a transcription factor which controlls the cell cycle (Hiddemann and Bartram, 2010). Through the overexpression of CCD1 the cell is able to proliferate but it can also influence the gene expression of other genes (Hiddemann and Bartram, 2010). It is observed, that a CCD1 overexpression leads to a deregulation of transcription factors and repair genes (Hiddemann and Bartram, 2010). 
+
+methylation
+
+bisulfite sequencing
+
+bluprint project
+
 
 # Data summary
 
@@ -163,60 +174,67 @@ Again we can distinguish between two major SD groups in both histograms. It is i
 By setting the lower coverage threshold to 5 % and the upper to 99.9 %, we fulfilled our initial requirement of retaining around 90 % of the information. This is proven later. 
 
 ```{r}
-threshold <-
+threshold_cancer_lower <-
   quantile(mean_cancer_coverage,
            probs = seq(0.05, 0.05),
            na.rm = TRUE)
-threshold2 <-
+threshold_cancer_upper <-
   quantile(mean_cancer_coverage,
            probs = seq(0.999, 0.999),
            na.rm = TRUE)
 
-threshold3 <-
+threshold_healthy_lower <-
   quantile(mean_healthy_coverage,
            probs = seq(0.05, 0.05),
            na.rm = TRUE)
-threshold4 <-
+threshold_healthy_upper <-
   quantile(mean_healthy_coverage,
            probs = seq(0.999, 0.999),
            na.rm = TRUE)
 ```
 
-Beta-values with very low or extreme high coverages are not reliable. Therefore with the help of the predefined coverage threshold for each patient we will set the beta values of the genes which didn't fulfill the coverage requirement to NA.
+Beta-values with very low or extreme high coverages are not reliable. Therefore with the help of the predefined coverage threshold for each patient we will set the beta values of the genes which didn't fulfill the coverage requirement to NA. We wrote a function which checked every table cell and set unreliable coverage value to zero. After that the associated table cells in bata values were set to NA.
 
 ```{r}
+cancer_threshold_function <- function(cancer_coverage) {
+  if(cancer_coverage <= threshold_cancer_lower) {
+    return(0)}
+  else {return(cancer_coverage)}
+  
+  if(cancer_coverage >= threshold_cancer_upper) {
+    return(0)}
+  else{return(cancer_coverage)}
+}
+
+cancer_coverage <- apply(cancer_coverage, MARGIN = c(1,2), FUN = cancer_threshold_function)
+
+
 for (i in 1:nrow(cancer_coverage)) {
   for (j in 1:ncol(cancer_coverage)) {
-    if (cancer_coverage[i, j] <= threshold) {
-      cancer_coverage[i, j] <- 0
-    }
-    
-    if (cancer_coverage[i, j] >= threshold2) {
-      cancer_coverage[i, j] <- 0
-    }
-    
     if (cancer_coverage[i, j] == 0) {
-      cancer_coverage[i, j] <- NA
       cancer_beta_values[i, j] <- NA
-      
     }
   }
 }
 
+
+healthy_threshold_function <- function(healthy_coverage) {
+  if(healthy_coverage <= threshold_healthy_lower) {
+    return(0)}
+  else {return(healthy_coverage)}
+  
+  if(healthy_coverage >= threshold_healthy_upper) {
+    return(0)}
+  else{return(healthy_coverage)}
+}
+
+healthy_coverage <- apply(healthy_coverage, MARGIN = c(1,2), FUN = healthy_threshold_function)
+
+
 for (i in 1:nrow(healthy_coverage)) {
   for (j in 1:ncol(healthy_coverage)) {
-    if (healthy_coverage[i, j] <= threshold3) {
-      healthy_coverage[i, j] <- 0
-    }
-    
-    if (healthy_coverage[i, j] >= threshold4) {
-      healthy_coverage[i, j] <- 0
-    }
-    
     if (healthy_coverage[i, j] == 0) {
-      healthy_coverage[i, j] <- NA
       healthy_beta_values[i, j] <- NA
-      
     }
   }
 }
@@ -394,27 +412,28 @@ sum(is.na(transposed_healthy_beta_values))
 
 There are some important genes for MCL which have ofen a different methylation pattern in comparison to heatlhy b-cells. These genes are:
 
-Gene     |Ensembl
----------|----------------
-SOX11	   |ENSG00000176887	
-NR2F2	   |ENSG00000185551	
-p53  	   |ENSG00000141510	
-AHR  	   |ENSG00000106546		
-ROBO1	   |ENSG00000169855		
-SOX9 	   |ENSG00000125398		
-HOXA9	   |ENSG00000078399		
-CDH1 	   |ENSG00000039068		
-CDC14B	 |ENSG00000081377		
-FOXC1	   |ENSG00000054598	
-G0S2	   |ENSG00000123689		
-GPX3	   |ENSG00000211445		
-LGALS3	 |ENSG00000131981		
-MAL  	   |ENSG00000172005		
-NPTX2	   |ENSG00000106236		 
-PAX6	   |ENSG00000007372		
-TFPI2	   |ENSG00000105825		
-THEM4	   |ENSG00000159445		
-TWIST1	 |ENSG00000122691		
+Gene   |Ensembl         |Function
+-------|----------------|----------------------------------------------------------------------------------
+CCND1  |ENSG00000110092 |cycline D1 controlls cell cycle (Fu et al., 2004)
+SOX11	 |ENSG00000176887 |SRY-box related gene	(SRY = sex determining region Y chromosome ) (Amann-Vesti et al., 2018), neural transcription factor (Mohanty et al., 2019), one reason for expression in MCL is CCND1 (Mohanty et al., 2019)
+NR2F2	 |ENSG00000185551	|is a nuclear receptor (https://www.ncbi.nlm.nih.gov/gene/7026, 6-6-2019) and plays a role as transcription factor in the differentiation and pluripotency of human embrionic stam cells (Rosa and Brivanlou, 2011)
+p53  	 |ENSG00000141510	|
+AHR  	 |ENSG00000106546	|	
+ROBO1	 |ENSG00000169855	|	
+SOX9 	 |ENSG00000125398	|SRY-box related gene	(SRY = sex determining region Y chromosome ) (Amann-Vesti et al., 2018), important in developement of testicle (Amann-Vesti et al., 2018), 
+HOXA9	 |ENSG00000078399	|	
+CDH1 	 |ENSG00000039068	|	
+CDC14B |ENSG00000081377	|	
+FOXC1	 |ENSG00000054598	|
+G0S2	 |ENSG00000123689	|	
+GPX3	 |ENSG00000211445	|	
+LGALS3 |ENSG00000131981	|	
+MAL  	 |ENSG00000172005	|	
+NPTX2	 |ENSG00000106236	|	 
+PAX6	 |ENSG00000007372	|	
+TFPI2	 |ENSG00000105825	|	
+THEM4	 |ENSG00000159445	|	
+TWIST1 |ENSG00000122691	|	
 
 To be sure we did not removed these genes in our data processing we tested if they are still all in our data frames. Because each of the 2 data frames contains the same genes it is enough to check if they are part of one of them.
 
@@ -486,3 +505,4 @@ We can continue to our next step: data normalization and visualization.
 # References
 
 Sharp, A.J., Stathaki, E., Migliavacca, E., Brahmachary, M., Montgomery, S.B., Dupre, Y., and Antonarakis, S.E. (2011). DNA methylation profiles of human active and inactive X chromosomes. Genome Res 21, 1592-1600.
+
