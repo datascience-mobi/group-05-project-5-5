@@ -77,3 +77,5 @@ loading_scores <- complete_m_values.pca$rotation[,1]
 ranked_gene_loading <- sort(abs(loading_scores), decreasing = TRUE)
 top_25_genes <- names(ranked_gene_loading[1:25])
 View(top_25_genes)
+
+complete_m_values.pca$rotation[top_25_genes,1]
