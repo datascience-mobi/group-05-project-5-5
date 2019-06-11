@@ -59,7 +59,7 @@ hist(
   log10(mean_healthy_m_values),
   breaks = "fd",
   main = "Healthy M values: Mean frequency",
-  xlab = "Common logarithm of coverages",
+  xlab = "Common logarithm of M values",
   col = "seagreen2",
   border = "gray20",
   xlim = c(-1, 1)
