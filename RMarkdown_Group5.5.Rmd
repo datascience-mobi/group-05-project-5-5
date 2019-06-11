@@ -41,7 +41,7 @@ bluprint project
 * coverage and beta-values for each gene
 * Length of each gene
 
-Researching on MCL we found a range of genes which have been linked with this specific cancer, some of which include SOX11, p53, CCND1 etc (Queirós et al., 2016).
+Researching on MCL we found a range of genes which have been linked with this specific cancer, some of which include SOX11, p53, CCND1 etc (Queir??s et al., 2016).
 
 To address the research question we broke down the project into 5 parts.
 
@@ -480,17 +480,113 @@ It so happens that we kept slightly over 90 % of the information (91.1 %). That 
 We can continue to our next step: data normalization and visualization.
 
 
+$$~$$
 
 
+## Part 2: Data normalization and vizualisation
 
+In this part we want to normalise the beta values in order to make them more homoscedastic for further statistical tests and downstream analysis. For that purpose we apply logit transformation and turn them into m values.
 
+```{r}
+cancer_m_values <-
+  data.frame(log2(cancer_beta_values / (1 - cancer_beta_values)))
+healthy_m_values <-
+  data.frame(log2(healthy_beta_values / (1 - healthy_beta_values)))
+```
 
+Afterwards we changed the endings of the patinets names to make it more clear to which data frame they belonged.
 
+```{r}
+# changing healthy patients names
+names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_NBC_NC11_41.bed"] <-
+  "Bcell_naive_VB_NBC_NC11_41.M"
+names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_NBC_NC11_83.bed"] <-
+  "Bcell_naive_VB_NBC_NC11_83.M"
+names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_S001JP51.bed"] <-
+  "Bcell_naive_VB_S001JP51.M"
+names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_S00DM851.bed"] <-
+  "Bcell_naive_VB_S00DM851.M"
+names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_S01ECGA1.bed"] <-
+  "Bcell_naive_VB_S01ECGA1.M"
 
+# changing cancer patients names
+names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FE8A1.bed"] <-
+  "cancer_VB_S01FE8A1.M"
+names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FF6A1.bed"] <-
+  "cancer_VB_S01FF6A1.M"
+names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FH2A1.bed"] <-
+  "cancer_VB_S01FH2A1.M"
+names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FJZA1.bed"] <-
+  "cancer_VB_S01FJZA1.M"
+names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FKXA1.bed"] <-
+  "cancer_VB_S01FKXA1.M"
+```
 
+Thereafter we calculated the means and standard deviations of the m values, subsequently plotting a histogram for each, to see how they are spread.
 
+```{r}
+# calculating mean, sd values and plotting a histogramm for each
+mean_cancer_m_values <- rowMeans(cancer_m_values)
+hist(
+  log10(mean_cancer_m_values),
+  breaks = "fd",
+  main = "Cancer M values: Mean frequency",
+  xlab = "Common logarithm of M values",
+  col = "indianred1",
+  border = "gray20",
+  xlim = c(-1, 1)
+)
+abline(v = log10(quantile(
+  mean_cancer_m_values,
+  probs = seq(0, 1, 0.1),
+  na.rm = TRUE
+)),
+col = "black",
+lty = 5,
+lwd = 1)
 
+mean_healthy_m_values <- rowMeans(healthy_m_values)
+hist(
+  log10(mean_healthy_m_values),
+  breaks = "fd",
+  main = "Healthy M values: Mean frequency",
+  xlab = "Common logarithm of M values",
+  col = "seagreen2",
+  border = "gray20",
+  xlim = c(-1, 1)
+)
+abline(v = log10(quantile(
+  mean_healthy_m_values,
+  probs = seq(0, 1, 0.1),
+  na.rm = TRUE
+)),
+col = "black",
+lty = 5,
+lwd = 1)
 
+sd_cancer_m_values <- apply(cancer_m_values, 1, sd)
+hist(
+  log10(sd_cancer_m_values),
+  breaks = "fd",
+  main = "Cancer M values: SD frequency",
+  xlab = "Common logarithm of M values",
+  col = "indianred1",
+  border = "gray20"
+)
+
+sd_healthy_m_values <- apply(healthy_m_values, 1, sd)
+hist(
+  log10(sd_healthy_m_values),
+  breaks = "fd",
+  col = "seagreen2",
+  main = "Healthy M values: SD frequency",
+  xlab = "Common logarithm of M values",
+  border = "gray20"
+)
+```
+
+As we can see in the mean frequency histograms there are some values of common logarithms of m values which are more than 1.0 and less than -1.0, this is due to the beta values which were registered as 1 or 0 which resulted in m values of +inf and -inf. These will be removed before the principal component analysis. 
+Comparing the mean frequency histograms of cancer and healthy samples, we can conclude that both are right-skewed, whereas in healthy m values the effect is more prominent. In the mean m value histogramm of healthy patients we can observe that the median lays around 0.6 which corresponds to beta values of around 0.8, in comparison to cancer where the median lays around 0.2 which correspond to beta vlues of 0.6. Important to mention is the fact that  there are far less genes which have low beta values in the healthy samples as in the cancer samples (judging by the tenth quantiles of the mean histograms). 
 
 
 
@@ -505,4 +601,3 @@ We can continue to our next step: data normalization and visualization.
 # References
 
 Sharp, A.J., Stathaki, E., Migliavacca, E., Brahmachary, M., Montgomery, S.B., Dupre, Y., and Antonarakis, S.E. (2011). DNA methylation profiles of human active and inactive X chromosomes. Genome Res 21, 1592-1600.
-
