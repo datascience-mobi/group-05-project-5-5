@@ -11,6 +11,8 @@ healthy_m_values <-
 # changing the ending of patients names from .bed to .M for better overview
 
 # changing healthy patients names
+## liste mit c(with names)
+
 names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_NBC_NC11_41.bed"] <-
   "Bcell_naive_VB_NBC_NC11_41.M"
 names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_NBC_NC11_83.bed"] <-
@@ -110,6 +112,8 @@ library(ggrepel)
 
 #extracting values of important genes (defined earlier) therefore we can highlight important genes in diagram
 #cancer
+
+## take the word complete out????
 
 complete_cancer_m_values_gene <- complete_cancer_m_values[c(
   "ENSG00000176887",
