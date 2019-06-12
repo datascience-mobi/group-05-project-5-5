@@ -524,7 +524,7 @@ names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FKXA1.bed"] <-
 
 Thereafter we calculated the means and standard deviations of the m values, subsequently plotting a histogram for each, to see how they are spread.
 
-```{r}
+```{r warning=FALSE}
 # calculating mean, sd values and plotting a histogramm for each
 mean_cancer_m_values <- rowMeans(cancer_m_values)
 hist(
