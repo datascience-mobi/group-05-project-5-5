@@ -16,8 +16,12 @@ input_data_csv <-
   read.csv(file = "sample_annotation.csv", sep = ",")
 View(input_data_csv)
 
-#creating a data frame to understand the different names of the original data frame of genes
-Name <-
+#creating a data frame to understand the different names of the original data frame of genes.
+
+####Unnecessary?????????
+
+
+Name <-  #not in markdown
   c(
     "Chromosome",
     "Start",
@@ -35,7 +39,7 @@ Name <-
     "beta value",
     "Whole genome bisulfite sequencing"
   )
-Name2 <-
+Name2 <-  #not in markdown
   c(
     "...",
     "Start position (bp)",
@@ -52,16 +56,18 @@ Name2 <-
     "can be defined theoretically as LN/G, where L is the read length, N is the number of reads and G is the haploid genome length.",
     " from 0 (demethylated) to 1 (fully methylated)",
     "https://de.wikipedia.org/wiki/Bisulfit-Sequenzierung"
-  )
-table_names <- data.frame(Name = Name, y = Name2)
+  ) 
+table_names <- data.frame(Name = Name, y = Name2) #not in markdown
 
-remove(list = c("Name", "Name2"))
+remove(list = c("Name", "Name2")) #not in markdown
 
 #copying "genes" data from general list to create a data frame of genes
 Gene_data_frame <- Samples$genes
 dim(Gene_data_frame)
 
 #some pre-cleaning up: deleting x and y chromosome specific genes
+
+##can be written in one function????????
 
 Gene_data_frame_x_y <-
   Gene_data_frame[-which(Gene_data_frame$Chromosome == "chrX"),]
@@ -166,52 +172,55 @@ abline(
 #cancer_coverage <- cbind(cancer_coverage, sd_cancer_coverage)
 #healthy_coverage <- cbind(healthy_coverage, sd_healthy_coverage)
 
-####find coverage value for threshold and remove coverages in threshold --> don´t loose more than 90% of information
+####find coverage value for threshold and remove coverages in threshold --> don't loose more than 90% of information
 
-sum(cancer_coverage == 0)
-sum(healthy_coverage == 0)
+sum(cancer_coverage == 0) #not in markdown
+sum(healthy_coverage == 0)  #not in markdown
 #cancer coverages: lower boundary
 threshold_cancer_lower <-
   quantile(mean_cancer_coverage,
-           probs = seq(0.05, 0.05),
+           probs = 0.05,
            na.rm = TRUE)
 
 #cancer coverages: upper boundary
 threshold_cancer_upper <-
   quantile(mean_cancer_coverage,
-           probs = seq(0.999, 0.999),
+           probs = 0.999,
            na.rm = TRUE)
 
 #healthy coverages: lower boundary
 threshold_healthy_lower <-
   quantile(mean_healthy_coverage,
-           probs = seq(0.05, 0.05),
+           probs = 0.05,
            na.rm = TRUE)
 
 #healthy coverages: upper boundary
 threshold_healthy_upper <-
   quantile(mean_healthy_coverage,
-           probs = seq(0.999, 0.999),
+           probs = 0.999,
            na.rm = TRUE)
 
 ##define a function to set every value of cancer coverage and cancer beta value to NA if they are in threshold and apply for the entire dataframe
 
 cancer_threshold_function <- function(cancer_coverage) {
   if(cancer_coverage <= threshold_cancer_lower) {
-    return(0)}
+    return("NA")}
   else {return(cancer_coverage)}
   
   if(cancer_coverage >= threshold_cancer_upper) {
-    return(0)}
+    return("NA")}
   else{return(cancer_coverage)}
 }
 
 cancer_coverage <- apply(cancer_coverage, MARGIN = c(1,2), FUN = cancer_threshold_function)
 
+## for later consideration: merge data frames coverage and beta values to substitute the for loop with the apply function
+##thereafter remove covergae column
+
 
 for (i in 1:nrow(cancer_coverage)) {
   for (j in 1:ncol(cancer_coverage)) {
-    if (cancer_coverage[i, j] == 0) {
+    if (cancer_coverage[i, j] == "NA") {
       cancer_beta_values[i, j] <- NA
     }
   }
