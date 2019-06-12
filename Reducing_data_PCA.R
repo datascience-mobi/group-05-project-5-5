@@ -1,4 +1,5 @@
 ## replacing 0 and 1 in beta values with approximate values, thus no -inf and +inf values in m values
+## multiple funktion for mut.fun ( ....c(fun1, fun2))
 
 function_inf <- function(x) {
   if (x == 1) {
@@ -14,6 +15,11 @@ function_minus_inf <- function(x) {
     return(x)
   }
 }
+
+### as.data.frame() to convert an existing data set into a data frame
+## data.frame() to create a new data frame
+
+
 cancer_beta_values <-
   as.data.frame(apply(cancer_beta_values, MARGIN = c(1, 2), FUN = function_inf))
 cancer_beta_values <-
@@ -68,10 +74,19 @@ complete_m_values.pca <- prcomp(t(complete_m_values))
 summary(complete_m_values.pca)
 
 #visualize pca variation
-plot(complete_m_values.pca, main = "Variance explained through every principal component", type = "l")
+
+###why does the xlab not function
+## cancer to MCL and healthy to control??????
+
+
+graphics::plot(
+  complete_m_values.pca,
+  main = "Variance explained through every principal component", xlab = "cioa",
+  type = "l"
+)
 
 #visualize pca
-plot(complete_m_values.pca$x[, 1], complete_m_values.pca$x[, 2])
+#plot(complete_m_values.pca$x[, 1], complete_m_values.pca$x[, 2])
 
 
 #adding an extra column with the category of sample with which we can color the pc dots in a ggplot according to their sample group
@@ -92,6 +107,7 @@ pcs_of_m_values <-
     )
   ))
 
+## remove the numbers in ggplot
 #generate a ggplot/scatterplot to visualize the Sample points in a coordinate system with x-axis = PC1 and y-axis = PC2
 p <- ggplot(pcs_of_m_values, aes(PC1, PC2, group = Samples)) +
   geom_point (aes(shape = Samples, color = Samples), size = 4)
@@ -105,9 +121,14 @@ ranked_gene_loading <- sort(abs(loading_scores), decreasing = TRUE)
 top_25_genes <- names(ranked_gene_loading[1:25])
 View(top_25_genes)
 
+##loading plots with elbow method
+
 complete_m_values.pca$rotation[top_25_genes, 1]
 
 #find out how much clusters do we need to group samples (obvisiously 2 would be perfekt because healthy/cancer)
+
+##why sapply??
+
 wss <-  sapply(1:5, function(k) {
   kmeans(x = complete_m_values.pca$x,
          centers = k,
@@ -127,9 +148,11 @@ plot(
 #find out if healthy and cancer samples are seperated
 #variable with two center positions of value of rotated data
 centers <-
-    kmeans(x = t(pcs_of_m_values[1:10]),
-           centers = 2,
-           iter.max = 100)$centers
+  kmeans(
+    x = t(pcs_of_m_values[1:10]),
+    centers = 2,
+    iter.max = 100
+  )$centers
 
 ##adding an extra column with the category of sample with which we can color the pc dots in a ggplot according to their sample group
 centers <-
@@ -153,3 +176,5 @@ centers <-
 p_cluster <- ggplot(centers, aes(X1, X2, group = Samples)) +
   geom_point (aes(shape = Samples, color = Samples), size = 4)
 p_cluster + scale_colour_manual(values = c("seagreen2", "indianred1"))
+
+## wilkoxon, kruskal wollis, correlation coefficient berechnene und ein permutation test
