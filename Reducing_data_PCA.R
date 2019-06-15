@@ -38,25 +38,28 @@ colnames(cancer_m_values) <- c(
 #data reduction with PCA
 
 #merging both m value dataframes (healthy and cancer) into one again for PCA
-complete_m_values <- cbind(healthy_m_values, cancer_m_values)
-View(complete_m_values)
+m_values <- cbind(healthy_m_values, cancer_m_values)
+View(m_values)
 
 #Apply PCA on data frame "complete_m_values" with all m values. For that, the matrix needs to be transposed first
 #(variables are scaled to have i) standard deviation one and ii) mean zero)
-complete_m_values.pca <- prcomp(t(complete_m_values))
-summary(complete_m_values.pca)
+pca_m_values <- prcomp(t(m_values))
+summary(pca_m_values)
 
 #visualize pca variation
 
-###why does the xlab not function
-## cancer to MCL and healthy to control??????
+##choosing number of pc's to work with for batch effect detection (elbow method)
+ 
+## calculating the variance of each principal component (sdev^2), then calculating the proportion of each 
+# variance by dividing it with the sum of the variacnes
 
 
-plot(
-  complete_m_values.pca,
-  main = "Variance explained through every principal component",
-  type = "l"
-)
+std_dev <- pca_m_values$sdev
+variance <- std_dev^2
+prop_var <- variance/sum(variance)
+
+plot(prop_var, main = "Variance explained by principal components", xlab = "Principal Components", ylab = "Proportion of Variance Explained",
+type = "b")
 
 #visualize pca
 #plot(complete_m_values.pca$x[, 1], complete_m_values.pca$x[, 2])
@@ -65,7 +68,7 @@ plot(
 #adding an extra column with the category of sample with which we can color the pc dots in a ggplot according to their sample group
 pcs_of_m_values <-
   data.frame(cbind(
-    complete_m_values.pca$x,
+    pca_m_values$x,
     Samples = c(
       "Healthy",
       "Healthy",
@@ -89,21 +92,21 @@ p + scale_colour_manual(values = c("seagreen2", "indianred1"))
 #finding the top 25 most important genes (with the biggest influence). Therefore we will look at the loading scores (saved in "rotation") of the genes on PC1. Because it's not important
 #whether it is positive or negative we will look at the absolute values and rank these
 
-loading_scores <- complete_m_values.pca$rotation[, 1]
+loading_scores <- pca_m_values$rotation[, 1]
 ranked_gene_loading <- sort(abs(loading_scores), decreasing = TRUE)
 top_25_genes <- names(ranked_gene_loading[1:25])
 View(top_25_genes)
 
 ##loading plots with elbow method
 
-complete_m_values.pca$rotation[top_25_genes, 1]
+pca_m_values$rotation[top_25_genes, 1]
 
 #find out how much clusters do we need to group samples (obvisiously 2 would be perfekt because healthy/cancer)
 
 ##why sapply??
 
 wss <-  sapply(1:5, function(k) {
-  kmeans(x = complete_m_values.pca$x,
+  kmeans(x = pca_m_values$x,
          centers = k,
          iter.max = 100)$tot.withinss
 })
@@ -132,16 +135,16 @@ centers <-
   data.frame(cbind(
     t(centers),
     Samples = c(
-      "Control",
-      "Control",
-      "Control",
-      "Control",
-      "Control",
-      "MCL",
-      "MCL",
-      "MCL",
-      "MCL",
-      "MCL"
+      "Healthy",
+      "Healthy",
+      "Healthy",
+      "Healthy",
+      "Healthy",
+      "Cancer",
+      "Cancer",
+      "Cancer",
+      "Cancer",
+      "Cancer"
     )
   ))
 
