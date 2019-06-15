@@ -11,7 +11,6 @@ healthy_m_values <-
 # changing the ending of patients names from .bed to .M for better overview
 
 # changing healthy patients names
-## liste mit c(with names)
 
 
 colnames(healthy_m_values) <-
