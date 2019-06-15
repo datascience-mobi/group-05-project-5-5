@@ -231,11 +231,11 @@ for (i in 1:nrow(cancer_coverage)) {
 
 healthy_threshold_function <- function(healthy_coverage) {
   if(healthy_coverage <= threshold_healthy_lower) {
-    return(0)}
+    return("NA")}
   else {return(healthy_coverage)}
   
   if(healthy_coverage >= threshold_healthy_upper) {
-    return(0)}
+    return("NA")}
   else{return(healthy_coverage)}
 }
 
@@ -244,7 +244,7 @@ healthy_coverage <- apply(healthy_coverage, MARGIN = c(1,2), FUN = healthy_thres
 
 for (i in 1:nrow(healthy_coverage)) {
   for (j in 1:ncol(healthy_coverage)) {
-    if (healthy_coverage[i, j] == 0) {
+    if (healthy_coverage[i, j] == "NA") {
       healthy_beta_values[i, j] <- NA
     }
   }
