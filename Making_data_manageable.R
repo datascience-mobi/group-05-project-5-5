@@ -233,8 +233,8 @@ healthy_coverage[healthy_coverage == "NA"] <- NA
 healthy_beta_values[healthy_coverage == "NA"] <- NA
 
 remove(list = c("threshold_cancer_lower", "threshold_cancer_upper", "threshold_healthy_lower", "threshold_healthy_upper"))
-#overview after data clean up
 
+#overview after data clean up
 #cancer
 mean_cancer_coverage <- rowMeans(cancer_coverage)
 hist(
