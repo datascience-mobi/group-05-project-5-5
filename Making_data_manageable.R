@@ -214,18 +214,11 @@ cancer_coverage <- apply(cancer_coverage, MARGIN = c(1,2), FUN = cancer_threshol
 ## for later consideration: merge data frames coverage and beta values to substitute the for loop with the apply function
 ##thereafter remove covergae column
 
-
-for (i in 1:nrow(cancer_coverage)) {
-  for (j in 1:ncol(cancer_coverage)) {
-    if (cancer_coverage[i, j] == "NA") {
-      cancer_beta_values[i, j] <- NA
-    }
-  }
-}
+cancer_coverage[cancer_coverage == "NA"] <- NA 
+cancer_beta_values[cancer_coverage == "NA"] <- NA
 
 
 ##define a function to set every value of healthy coverage and healthy beta value to NA if they are in threshold and apply for the entire dataframe
-
 healthy_threshold_function <- function(healthy_coverage) {
   if(healthy_coverage <= threshold_healthy_lower) {
     return("NA")}
@@ -238,16 +231,8 @@ healthy_threshold_function <- function(healthy_coverage) {
 
 healthy_coverage <- apply(healthy_coverage, MARGIN = c(1,2), FUN = healthy_threshold_function)
 
-
-for (i in 1:nrow(healthy_coverage)) {
-  for (j in 1:ncol(healthy_coverage)) {
-    if (healthy_coverage[i, j] == "NA") {
-      healthy_beta_values[i, j] <- NA
-    }
-  }
-}
-
-
+healthy_coverage[healthy_coverage == "NA"] <- NA
+cancer_coverage[healthy_coverage == "NA"] <- NA
 
 remove(list = c("threshold_cancer_lower", "threshold_cancer_upper", "threshold_healthy_lower", "threshold_healthy_upper"))
 #overview after data clean up
