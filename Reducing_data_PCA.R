@@ -94,16 +94,16 @@ pcs_of_m_values <-
   data.frame(cbind(
     complete_m_values.pca$x,
     Samples = c(
-      "Control",
-      "Control",
-      "Control",
-      "Control",
-      "Control",
-      "MCL",
-      "MCL",
-      "MCL",
-      "MCL",
-      "MCL"
+      "Healthy",
+      "Healthy",
+      "Healthy",
+      "Healthy",
+      "Healthy",
+      "Cancer",
+      "Cancer",
+      "Cancer",
+      "Cancer",
+      "Cancer"
     )
   ))
 
@@ -177,4 +177,4 @@ p_cluster <- ggplot(centers, aes(X1, X2, group = Samples)) +
   geom_point (aes(shape = Samples, color = Samples), size = 4)
 p_cluster + scale_colour_manual(values = c("seagreen2", "indianred1"))
 
-## wilkoxon, kruskal wollis, correlation coefficient berechnene und ein permutation test
+## wilkoxon, kruskal wallis, Pearson correlation coefficient berechnen und ein permutation test
