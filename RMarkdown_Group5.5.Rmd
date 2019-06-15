@@ -306,6 +306,7 @@ healthy_beta_values$Number_of_NA_cancer <-
 To visualize the number of NA's in the beta-values we plotted different histograms.
 
 ```{r}
+library(tidyverse)
 ggplot() +
   geom_bar(
     data = cancer_beta_values,
