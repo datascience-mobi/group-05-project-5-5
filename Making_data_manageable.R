@@ -65,9 +65,6 @@ Gene_data_frame <- Samples$genes
 dim(Gene_data_frame)
 
 #some pre-cleaning up: deleting x and y chromosome specific genes
-
-##can be written in one function????????
-
 Gene_data_frame_x_y <-
   Gene_data_frame[-which(Gene_data_frame$Chromosome == "chrX"),]
 Gene_data_frame_x_y <-
