@@ -14,7 +14,6 @@ Samples <- readRDS(file = "Mantle-Bcell_list.RDS.gz")
 #Loading annotation data file
 input_data_csv <-
   read.csv(file = "sample_annotation.csv", sep = ",")
-View(input_data_csv)
 
 #creating a data frame to understand the different names of the original data frame of genes.
 
@@ -66,9 +65,6 @@ Gene_data_frame <- Samples$genes
 dim(Gene_data_frame)
 
 #some pre-cleaning up: deleting x and y chromosome specific genes
-
-##can be written in one function????????
-
 Gene_data_frame_x_y <-
   Gene_data_frame[-which(Gene_data_frame$Chromosome == "chrX"),]
 Gene_data_frame_x_y <-
@@ -84,7 +80,6 @@ cancer_beta_values <- Gene_data_frame_x_y[, 16:20]
 #######################################
 
 #mean and sd value histogram of every gene + quantiles
-
 mean_cancer_coverage <- rowMeans(cancer_coverage)
 hist(
   log10(mean_cancer_coverage),
@@ -217,18 +212,11 @@ cancer_coverage <- apply(cancer_coverage, MARGIN = c(1,2), FUN = cancer_threshol
 ## for later consideration: merge data frames coverage and beta values to substitute the for loop with the apply function
 ##thereafter remove covergae column
 
-
-for (i in 1:nrow(cancer_coverage)) {
-  for (j in 1:ncol(cancer_coverage)) {
-    if (cancer_coverage[i, j] == "NA") {
-      cancer_beta_values[i, j] <- NA
-    }
-  }
-}
+cancer_coverage[cancer_coverage == "NA"] <- NA 
+cancer_beta_values[cancer_coverage == "NA"] <- NA
 
 
 ##define a function to set every value of healthy coverage and healthy beta value to NA if they are in threshold and apply for the entire dataframe
-
 healthy_threshold_function <- function(healthy_coverage) {
   if(healthy_coverage <= threshold_healthy_lower) {
     return("NA")}
@@ -241,20 +229,12 @@ healthy_threshold_function <- function(healthy_coverage) {
 
 healthy_coverage <- apply(healthy_coverage, MARGIN = c(1,2), FUN = healthy_threshold_function)
 
-
-for (i in 1:nrow(healthy_coverage)) {
-  for (j in 1:ncol(healthy_coverage)) {
-    if (healthy_coverage[i, j] == "NA") {
-      healthy_beta_values[i, j] <- NA
-    }
-  }
-}
-
-
+healthy_coverage[healthy_coverage == "NA"] <- NA
+healthy_beta_values[healthy_coverage == "NA"] <- NA
 
 remove(list = c("threshold_cancer_lower", "threshold_cancer_upper", "threshold_healthy_lower", "threshold_healthy_upper"))
-#overview after data clean up
 
+#overview after data clean up
 #cancer
 mean_cancer_coverage <- rowMeans(cancer_coverage)
 hist(
@@ -326,61 +306,72 @@ healthy_beta_values$Number_of_NA_cancer <-
 #NA_cancer_beta_values <- rowSums(is.na(cancer_beta_values))
 
 ##Histogram of NA's
-hist(
-  cancer_beta_values$Number_of_NA_cancer,
-  main =  "NA's per Gene in MCL Samples",
-  breaks = 5,
-  xlab = "Number of NA's",
-  ylab = "Number of Genes",
-  col = "indianred1",
-  border = "gray20"
-)
-#abline(v = log10(quantile(
-#  cancer_beta_values$Number_of_NA_cancer,
-#  probs = seq(0, 1, 0.25)
-#)),
-#col = "black",
-#lty = 5,
-#lwd = 1)
-hist(
-  cancer_beta_values$Number_of_NA_cancer,
-  main =  "NA's per Gene in MCL Samples (zoomed in)",
-  breaks = 4,
-  xlim = c(1, 5),
-  ylim = c(0, 2500),
-  xlab = "Number of NA's",
-  ylab = "Number of Genes",
-  col = "indianred1",
-  border = "gray20"
-)
+#cancer
+ggplot() +
+  geom_bar(
+    data = cancer_beta_values,
+    mapping = aes(x = cancer_beta_values$Number_of_NA_cancer),
+    fill = "indianred2"
+  ) +
+  xlim(-0.5, 5.5) +
+  ggtitle("NA's per Gene in cancer samples") +
+  labs(x = "Number of NA's", y = "Number of Genes") +
+  theme(plot.title = element_text(
+    color = "black",
+    size = 14,
+    face = "bold",
+    hjust = 0.5
+  )) 
 
-hist(
-  healthy_beta_values$Number_of_NA_healty,
-  main =  "NA's per Gene in Healthy Samples",
-  breaks = 5,
-  xlab = "Number of NA's",
-  ylab = "Number of Genes",
-  col = "seagreen2",
-  border = "gray20"
-)
-#abline(v = log10(quantile(
-#  healthy_beta_values$Number_of_NA_healthy,
-#  probs = seq(0, 1, 0.1)
-#)),
-#col = "black",
-#lty = 5,
-#lwd = 1)
-hist(
-  healthy_beta_values$Number_of_NA_healthy,
-  main =  "NA's per Gene in Healthy Samples (zoomed in)",
-  breaks = 4,
-  xlim = c(1, 5),
-  ylim = c(0, 2500),
-  xlab = "Number of NA's",
-  ylab = "Number of Genes",
-  col = "seagreen2",
-  border = "gray20"
-)
+ggplot() +
+  geom_bar(
+    data = cancer_beta_values,
+    mapping = aes(x = cancer_beta_values$Number_of_NA_cancer),
+    fill = "indianred2"
+  ) +
+  xlim(0.5, 5.5) +
+  ggtitle("NA's per Gene in cancer samples \n (zoomed in)") +
+  labs(x = "Number of NA's", y = "Number of Genes") +
+  theme(plot.title = element_text(
+    color = "black",
+    size = 14,
+    face = "bold",
+    hjust = 0.5
+  )) 
+
+#healthy
+ggplot() +
+  geom_bar(
+    data = healthy_beta_values,
+    mapping = aes(x = healthy_beta_values$Number_of_NA_healthy),
+    fill = "indianred2"
+  ) +
+  xlim(-0.5, 5.5) +
+  ylim(0, 50000) +
+  ggtitle("NA's per Gene in healthy samples") +
+  labs(x = "Number of NA's", y = "Number of Genes") +
+  theme(plot.title = element_text(
+    color = "black",
+    size = 14,
+    face = "bold",
+    hjust = 0.5
+  )) 
+  
+ggplot() +
+  geom_bar(
+    data = healthy_beta_values,
+    mapping = aes(x = healthy_beta_values$Number_of_NA_healthy),
+    fill = "indianred2"
+  ) +
+  xlim(0.5, 5.5) +
+  ggtitle("NA's per Gene in healthy samples \n (zoomed in)") +
+  labs(x = "Number of NA's", y = "Number of Genes") +
+  theme(plot.title = element_text(
+    color = "black",
+    size = 14,
+    face = "bold",
+    hjust = 0.5
+  )) 
 
 
 #set a threshold for the NA values and remove the gene if there are too much NA's

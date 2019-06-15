@@ -41,7 +41,7 @@ bluprint project
 * coverage and beta-values for each gene
 * Length of each gene
 
-Researching on MCL we found a range of genes which have been linked with this specific cancer, some of which include SOX11, p53, CCND1 etc (Queir??s et al., 2016).
+Researching on MCL we found a range of genes which have been linked with this specific cancer, some of which include SOX11, p53, CCND1 etc (Queirós et al., 2016).
 
 To address the research question we broke down the project into 5 parts.
 
@@ -198,88 +198,35 @@ Beta-values with very low or extreme high coverages are not reliable. Therefore 
 ```{r}
 cancer_threshold_function <- function(cancer_coverage) {
   if(cancer_coverage <= threshold_cancer_lower) {
-    return(0)}
+    return("NA")}
   else {return(cancer_coverage)}
   
   if(cancer_coverage >= threshold_cancer_upper) {
-    return(0)}
+    return("NA")}
   else{return(cancer_coverage)}
 }
 
 cancer_coverage <- apply(cancer_coverage, MARGIN = c(1,2), FUN = cancer_threshold_function)
 
-
-for (i in 1:nrow(cancer_coverage)) {
-  for (j in 1:ncol(cancer_coverage)) {
-    if (cancer_coverage[i, j] == 0) {
-      cancer_beta_values[i, j] <- NA
-    }
-  }
-}
+cancer_coverage[cancer_coverage == "NA"] <- NA 
+cancer_beta_values[cancer_coverage == "NA"] <- NA
 
 
 healthy_threshold_function <- function(healthy_coverage) {
   if(healthy_coverage <= threshold_healthy_lower) {
-    return(0)}
+    return("NA")}
   else {return(healthy_coverage)}
   
   if(healthy_coverage >= threshold_healthy_upper) {
-    return(0)}
+    return("NA")}
   else{return(healthy_coverage)}
 }
 
 healthy_coverage <- apply(healthy_coverage, MARGIN = c(1,2), FUN = healthy_threshold_function)
 
 
-for (i in 1:nrow(healthy_coverage)) {
-  for (j in 1:ncol(healthy_coverage)) {
-    if (healthy_coverage[i, j] == 0) {
-      healthy_beta_values[i, j] <- NA
-    }
-  }
-}
-```
-
-To proof the success of our data cleanup we plotted the cancer and healthy coverage histograms again. In both cases it is seen that the shapes of the bars are still the same, but the low coverage values are deleted.
-
-```{r}
-mean_cancer_coverage <- rowMeans(cancer_coverage)
-hist(
-  log10(mean_cancer_coverage),
-  breaks = "fd",
-  main = "Cancer coverage: Mean frequency",
-  xlab = "Common logarithm of coverages",
-  col = "indianred1",
-  border = "gray20"
-)
-abline(v = log10(quantile(
-  mean_cancer_coverage,
-  probs = seq(0, 1, 0.1),
-  na.rm = TRUE
-)),
-col = "black",
-lty = 5,
-lwd = 1)
-
-
-mean_healthy_coverage <- rowMeans(healthy_coverage)
-hist(
-  log10(mean_healthy_coverage),
-  breaks = "fd",
-  main = "Healthy coverage: Mean frequency",
-  xlab = "Common logarithm of coverages",
-  col = "seagreen2",
-  border = "gray20"
-)
-abline(v = log10(quantile(
-  mean_healthy_coverage,
-  probs = seq(0, 1, 0.1),
-  na.rm = TRUE
-)),
-col = "black",
-lty = 5,
-lwd = 1)
-
+healthy_coverage[healthy_coverage == "NA"] <- NA
+healthy_beta_values[healthy_coverage == "NA"] <- NA
 ```
 
 Now we needed to deal with NA's in the beta-values, because they represent no information and they could cause errors in our further analysis. We had many NA's but we cannot remove every gene with a NA because this would lead to a loss of too much information.
@@ -306,47 +253,71 @@ healthy_beta_values$Number_of_NA_cancer <-
 To visualize the number of NA's in the beta-values we plotted different histograms.
 
 ```{r}
-hist(
-  cancer_beta_values$Number_of_NA_cancer,
-  main =  "NA's per Gene in MCL Samples",
-  breaks = 5,
-  xlab = "Number of NA's",
-  ylab = "Number of Genes",
-  col = "indianred1",
-  border = "gray20"
-)
-hist(
-  cancer_beta_values$Number_of_NA_cancer,
-  main =  "NA's per Gene in MCL Samples (zoomed in)",
-  breaks = 4,
-  xlim = c(1,5),
-  ylim = c(0,2500),
-  xlab = "Number of NA's",
-  ylab = "Number of Genes",
-  col = "indianred1",
-  border = "gray20"
-)
+library(tidyverse)
+ggplot() +
+  geom_bar(
+    data = cancer_beta_values,
+    mapping = aes(x = cancer_beta_values$Number_of_NA_cancer),
+    fill = "indianred2"
+  ) +
+  xlim(-0.5, 5.5) +
+  ggtitle("NA's per Gene in cancer samples") +
+  labs(x = "Number of NA's", y = "Number of Genes") +
+  theme(plot.title = element_text(
+    color = "black",
+    size = 14,
+    face = "bold",
+    hjust = 0.5
+  )) 
 
-hist(
-  healthy_beta_values$Number_of_NA_healthy,
-  main =  "NA's per Gene in Healthy Samples",
-  breaks = 5,
-  xlab = "Number of NA's",
-  ylab = "Number of Genes",
-  col = "seagreen2",
-  border = "gray20"
-)
-hist(
-  healthy_beta_values$Number_of_NA_healthy,
-  main =  "NA's per Gene in Healthy Samples (zoomed in)",
-  breaks = 4,
-  xlim = c(1,5),
-  ylim = c(0,2500),
-  xlab = "Number of NA's",
-  ylab = "Number of Genes",
-  col = "seagreen2",
-  border = "gray20"
-)
+ggplot() +
+  geom_bar(
+    data = cancer_beta_values,
+    mapping = aes(x = cancer_beta_values$Number_of_NA_cancer),
+    fill = "indianred2"
+  ) +
+  xlim(0.5, 5.5) +
+  ggtitle("NA's per Gene in cancer samples \n (zoomed in)") +
+  labs(x = "Number of NA's", y = "Number of Genes") +
+  theme(plot.title = element_text(
+    color = "black",
+    size = 14,
+    face = "bold",
+    hjust = 0.5
+  )) 
+
+ggplot() +
+  geom_bar(
+    data = healthy_beta_values,
+    mapping = aes(x = healthy_beta_values$Number_of_NA_healthy),
+    fill = "indianred2"
+  ) +
+  xlim(-0.5, 5.5) +
+  ylim(0, 50000) +
+  ggtitle("NA's per Gene in healthy samples") +
+  labs(x = "Number of NA's", y = "Number of Genes") +
+  theme(plot.title = element_text(
+    color = "black",
+    size = 14,
+    face = "bold",
+    hjust = 0.5
+  )) 
+  
+ggplot() +
+  geom_bar(
+    data = healthy_beta_values,
+    mapping = aes(x = healthy_beta_values$Number_of_NA_healthy),
+    fill = "indianred2"
+  ) +
+  xlim(0.5, 5.5) +
+  ggtitle("NA's per Gene in healthy samples \n (zoomed in)") +
+  labs(x = "Number of NA's", y = "Number of Genes") +
+  theme(plot.title = element_text(
+    color = "black",
+    size = 14,
+    face = "bold",
+    hjust = 0.5
+  )) 
 ```
 
 The first histogram of cancer/healthy is to get an overview over all numbers of missing values per gene. Most genes in 'cancer_beta_values' and 'healthy_beta_values' have no NA's. That is good, because it means we have much information in our analysis and our results will be more meaningful.
@@ -497,29 +468,22 @@ healthy_m_values <-
 Afterwards we changed the endings of the patinets names to make it more clear to which data frame they belonged.
 
 ```{r}
-# changing healthy patients names
-names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_NBC_NC11_41.bed"] <-
-  "Bcell_naive_VB_NBC_NC11_41.M"
-names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_NBC_NC11_83.bed"] <-
-  "Bcell_naive_VB_NBC_NC11_83.M"
-names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_S001JP51.bed"] <-
-  "Bcell_naive_VB_S001JP51.M"
-names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_S00DM851.bed"] <-
-  "Bcell_naive_VB_S00DM851.M"
-names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_S01ECGA1.bed"] <-
-  "Bcell_naive_VB_S01ECGA1.M"
+colnames(healthy_m_values) <-
+  c(
+    "Bcell_naive_VB_NBC_NC11_41.M",
+    "Bcell_naive_VB_NBC_NC11_83.M",
+    "Bcell_naive_VB_S001JP51.M",
+    "Bcell_naive_VB_S00DM851.M",
+    "Bcell_naive_VB_S01ECGA1.M"
+  )
 
-# changing cancer patients names
-names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FE8A1.bed"] <-
-  "cancer_VB_S01FE8A1.M"
-names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FF6A1.bed"] <-
-  "cancer_VB_S01FF6A1.M"
-names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FH2A1.bed"] <-
-  "cancer_VB_S01FH2A1.M"
-names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FJZA1.bed"] <-
-  "cancer_VB_S01FJZA1.M"
-names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FKXA1.bed"] <-
+colnames(cancer_m_values) <- c(
+  "cancer_VB_S01FE8A1.M",
+  "cancer_VB_S01FF6A1.M",
+  "cancer_VB_S01FH2A1.M",
+  "cancer_VB_S01FJZA1.M",
   "cancer_VB_S01FKXA1.M"
+)
 ```
 
 Thereafter we calculated the means and standard deviations of the m values, subsequently plotting a histogram for each, to see how they are spread.
@@ -586,7 +550,7 @@ hist(
 ```
 
 As we can see in the mean frequency histograms there are some values of common logarithms of m values which are more than 1.0 and less than -1.0, this is due to the beta values which were registered as 1 or 0 which resulted in m values of +inf and -inf. These will be removed before the principal component analysis. 
-Comparing the mean frequency histograms of cancer and healthy samples, we can conclude that both are right-skewed, whereas in healthy m values the effect is more prominent. In the mean m value histogramm of healthy patients we can observe that the median lays around 0.6 which corresponds to beta values of around 0.8, in comparison to cancer where the median lays around 0.2 which correspond to beta vlues of 0.6. Important to mention is the fact that  there are far less genes which have low beta values in the healthy samples as in the cancer samples (judging by the tenth quantiles of the mean histograms). 
+Comparing the mean frequency histograms of cancer and healthy samples, we can conclude that both are right-skewed, whereas in healthy m values the effect is more prominent. In the mean m value histogram of healthy patients we can observe that the median lays around 0.6 which corresponds to beta values of around 0.8, in comparison to cancer where the median lays around 0.2 which correspond to beta vlues of 0.6. Important to mention is the fact that  there are far less genes which have low beta values in the healthy samples as in the cancer samples (judging by the tenth quantiles of the mean histograms). 
 
 
 
