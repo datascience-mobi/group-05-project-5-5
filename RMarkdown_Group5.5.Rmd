@@ -176,20 +176,20 @@ By setting the lower coverage threshold to 5 % and the upper to 99.9 %, we fulfi
 ```{r}
 threshold_cancer_lower <-
   quantile(mean_cancer_coverage,
-           probs = seq(0.05, 0.05),
+           probs = 0.05,
            na.rm = TRUE)
 threshold_cancer_upper <-
   quantile(mean_cancer_coverage,
-           probs = seq(0.999, 0.999),
+           probs = 0.999,
            na.rm = TRUE)
 
 threshold_healthy_lower <-
   quantile(mean_healthy_coverage,
-           probs = seq(0.05, 0.05),
+           probs = 0.05,
            na.rm = TRUE)
 threshold_healthy_upper <-
   quantile(mean_healthy_coverage,
-           probs = seq(0.999, 0.999),
+           probs = 0.999,
            na.rm = TRUE)
 ```
 
@@ -230,7 +230,7 @@ healthy_beta_values[healthy_coverage == "NA"] <- NA
 ```
 
 Now we needed to deal with NA's in the beta-values, because they represent no information and they could cause errors in our further analysis. We had many NA's but we cannot remove every gene with a NA because this would lead to a loss of too much information.
-
+Our sum of NA's is:
 ```{r}
 sum(is.na(cancer_beta_values))
 sum(is.na(healthy_beta_values))
@@ -252,16 +252,20 @@ healthy_beta_values$Number_of_NA_cancer <-
 
 To visualize the number of NA's in the beta-values we plotted different histograms.
 
-```{r}
+```{r, include=FALSE}
 library(tidyverse)
-ggplot() +
+library(gridExtra)
+library(ggrepel)
+```
+```{r error=FALSE, warning=FALSE}
+
+p1 <- ggplot() +
   geom_bar(
     data = cancer_beta_values,
     mapping = aes(x = cancer_beta_values$Number_of_NA_cancer),
     fill = "indianred2"
   ) +
-  xlim(-0.5, 5.5) +
-  ggtitle("NA's per Gene in cancer samples") +
+  ggtitle("NA's per Gene in \n cancer samples") +
   labs(x = "Number of NA's", y = "Number of Genes") +
   theme(plot.title = element_text(
     color = "black",
@@ -270,14 +274,14 @@ ggplot() +
     hjust = 0.5
   )) 
 
-ggplot() +
+p2 <- ggplot() +
   geom_bar(
     data = cancer_beta_values,
     mapping = aes(x = cancer_beta_values$Number_of_NA_cancer),
     fill = "indianred2"
   ) +
   xlim(0.5, 5.5) +
-  ggtitle("NA's per Gene in cancer samples \n (zoomed in)") +
+  ggtitle("NA's per Gene in \n cancer samples \n (zoomed in)") +
   labs(x = "Number of NA's", y = "Number of Genes") +
   theme(plot.title = element_text(
     color = "black",
@@ -286,15 +290,13 @@ ggplot() +
     hjust = 0.5
   )) 
 
-ggplot() +
+p3 <- ggplot() +
   geom_bar(
     data = healthy_beta_values,
     mapping = aes(x = healthy_beta_values$Number_of_NA_healthy),
-    fill = "indianred2"
+    fill = "seagreen2"
   ) +
-  xlim(-0.5, 5.5) +
-  ylim(0, 50000) +
-  ggtitle("NA's per Gene in healthy samples") +
+  ggtitle("NA's per Gene in \n healthy samples") +
   labs(x = "Number of NA's", y = "Number of Genes") +
   theme(plot.title = element_text(
     color = "black",
@@ -303,14 +305,14 @@ ggplot() +
     hjust = 0.5
   )) 
   
-ggplot() +
+p4 <- ggplot() +
   geom_bar(
     data = healthy_beta_values,
     mapping = aes(x = healthy_beta_values$Number_of_NA_healthy),
-    fill = "indianred2"
+    fill = "seagreen2"
   ) +
   xlim(0.5, 5.5) +
-  ggtitle("NA's per Gene in healthy samples \n (zoomed in)") +
+  ggtitle("NA's per Gene in \n healthy samples \n (zoomed in)") +
   labs(x = "Number of NA's", y = "Number of Genes") +
   theme(plot.title = element_text(
     color = "black",
@@ -318,6 +320,8 @@ ggplot() +
     face = "bold",
     hjust = 0.5
   )) 
+grid.arrange(p1, p2, ncol = 2)
+grid.arrange(p3, p4, ncol = 2)
 ```
 
 The first histogram of cancer/healthy is to get an overview over all numbers of missing values per gene. Most genes in 'cancer_beta_values' and 'healthy_beta_values' have no NA's. That is good, because it means we have much information in our analysis and our results will be more meaningful.
@@ -489,7 +493,7 @@ colnames(cancer_m_values) <- c(
 Thereafter we calculated the means and standard deviations of the m values, subsequently plotting a histogram for each, to see how they are spread.
 
 ```{r warning=FALSE}
-# calculating mean, sd values and plotting a histogramm for each
+
 mean_cancer_m_values <- rowMeans(cancer_m_values)
 hist(
   log10(mean_cancer_m_values),
@@ -534,7 +538,7 @@ hist(
   breaks = "fd",
   main = "Cancer M values: SD frequency",
   xlab = "Common logarithm of M values",
-  col = "indianred1",
+  col = "indianred2",
   border = "gray20"
 )
 
@@ -552,8 +556,287 @@ hist(
 As we can see in the mean frequency histograms there are some values of common logarithms of m values which are more than 1.0 and less than -1.0, this is due to the beta values which were registered as 1 or 0 which resulted in m values of +inf and -inf. These will be removed before the principal component analysis. 
 Comparing the mean frequency histograms of cancer and healthy samples, we can conclude that both are right-skewed, whereas in healthy m values the effect is more prominent. In the mean m value histogram of healthy patients we can observe that the median lays around 0.6 which corresponds to beta values of around 0.8, in comparison to cancer where the median lays around 0.2 which correspond to beta vlues of 0.6. Important to mention is the fact that  there are far less genes which have low beta values in the healthy samples as in the cancer samples (judging by the tenth quantiles of the mean histograms). 
 
+We included mean and standard deviation values to the original data frame, therefore, we can later visualize them. Additionally, we created a data frame which only include our cancer related genes. This data frame is extended by gene name rather than ensembl name.
+```{r}
+extended_cancer_m_values <-
+  cbind.data.frame(cancer_m_values, mean_cancer_m_values, sd_cancer_m_values)
+extended_healthy_m_values <-
+  cbind.data.frame(healthy_m_values, mean_healthy_m_values, sd_healthy_m_values)
 
+extended_cancer_m_values_gene <- extended_cancer_m_values[c(
+  "ENSG00000176887",
+  "ENSG00000185551",
+  "ENSG00000141510",
+  "ENSG00000110092",
+  "ENSG00000106546",
+  "ENSG00000169855",
+  "ENSG00000125398",
+  "ENSG00000078399",
+  "ENSG00000039068",
+  "ENSG00000081377",
+  "ENSG00000054598",
+  "ENSG00000123689",
+  "ENSG00000211445",
+  "ENSG00000131981",
+  "ENSG00000172005",
+  "ENSG00000106236",
+  "ENSG00000007372",
+  "ENSG00000105825",
+  "ENSG00000159445",
+  "ENSG00000122691"
+),]
 
+extended_healthy_m_values_gene <- extended_healthy_m_values[c(
+  "ENSG00000176887",
+  "ENSG00000185551",
+  "ENSG00000141510",
+  "ENSG00000110092",
+  "ENSG00000106546",
+  "ENSG00000169855",
+  "ENSG00000125398",
+  "ENSG00000078399",
+  "ENSG00000039068",
+  "ENSG00000081377",
+  "ENSG00000054598",
+  "ENSG00000123689",
+  "ENSG00000211445",
+  "ENSG00000131981",
+  "ENSG00000172005",
+  "ENSG00000106236",
+  "ENSG00000007372",
+  "ENSG00000105825",
+  "ENSG00000159445",
+  "ENSG00000122691"
+),]
+
+extended_cancer_m_values_gene <-
+  cbind(
+    extended_cancer_m_values_gene,
+    Important_genes = c(
+      "SOX11",
+      "NR2F2",
+      "p53",
+      "CCND1",
+      "AHR",
+      "ROBO1",
+      "SOX9",
+      "HOXA9",
+      "CDH1",
+      "CDC14B",
+      "FOXC1",
+      "G0S2",
+      "GPX3",
+      "LGALS3",
+      "MAL",
+      "NPTX2",
+      "PAX6",
+      "TFPI2",
+      "THEM4",
+      "TWIST1"
+    ) 
+  )
+```
+
+Now, the task was to compare mean cancer m-values with mean healthy m-values. Our goal was, to visualize the differences and similarities in the m-values of cancer and healthy samples. A big resemblance would result in a linear line, while a curve indicates differences in the mean methylation patterns.
+$$~$$
+
+The following overview plot includes:
+
+* mean of cancer and healthy m-values (black points), 
+* general trend of points to solve overplotting problem (blue smoothed curve)
+
+``` {r}
+ggplot() +
+  geom_point(
+    mapping = aes(
+      x = extended_cancer_m_values$mean_cancer_m_values,
+      y = extended_healthy_m_values$mean_healthy_m_values
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  geom_smooth(
+    mapping = aes(
+      x = extended_cancer_m_values$mean_cancer_m_values,
+      y = extended_healthy_m_values$mean_healthy_m_values
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10,
+    colour = "darkgrey"
+  ) +
+  labs(x = "Mean cancer m-values",
+       y = "Mean healthy m-values",
+       title = "Comparison of mean m-values") +
+  theme_bw() +
+  xlim(-12, 9) +
+  ylim(-12, 9) 
+```
+After that we focused on details. The following detailed plot visualizes:
+
+* mean of cancer and healthy m-values (black points), 
+* highlights of important genes for cancer (red points), 
+* labels of specific genes,
+* straight line through origin (y=x) for better interpreting (blue line)
+
+```{r}
+ggplot() +
+  geom_point(
+    mapping = aes(
+      x = extended_cancer_m_values$mean_cancer_m_values,
+      y = extended_healthy_m_values$mean_healthy_m_values
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  geom_point(
+    mapping = aes(
+      x = extended_cancer_m_values_gene$mean_cancer_m_values,
+      y = extended_healthy_m_values_gene$mean_healthy_m_values
+    ),
+    colour = "red",
+    size = 2
+  ) +
+  geom_label_repel(
+    aes(
+      label = Important_genes,
+      x = extended_cancer_m_values_gene$mean_cancer_m_values,
+      y = extended_healthy_m_values_gene$mean_healthy_m_values
+    ),
+    data = extended_cancer_m_values_gene,
+    point.padding = 0.5,
+    label.size = 0.1,
+    segment.colour = "cornflowerblue",
+    segment.alpha = 0.9
+  ) +
+  labs(x = "Mean cancer m-values",
+       y = "Mean healthy m-values",
+       title = "Comparison of mean m-values") +
+  theme_bw() +
+  xlim(-5, 5) +
+  ylim(-5, 5) +
+  geom_abline(
+    mapping = NULL,
+    data = NULL,
+    slope = 1,
+    intercept = 0,
+    colour = "yellow2"
+  )
+```
+
+For better valuation of how conclusive following analysis are, it would be pretty neat, if we compare standard deviations (SD) of cancer and healthy m-values.
+At first, we compared general information with following attributes shown in the plot:
+
+* SD of cancer and healthy m-values (black points) 
+
+```{r}
+ggplot() +
+  geom_point(
+    mapping = aes(
+      x = extended_cancer_m_values$sd_cancer_m_values,
+      y = extended_healthy_m_values$sd_healthy_m_values
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  labs(x = "SD cancer m-values",
+       y = "SD healthy m-values",
+       title = "Comparison of SD of m-values") +
+  theme_bw()
+```
+
+For further analysis, it would be proficient if cancer related genes have low standard deviations in both sample groups. The following detailed plot visualizes:
+
+* SD of cancer and healthy m-values (black points), 
+* highlights of important genes for cancer (red points), 
+* labels of specific genes 
+
+```{r}
+ggplot() +
+  geom_point(
+    mapping = aes(
+      x = extended_cancer_m_values$sd_cancer_m_values,
+      y = extended_healthy_m_values$sd_healthy_m_values
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  geom_point(
+    mapping = aes(
+      x = extended_cancer_m_values_gene$sd_cancer_m_values,
+      y = extended_healthy_m_values_gene$sd_healthy_m_values
+    ),
+    colour = "red",
+    size = 2
+  ) +
+  geom_label_repel(
+    aes(
+      label = Important_genes,
+      x = extended_cancer_m_values_gene$sd_cancer_m_values,
+      y = extended_healthy_m_values_gene$sd_healthy_m_values
+    ),
+    data = extended_cancer_m_values_gene,
+    point.padding = 0.5,
+    label.size = 0.1,
+    segment.colour = "cornflowerblue",
+    segment.alpha = 0.9,
+    max.iter = 5000
+  ) +
+  labs(x = "SD cancer m-values",
+       y = "SD healthy m-values",
+       title = "Comparison of SD of m-values") +
+  xlim(-1, 2.5) +
+  ylim(0, 1) +
+  theme_bw()
+```
+#comparing mean beta values and mean m values (for Rmarkdown: compare to literature and say if it was successfull)
+#cancer
+```{r}
+ggplot() +
+  geom_point(
+    mapping = aes(
+      x = extended_cancer_m_values$mean_cancer_m_values,
+      y = rowMeans(cancer_beta_values)
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  geom_smooth(
+    mapping = aes(
+      x = extended_cancer_m_values$mean_cancer_m_values,
+      y = rowMeans(cancer_beta_values)
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  labs(x = "Mean cancer beta values",
+       y = "Mean cancer m values",
+       title = "Comparison of mean values") +
+  theme_bw()
+```
+#healthy
+```{r}
+ggplot() +
+  geom_point(
+    mapping = aes(
+      x = extended_healthy_m_values$mean_healthy_m_values,
+      y = rowMeans(healthy_beta_values)
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  geom_smooth(
+    mapping = aes(
+      x = extended_healthy_m_values$mean_healthy_m_values,
+      y = rowMeans(healthy_beta_values)
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  labs(x = "Mean healthy beta values",
+       y = "Mean healthy m values",
+       title = "Comparison of mean values") +
+  theme_bw()
+```
 
 
 
