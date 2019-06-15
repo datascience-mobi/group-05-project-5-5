@@ -38,25 +38,28 @@ colnames(cancer_m_values) <- c(
 #data reduction with PCA
 
 #merging both m value dataframes (healthy and cancer) into one again for PCA
-complete_m_values <- cbind(healthy_m_values, cancer_m_values)
-View(complete_m_values)
+m_values <- cbind(healthy_m_values, cancer_m_values)
+View(m_values)
 
 #Apply PCA on data frame "complete_m_values" with all m values. For that, the matrix needs to be transposed first
 #(variables are scaled to have i) standard deviation one and ii) mean zero)
-complete_m_values.pca <- prcomp(t(complete_m_values))
-summary(complete_m_values.pca)
+pca_m_values <- prcomp(t(m_values))
+summary(pca_m_values)
 
 #visualize pca variation
 
-###why does the xlab not function
-## cancer to MCL and healthy to control??????
+##choosing number of pc's to work with for batch effect detection (elbow method)
+ 
+## calculating the variance of each principal component (sdev^2), then calculating the proportion of each 
+# variance by dividing it with the sum of the variacnes
 
 
-plot(
-  complete_m_values.pca,
-  main = "Variance explained through every principal component",
-  type = "l"
-)
+std_dev <- pca_m_values$sdev
+variance <- std_dev^2
+prop_var <- variance/sum(variance)
+
+plot(prop_var, main = "Variance explained by principal components", xlab = "Principal Components", ylab = "Proportion of Variance Explained",
+type = "b")
 
 #visualize pca
 #plot(complete_m_values.pca$x[, 1], complete_m_values.pca$x[, 2])
@@ -65,7 +68,7 @@ plot(
 #adding an extra column with the category of sample with which we can color the pc dots in a ggplot according to their sample group
 pcs_of_m_values <-
   data.frame(cbind(
-    complete_m_values.pca$x,
+    pca_m_values$x,
     Samples = c(
       "Healthy",
       "Healthy",
@@ -89,21 +92,21 @@ p + scale_colour_manual(values = c("seagreen2", "indianred1"))
 #finding the top 25 most important genes (with the biggest influence). Therefore we will look at the loading scores (saved in "rotation") of the genes on PC1. Because it's not important
 #whether it is positive or negative we will look at the absolute values and rank these
 
-loading_scores <- complete_m_values.pca$rotation[, 1]
+loading_scores <- pca_m_values$rotation[, 1]
 ranked_gene_loading <- sort(abs(loading_scores), decreasing = TRUE)
 top_25_genes <- names(ranked_gene_loading[1:25])
 View(top_25_genes)
 
 ##loading plots with elbow method
 
-complete_m_values.pca$rotation[top_25_genes, 1]
+pca_m_values$rotation[top_25_genes, 1]
 
 #find out how much clusters do we need to group samples (obvisiously 2 would be perfekt because healthy/cancer)
 
 ##why sapply??
 
 wss <-  sapply(1:5, function(k) {
-  kmeans(x = complete_m_values.pca$x,
+  kmeans(x = pca_m_values$x,
          centers = k,
          iter.max = 100)$tot.withinss
 })
@@ -132,16 +135,16 @@ centers <-
   data.frame(cbind(
     t(centers),
     Samples = c(
-      "Control",
-      "Control",
-      "Control",
-      "Control",
-      "Control",
-      "MCL",
-      "MCL",
-      "MCL",
-      "MCL",
-      "MCL"
+      "Healthy",
+      "Healthy",
+      "Healthy",
+      "Healthy",
+      "Healthy",
+      "Cancer",
+      "Cancer",
+      "Cancer",
+      "Cancer",
+      "Cancer"
     )
   ))
 
@@ -151,3 +154,101 @@ p_cluster <- ggplot(centers, aes(X1, X2, group = Samples)) +
 p_cluster + scale_colour_manual(values = c("seagreen2", "indianred1"))
 
 ## wilkoxon, kruskal wallis, Pearson correlation coefficient berechnen und ein permutation test
+
+
+pcs_of_m_values$PC1 <- as.numeric(as.character(pcs_of_m_values$PC1))
+pcs_of_m_values$PC2 <- as.numeric(as.character(pcs_of_m_values$PC2))
+pcs_of_m_values$PC3 <- as.numeric(as.character(pcs_of_m_values$PC3))
+
+batch_pcs <-
+  cbind(pcs_of_m_values[, 1:3], c(input_data_csv[, c(
+    "BIOMATERIAL_PROVIDER",
+    "BIOMATERIAL_TYPE",
+    "SAMPLE_DESC_3",
+    "DONOR_SEX",
+    "DISEASE",
+    "FIRST_SUBMISSION_DATE",
+    "SEQ_RUNS_COUNT",
+    "DONOR_AGE"
+  )]))
+
+
+#wilcoxon test
+
+
+wilcox.test(
+     batch_pcs$PC1 ~ batch_pcs$BIOMATERIAL_PROVIDER,
+    mu = 0,
+     alt = "two.sided",
+     conf.int = T,
+     conf.level = 0.95,
+     paired = F,
+     exact = T
+   )
+
+wilcox.test(
+  batch_pcs$PC1 ~ batch_pcs$BIOMATERIAL_TYPE,
+  mu = 0,
+  alt = "two.sided",
+  conf.int = T,
+  conf.level = 0.95,
+  paired = F,
+  exact = T
+)
+
+
+
+# to do: find a function to apply on multiple columns at once
+
+#testing a function for apply (didn't work)
+
+
+function_wilcox <- function(x) {wilcox.test(
+  batch_pcs$PC1 ~ x,
+  mu = 0,
+  alt = "two.sided",
+  conf.int = T,
+  conf.level = 0.95,
+  paired = F,
+  exact = T
+)}
+
+
+testing_wilk_apply <- apply(batch_pcs, MARGIN = 2, FUN = function_wilcox)
+
+#testing another function (didn't work)
+
+mapply(function(x,y) {wilcox.test(
+  x ~ y,
+  mu = 0,
+  alt = "two.sided",
+  conf.int = T,
+  conf.level = 0.95,
+  paired = F,
+  exact = T
+)}, x = batch_pcs$PC1, y = batch_pcs$BIOMATERIAL_PROVIDER)
+
+
+#permutation test
+
+
+x <- batch_pcs$PC1
+y <- batch_pcs$SEQ_RUNS_COUNT
+
+cor.perm <- function (x, y, nperm = 499)
+   {
+      r.obs <- cor (x = x, y = y)
+    p_value <- cor.test (x = x, y = y)$p.value
+     #  r.per <- replicate (nperm, expr = cor (x = x, y = sample (y)))
+         r.per <- sapply (1:nperm, FUN = function (i) cor (x = x, y = sample (y)))
+         r.per <- c(r.per, r.obs)
+         P.per <- sum (abs (r.per) >= abs (r.obs))/(nperm + 1) 
+         return (list (r.obs = r.obs, p_value = p_value, P.per = P.per))
+       }
+> cor.perm (x = batch_pcs$PC1, y = batch_pcs$SEQ_RUNS_COUNT)
+
+#kruskal wallis test
+
+kruskal_PC1_sub_date <- kruskal.test(
+  batch_pcs$PC1 ~ batch_pcs$FIRST_SUBMISSION_DATE,
+  data = batch_pcs)
