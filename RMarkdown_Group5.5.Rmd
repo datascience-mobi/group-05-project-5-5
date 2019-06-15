@@ -306,47 +306,70 @@ healthy_beta_values$Number_of_NA_cancer <-
 To visualize the number of NA's in the beta-values we plotted different histograms.
 
 ```{r}
-hist(
-  cancer_beta_values$Number_of_NA_cancer,
-  main =  "NA's per Gene in MCL Samples",
-  breaks = 5,
-  xlab = "Number of NA's",
-  ylab = "Number of Genes",
-  col = "indianred1",
-  border = "gray20"
-)
-hist(
-  cancer_beta_values$Number_of_NA_cancer,
-  main =  "NA's per Gene in MCL Samples (zoomed in)",
-  breaks = 4,
-  xlim = c(1,5),
-  ylim = c(0,2500),
-  xlab = "Number of NA's",
-  ylab = "Number of Genes",
-  col = "indianred1",
-  border = "gray20"
-)
+ggplot() +
+  geom_bar(
+    data = cancer_beta_values,
+    mapping = aes(x = cancer_beta_values$Number_of_NA_cancer),
+    fill = "indianred2"
+  ) +
+  xlim(-0.5, 5.5) +
+  ggtitle("NA's per Gene in cancer samples") +
+  labs(x = "Number of NA's", y = "Number of Genes") +
+  theme(plot.title = element_text(
+    color = "black",
+    size = 14,
+    face = "bold",
+    hjust = 0.5
+  )) 
 
-hist(
-  healthy_beta_values$Number_of_NA_healthy,
-  main =  "NA's per Gene in Healthy Samples",
-  breaks = 5,
-  xlab = "Number of NA's",
-  ylab = "Number of Genes",
-  col = "seagreen2",
-  border = "gray20"
-)
-hist(
-  healthy_beta_values$Number_of_NA_healthy,
-  main =  "NA's per Gene in Healthy Samples (zoomed in)",
-  breaks = 4,
-  xlim = c(1,5),
-  ylim = c(0,2500),
-  xlab = "Number of NA's",
-  ylab = "Number of Genes",
-  col = "seagreen2",
-  border = "gray20"
-)
+ggplot() +
+  geom_bar(
+    data = cancer_beta_values,
+    mapping = aes(x = cancer_beta_values$Number_of_NA_cancer),
+    fill = "indianred2"
+  ) +
+  xlim(0.5, 5.5) +
+  ggtitle("NA's per Gene in cancer samples \n (zoomed in)") +
+  labs(x = "Number of NA's", y = "Number of Genes") +
+  theme(plot.title = element_text(
+    color = "black",
+    size = 14,
+    face = "bold",
+    hjust = 0.5
+  )) 
+
+ggplot() +
+  geom_bar(
+    data = healthy_beta_values,
+    mapping = aes(x = healthy_beta_values$Number_of_NA_healthy),
+    fill = "indianred2"
+  ) +
+  xlim(-0.5, 5.5) +
+  ylim(0, 50000) +
+  ggtitle("NA's per Gene in healthy samples") +
+  labs(x = "Number of NA's", y = "Number of Genes") +
+  theme(plot.title = element_text(
+    color = "black",
+    size = 14,
+    face = "bold",
+    hjust = 0.5
+  )) 
+  
+ggplot() +
+  geom_bar(
+    data = healthy_beta_values,
+    mapping = aes(x = healthy_beta_values$Number_of_NA_healthy),
+    fill = "indianred2"
+  ) +
+  xlim(0.5, 5.5) +
+  ggtitle("NA's per Gene in healthy samples \n (zoomed in)") +
+  labs(x = "Number of NA's", y = "Number of Genes") +
+  theme(plot.title = element_text(
+    color = "black",
+    size = 14,
+    face = "bold",
+    hjust = 0.5
+  )) 
 ```
 
 The first histogram of cancer/healthy is to get an overview over all numbers of missing values per gene. Most genes in 'cancer_beta_values' and 'healthy_beta_values' have no NA's. That is good, because it means we have much information in our analysis and our results will be more meaningful.
@@ -497,29 +520,22 @@ healthy_m_values <-
 Afterwards we changed the endings of the patinets names to make it more clear to which data frame they belonged.
 
 ```{r}
-# changing healthy patients names
-names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_NBC_NC11_41.bed"] <-
-  "Bcell_naive_VB_NBC_NC11_41.M"
-names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_NBC_NC11_83.bed"] <-
-  "Bcell_naive_VB_NBC_NC11_83.M"
-names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_S001JP51.bed"] <-
-  "Bcell_naive_VB_S001JP51.M"
-names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_S00DM851.bed"] <-
-  "Bcell_naive_VB_S00DM851.M"
-names(healthy_m_values)[names(healthy_m_values) == "Bcell_naive_VB_S01ECGA1.bed"] <-
-  "Bcell_naive_VB_S01ECGA1.M"
+colnames(healthy_m_values) <-
+  c(
+    "Bcell_naive_VB_NBC_NC11_41.M",
+    "Bcell_naive_VB_NBC_NC11_83.M",
+    "Bcell_naive_VB_S001JP51.M",
+    "Bcell_naive_VB_S00DM851.M",
+    "Bcell_naive_VB_S01ECGA1.M"
+  )
 
-# changing cancer patients names
-names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FE8A1.bed"] <-
-  "cancer_VB_S01FE8A1.M"
-names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FF6A1.bed"] <-
-  "cancer_VB_S01FF6A1.M"
-names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FH2A1.bed"] <-
-  "cancer_VB_S01FH2A1.M"
-names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FJZA1.bed"] <-
-  "cancer_VB_S01FJZA1.M"
-names(cancer_m_values)[names(cancer_m_values) == "cancer_VB_S01FKXA1.bed"] <-
+colnames(cancer_m_values) <- c(
+  "cancer_VB_S01FE8A1.M",
+  "cancer_VB_S01FF6A1.M",
+  "cancer_VB_S01FH2A1.M",
+  "cancer_VB_S01FJZA1.M",
   "cancer_VB_S01FKXA1.M"
+)
 ```
 
 Thereafter we calculated the means and standard deviations of the m values, subsequently plotting a histogram for each, to see how they are spread.
