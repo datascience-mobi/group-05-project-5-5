@@ -154,3 +154,101 @@ p_cluster <- ggplot(centers, aes(X1, X2, group = Samples)) +
 p_cluster + scale_colour_manual(values = c("seagreen2", "indianred1"))
 
 ## wilkoxon, kruskal wallis, Pearson correlation coefficient berechnen und ein permutation test
+
+
+pcs_of_m_values$PC1 <- as.numeric(as.character(pcs_of_m_values$PC1))
+pcs_of_m_values$PC2 <- as.numeric(as.character(pcs_of_m_values$PC2))
+pcs_of_m_values$PC3 <- as.numeric(as.character(pcs_of_m_values$PC3))
+
+batch_pcs <-
+  cbind(pcs_of_m_values[, 1:3], c(input_data_csv[, c(
+    "BIOMATERIAL_PROVIDER",
+    "BIOMATERIAL_TYPE",
+    "SAMPLE_DESC_3",
+    "DONOR_SEX",
+    "DISEASE",
+    "FIRST_SUBMISSION_DATE",
+    "SEQ_RUNS_COUNT",
+    "DONOR_AGE"
+  )]))
+
+
+#wilcoxon test
+
+
+wilcox.test(
+     batch_pcs$PC1 ~ batch_pcs$BIOMATERIAL_PROVIDER,
+    mu = 0,
+     alt = "two.sided",
+     conf.int = T,
+     conf.level = 0.95,
+     paired = F,
+     exact = T
+   )
+
+wilcox.test(
+  batch_pcs$PC1 ~ batch_pcs$BIOMATERIAL_TYPE,
+  mu = 0,
+  alt = "two.sided",
+  conf.int = T,
+  conf.level = 0.95,
+  paired = F,
+  exact = T
+)
+
+
+
+# to do: find a function to apply on multiple columns at once
+
+#testing a function for apply (didn't work)
+
+
+function_wilcox <- function(x) {wilcox.test(
+  batch_pcs$PC1 ~ x,
+  mu = 0,
+  alt = "two.sided",
+  conf.int = T,
+  conf.level = 0.95,
+  paired = F,
+  exact = T
+)}
+
+
+testing_wilk_apply <- apply(batch_pcs, MARGIN = 2, FUN = function_wilcox)
+
+#testing another function (didn't work)
+
+mapply(function(x,y) {wilcox.test(
+  x ~ y,
+  mu = 0,
+  alt = "two.sided",
+  conf.int = T,
+  conf.level = 0.95,
+  paired = F,
+  exact = T
+)}, x = batch_pcs$PC1, y = batch_pcs$BIOMATERIAL_PROVIDER)
+
+
+#permutation test
+
+
+x <- batch_pcs$PC1
+y <- batch_pcs$SEQ_RUNS_COUNT
+
+cor.perm <- function (x, y, nperm = 499)
+   {
+      r.obs <- cor (x = x, y = y)
+    p_value <- cor.test (x = x, y = y)$p.value
+     #  r.per <- replicate (nperm, expr = cor (x = x, y = sample (y)))
+         r.per <- sapply (1:nperm, FUN = function (i) cor (x = x, y = sample (y)))
+         r.per <- c(r.per, r.obs)
+         P.per <- sum (abs (r.per) >= abs (r.obs))/(nperm + 1) 
+         return (list (r.obs = r.obs, p_value = p_value, P.per = P.per))
+       }
+> cor.perm (x = batch_pcs$PC1, y = batch_pcs$SEQ_RUNS_COUNT)
+
+#kruskal wallis test
+
+kruskal_PC1_sub_date <- kruskal.test(
+  batch_pcs$PC1 ~ batch_pcs$FIRST_SUBMISSION_DATE,
+  data = batch_pcs)
