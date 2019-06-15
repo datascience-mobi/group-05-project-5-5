@@ -5,18 +5,6 @@ cancer_beta_values[cancer_beta_values == 1] <- 0.99999
 healthy_beta_values[healthy_beta_values == 0] <- 0.00001
 healthy_beta_values[healthy_beta_values == 1] <- 0.99999
 
-### as.data.frame() to convert an existing data set into a data frame
-## data.frame() to create a new data frame
-
-
-cancer_beta_values <-
-  as.data.frame(apply(cancer_beta_values, MARGIN = c(1, 2), FUN = function_inf))
-cancer_beta_values <-
-  as.data.frame(apply(cancer_beta_values, MARGIN = c(1, 2), FUN = function_minus_inf))
-healthy_beta_values <-
-  as.data.frame(apply(healthy_beta_values, MARGIN = c(1, 2), FUN = function_inf))
-healthy_beta_values <-
-  as.data.frame(apply(healthy_beta_values, MARGIN = c(1, 2), FUN = function_minus_inf))
 # transforming beta values to M values and creating a separate dataframe with those values
 
 cancer_m_values <-
