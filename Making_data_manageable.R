@@ -234,58 +234,6 @@ healthy_beta_values[healthy_coverage == "NA"] <- NA
 
 remove(list = c("threshold_cancer_lower", "threshold_cancer_upper", "threshold_healthy_lower", "threshold_healthy_upper"))
 
-#overview after data clean up
-#cancer
-mean_cancer_coverage <- rowMeans(cancer_coverage)
-hist(
-  log10(mean_cancer_coverage),
-  breaks = "fd",
-  main = "Cancer coverage: Mean frequency",
-  xlab = "Common logarithm of coverages",
-  col = "indianred1",
-  border = "gray20"
-)
-abline(
-  v = log10(quantile(
-    mean_cancer_coverage,
-    probs = seq(0, 1, 0.1),
-    na.rm = TRUE
-  )),
-  col = "black",
-  lty = 5,
-  lwd = 1
-)
-
-#healthy
-mean_healthy_coverage <- rowMeans(healthy_coverage)
-hist(
-  log10(mean_healthy_coverage),
-  breaks = "fd",
-  main = "Healthy coverage: Mean frequency",
-  xlab = "Common logarithm of coverages",
-  col = "seagreen2",
-  border = "gray20"
-)
-abline(
-  v = log10(quantile(
-    mean_healthy_coverage,
-    probs = seq(0, 1, 0.1),
-    na.rm = TRUE
-  )),
-  col = "black",
-  lty = 5,
-  lwd = 1
-)
-
-remove(
-  list = c(
-    "mean_cancer_coverage",
-    "mean_healthy_coverage",
-    "sd_cancer_coverage",
-    "sd_healthy_coverage"
-  )
-)
-####
 
 #deal with NA's
 ##output of the number of all NA's in healthy genes
