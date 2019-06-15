@@ -92,7 +92,7 @@ hist(
 
 extended_cancer_m_values <-
   cbind.data.frame(cancer_m_values, mean_cancer_m_values, sd_cancer_m_values)
-extanded_healthy_m_values <-
+extended_healthy_m_values <-
   cbind.data.frame(healthy_m_values, mean_healthy_m_values, sd_healthy_m_values)
 
 ##showing mean cancer m-values vs. mean healthy m-values
@@ -128,7 +128,7 @@ extended_cancer_m_values_gene <- extended_cancer_m_values[c(
 ),]
 
 #healthy
-extanded_healthy_m_values_gene <- extanded_healthy_m_values[c(
+extended_healthy_m_values_gene <- extended_healthy_m_values[c(
   "ENSG00000176887",
   "ENSG00000185551",
   "ENSG00000141510",
@@ -227,7 +227,7 @@ ggplot() +
       y = extended_healthy_m_values_gene$mean_healthy_m_values
     ),
     colour = "red",
-    size = 2,
+    size = 2
   ) +
   geom_label_repel(
     aes(
