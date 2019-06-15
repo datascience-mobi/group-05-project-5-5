@@ -230,7 +230,7 @@ healthy_threshold_function <- function(healthy_coverage) {
 healthy_coverage <- apply(healthy_coverage, MARGIN = c(1,2), FUN = healthy_threshold_function)
 
 healthy_coverage[healthy_coverage == "NA"] <- NA
-healtyh_beta_values[healthy_coverage == "NA"] <- NA
+healthy_beta_values[healthy_coverage == "NA"] <- NA
 
 remove(list = c("threshold_cancer_lower", "threshold_cancer_upper", "threshold_healthy_lower", "threshold_healthy_upper"))
 #overview after data clean up
