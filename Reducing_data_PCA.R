@@ -79,9 +79,9 @@ summary(complete_m_values.pca)
 ## cancer to MCL and healthy to control??????
 
 
-graphics::plot(
+plot(
   complete_m_values.pca,
-  main = "Variance explained through every principal component", xlab = "cioa",
+  main = "Variance explained through every principal component",
   type = "l"
 )
 
