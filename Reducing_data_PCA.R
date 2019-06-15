@@ -1,20 +1,9 @@
 ## replacing 0 and 1 in beta values with approximate values, thus no -inf and +inf values in m values
-## multiple funktion for mut.fun ( ....c(fun1, fun2))
 
-function_inf <- function(x) {
-  if (x == 1) {
-    return(0.99999)
-  } else {
-    return(x)
-  }
-}
-function_minus_inf <- function(x) {
-  if (x == 0) {
-    return(0.00001)
-  } else {
-    return(x)
-  }
-}
+cancer_beta_values[cancer_beta_values == 0] <- 0.00001
+cancer_beta_values[cancer_beta_values == 1] <- 0.99999
+healthy_beta_values[healthy_beta_values == 0] <- 0.00001
+healthy_beta_values[healthy_beta_values == 1] <- 0.99999
 
 ### as.data.frame() to convert an existing data set into a data frame
 ## data.frame() to create a new data frame
