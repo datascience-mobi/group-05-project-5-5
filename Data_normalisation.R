@@ -9,10 +9,7 @@ healthy_m_values <-
   data.frame(log2(healthy_beta_values / (1 - healthy_beta_values)))
 
 # changing the ending of patients names from .bed to .M for better overview
-
 # changing healthy patients names
-
-
 colnames(healthy_m_values) <-
   c(
     "Bcell_naive_VB_NBC_NC11_41.M",
@@ -23,7 +20,6 @@ colnames(healthy_m_values) <-
   )
 
 # changing cancer patients names
-
 colnames(cancer_m_values) <- c(
   "cancer_VB_S01FE8A1.M",
   "cancer_VB_S01FF6A1.M",
@@ -94,9 +90,9 @@ hist(
 
 #include mean and sd values to the original dataframes
 
-complete_cancer_m_values <-
+extended_cancer_m_values <-
   cbind.data.frame(cancer_m_values, mean_cancer_m_values, sd_cancer_m_values)
-complete_healthy_m_values <-
+extanded_healthy_m_values <-
   cbind.data.frame(healthy_m_values, mean_healthy_m_values, sd_healthy_m_values)
 
 ##showing mean cancer m-values vs. mean healthy m-values
@@ -108,10 +104,7 @@ library(ggrepel)
 
 #extracting values of important genes (defined earlier) therefore we can highlight important genes in diagram
 #cancer
-
-## take the word complete out????
-
-complete_cancer_m_values_gene <- complete_cancer_m_values[c(
+extended_cancer_m_values_gene <- extended_cancer_m_values[c(
   "ENSG00000176887",
   "ENSG00000185551",
   "ENSG00000141510",
@@ -135,7 +128,7 @@ complete_cancer_m_values_gene <- complete_cancer_m_values[c(
 ),]
 
 #healthy
-complete_healthy_m_values_gene <- complete_healthy_m_values[c(
+extanded_healthy_m_values_gene <- extanded_healthy_m_values[c(
   "ENSG00000176887",
   "ENSG00000185551",
   "ENSG00000141510",
@@ -159,9 +152,9 @@ complete_healthy_m_values_gene <- complete_healthy_m_values[c(
 ),]
 
 #adding names of important genes to our important gene data frame because it is easier to work with
-complete_cancer_m_values_gene <-
+extended_cancer_m_values_gene <-
   cbind(
-    complete_cancer_m_values_gene,
+    extended_cancer_m_values_gene,
     Important_genes = c(
       "SOX11",
       "NR2F2",
@@ -196,16 +189,16 @@ complete_cancer_m_values_gene <-
 ggplot() +
   geom_point(
     mapping = aes(
-      x = complete_cancer_m_values$mean_cancer_m_values,
-      y = complete_healthy_m_values$mean_healthy_m_values
+      x = extended_cancer_m_values$mean_cancer_m_values,
+      y = extended_healthy_m_values$mean_healthy_m_values
     ),
     na.rm = TRUE,
     alpha = 1 / 10
   ) +
   geom_smooth(
     mapping = aes(
-      x = complete_cancer_m_values$mean_cancer_m_values,
-      y = complete_healthy_m_values$mean_healthy_m_values
+      x = extended_cancer_m_values$mean_cancer_m_values,
+      y = extended_healthy_m_values$mean_healthy_m_values
     ),
     na.rm = TRUE,
     alpha = 1 / 10,
@@ -222,16 +215,16 @@ ggplot() +
 ggplot() +
   geom_point(
     mapping = aes(
-      x = complete_cancer_m_values$mean_cancer_m_values,
-      y = complete_healthy_m_values$mean_healthy_m_values
+      x = extended_cancer_m_values$mean_cancer_m_values,
+      y = extended_healthy_m_values$mean_healthy_m_values
     ),
     na.rm = TRUE,
     alpha = 1 / 10
   ) +
   geom_point(
     mapping = aes(
-      x = complete_cancer_m_values_gene$mean_cancer_m_values,
-      y = complete_healthy_m_values_gene$mean_healthy_m_values
+      x = extended_cancer_m_values_gene$mean_cancer_m_values,
+      y = extended_healthy_m_values_gene$mean_healthy_m_values
     ),
     colour = "red",
     size = 2,
@@ -239,10 +232,10 @@ ggplot() +
   geom_label_repel(
     aes(
       label = Important_genes,
-      x = complete_cancer_m_values_gene$mean_cancer_m_values,
-      y = complete_healthy_m_values_gene$mean_healthy_m_values
+      x = extended_cancer_m_values_gene$mean_cancer_m_values,
+      y = extended_healthy_m_values_gene$mean_healthy_m_values
     ),
-    data = complete_cancer_m_values_gene,
+    data = extended_cancer_m_values_gene,
     point.padding = 0.5,
     label.size = 0.1,
     segment.colour = "cornflowerblue",
@@ -267,8 +260,8 @@ ggplot() +
 ggplot() +
   geom_point(
     mapping = aes(
-      x = complete_cancer_m_values$sd_cancer_m_values,
-      y = complete_healthy_m_values$sd_healthy_m_values
+      x = extended_cancer_m_values$sd_cancer_m_values,
+      y = extended_healthy_m_values$sd_healthy_m_values
     ),
     na.rm = TRUE,
     alpha = 1 / 10
@@ -282,27 +275,27 @@ ggplot() +
 ggplot() +
   geom_point(
     mapping = aes(
-      x = complete_cancer_m_values$sd_cancer_m_values,
-      y = complete_healthy_m_values$sd_healthy_m_values
+      x = extended_cancer_m_values$sd_cancer_m_values,
+      y = extended_healthy_m_values$sd_healthy_m_values
     ),
     na.rm = TRUE,
     alpha = 1 / 10
   ) +
   geom_point(
     mapping = aes(
-      x = complete_cancer_m_values_gene$sd_cancer_m_values,
-      y = complete_healthy_m_values_gene$sd_healthy_m_values
+      x = extended_cancer_m_values_gene$sd_cancer_m_values,
+      y = extended_healthy_m_values_gene$sd_healthy_m_values
     ),
     colour = "red",
-    size = 2,
+    size = 2
   ) +
   geom_label_repel(
     aes(
       label = Important_genes,
-      x = complete_cancer_m_values_gene$sd_cancer_m_values,
-      y = complete_healthy_m_values_gene$sd_healthy_m_values
+      x = extended_cancer_m_values_gene$sd_cancer_m_values,
+      y = extended_healthy_m_values_gene$sd_healthy_m_values
     ),
-    data = complete_cancer_m_values_gene,
+    data = extended_cancer_m_values_gene,
     point.padding = 0.5,
     label.size = 0.1,
     segment.colour = "cornflowerblue",
@@ -321,7 +314,7 @@ ggplot() +
 ggplot() +
   geom_point(
     mapping = aes(
-      x = complete_cancer_m_values$mean_cancer_m_values,
+      x = extended_cancer_m_values$mean_cancer_m_values,
       y = rowMeans(cancer_beta_values)
     ),
     na.rm = TRUE,
@@ -329,7 +322,7 @@ ggplot() +
   ) +
   geom_smooth(
     mapping = aes(
-      x = complete_cancer_m_values$mean_cancer_m_values,
+      x = extended_cancer_m_values$mean_cancer_m_values,
       y = rowMeans(cancer_beta_values)
     ),
     na.rm = TRUE,
@@ -344,7 +337,7 @@ ggplot() +
 ggplot() +
   geom_point(
     mapping = aes(
-      x = complete_healthy_m_values$mean_healthy_m_values,
+      x = extended_healthy_m_values$mean_healthy_m_values,
       y = rowMeans(healthy_beta_values)
     ),
     na.rm = TRUE,
@@ -352,7 +345,7 @@ ggplot() +
   ) +
   geom_smooth(
     mapping = aes(
-      x = complete_healthy_m_values$mean_healthy_m_values,
+      x = extended_healthy_m_values$mean_healthy_m_values,
       y = rowMeans(healthy_beta_values)
     ),
     na.rm = TRUE,
