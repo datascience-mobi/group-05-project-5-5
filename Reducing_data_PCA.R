@@ -87,7 +87,7 @@ pcs_of_m_values <-
 #generate a ggplot/scatterplot to visualize the Sample points in a coordinate system with x-axis = PC1 and y-axis = PC2
 p <- ggplot(pcs_of_m_values, aes(PC1, PC2, group = Samples)) +
   geom_point (aes(shape = Samples, color = Samples), size = 4)
-p + scale_colour_manual(values = c("seagreen2", "indianred1"))
+p + scale_colour_manual(values = c("seagreen2", "indianred2"))
 
 #finding the top 25 most important genes (with the biggest influence). Therefore we will look at the loading scores (saved in "rotation") of the genes on PC1. Because it's not important
 #whether it is positive or negative we will look at the absolute values and rank these
@@ -151,7 +151,7 @@ centers <-
 #visualize cluster x1 and x2 and how samples are seperated
 p_cluster <- ggplot(centers, aes(X1, X2, group = Samples)) +
   geom_point (aes(shape = Samples, color = Samples), size = 4)
-p_cluster + scale_colour_manual(values = c("seagreen2", "indianred1"))
+p_cluster + scale_colour_manual(values = c("seagreen2", "indianred2"))
 
 ## wilkoxon, kruskal wallis, Pearson correlation coefficient berechnen und ein permutation test
 
