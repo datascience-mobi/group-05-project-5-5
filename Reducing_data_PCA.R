@@ -49,17 +49,22 @@ summary(pca_m_values)
 #visualize pca variation
 
 ##choosing number of pc's to work with for batch effect detection (elbow method)
- 
-## calculating the variance of each principal component (sdev^2), then calculating the proportion of each 
+
+## calculating the variance of each principal component (sdev^2), then calculating the proportion of each
 # variance by dividing it with the sum of the variacnes
 
 
 std_dev <- pca_m_values$sdev
-variance <- std_dev^2
-prop_var <- variance/sum(variance)
+variance <- std_dev ^ 2
+prop_var <- variance / sum(variance)
 
-plot(prop_var, main = "Variance explained by principal components", xlab = "Principal Components", ylab = "Proportion of Variance Explained",
-type = "b")
+plot(
+  prop_var,
+  main = "Variance explained by principal components",
+  xlab = "Principal Components",
+  ylab = "Proportion of Variance Explained",
+  type = "b"
+)
 
 #visualize pca
 #plot(complete_m_values.pca$x[, 1], complete_m_values.pca$x[, 2])
@@ -179,8 +184,8 @@ batch_pcs <- within(batch_pcs, {
 })
 
 batch_pcs <- within(batch_pcs, {
-      PC2 <- as.numeric(as.character(PC2))
-   })
+  PC2 <- as.numeric(as.character(PC2))
+})
 
 batch_pcs <- within(batch_pcs, {
   PC3 <- as.numeric(as.character(PC3))
@@ -190,14 +195,14 @@ batch_pcs <- within(batch_pcs, {
 #--------PC1---------
 
 bio_prov_test_pc1 <- wilcox.test(
-     batch_pcs$PC1 ~ batch_pcs$BIOMATERIAL_PROVIDER,
-    mu = 0,
-     alt = "two.sided",
-     conf.int = T,
-     conf.level = 0.95,
-     paired = F,
-     exact = T
-   )
+  batch_pcs$PC1 ~ batch_pcs$BIOMATERIAL_PROVIDER,
+  mu = 0,
+  alt = "two.sided",
+  conf.int = T,
+  conf.level = 0.95,
+  paired = F,
+  exact = T
+)
 
 bio_type_test_pc1 <- wilcox.test(
   batch_pcs$PC1 ~ batch_pcs$BIOMATERIAL_TYPE,
@@ -220,7 +225,7 @@ disease_test_pc1 <- wilcox.test(
   exact = T
 )
 
-donor_sex_test_pc1 <-wilcox.test(
+donor_sex_test_pc1 <- wilcox.test(
   batch_pcs$PC1 ~ batch_pcs$DONOR_SEX,
   mu = 0,
   alt = "two.sided",
@@ -326,47 +331,65 @@ donor_sex_test_pc3 <- wilcox.test(
 #--------PC1-------
 
 cor.perm <- function (x, y, nperm = 1000)
- {
-       r.obs <- cor (x = x, y = y)
-      p_value <- cor.test (x = x, y = y)$p.value
-      #  r.per <- replicate (nperm, expr = cor (x = x, y = sample (y)))
-        r.per <- sapply (1:nperm, FUN = function (i) cor (x = x, y = sample (y)))
-       r.per <- c(r.per, r.obs)
-         hist (r.per, xlim = c(-1,1))
-         abline (v = r.obs, col = 'red')
-         P.per <- sum (abs (r.per) >= abs (r.obs))/(nperm + 1) 
-         return (list (r.obs = r.obs, p_value = p_value, P.per = P.per))
-       }
-seq_runs_count_test_pc1 <- cor.perm (x = batch_pcs$PC1, y = batch_pcs$SEQ_RUNS_COUNT)
+{
+  r.obs <- cor (x = x, y = y)
+  p_value <- cor.test (x = x, y = y)$p.value
+  #  r.per <- replicate (nperm, expr = cor (x = x, y = sample (y)))
+  r.per <-
+    sapply (
+      1:nperm,
+      FUN = function (i)
+        cor (x = x, y = sample (y))
+    )
+  r.per <- c(r.per, r.obs)
+  hist (r.per, xlim = c(-1, 1))
+  abline (v = r.obs, col = 'red')
+  P.per <- sum (abs (r.per) >= abs (r.obs)) / (nperm + 1)
+  return (list (
+    r.obs = r.obs,
+    p_value = p_value,
+    P.per = P.per
+  ))
+}
+seq_runs_count_test_pc1 <-
+  cor.perm (x = batch_pcs$PC1, y = batch_pcs$SEQ_RUNS_COUNT)
 
 
 #permutation test on donor age
 #working with mean donor ages
 
 
-donor_age_test_pc1 <- cor.perm (x = batch_pcs$PC1, y = c(62, 47, 72, 52, 62, 82, 67, 82, 77, 62 ))
+donor_age_test_pc1 <-
+  cor.perm (x = batch_pcs$PC1,
+            y = c(62, 47, 72, 52, 62, 82, 67, 82, 77, 62))
 
 #--------PC2-------
 
 
-seq_runs_count_test_pc2 <- cor.perm (x = batch_pcs$PC2, y = batch_pcs$SEQ_RUNS_COUNT)
+seq_runs_count_test_pc2 <-
+  cor.perm (x = batch_pcs$PC2, y = batch_pcs$SEQ_RUNS_COUNT)
 
 
 #permutation test on donor age
 
 
-donor_age_test_pc2 <- cor.perm (x = batch_pcs$PC2, y = c(62, 47, 72, 52, 62, 82, 67, 82, 77, 62 ))
+donor_age_test_pc2 <-
+  cor.perm (x = batch_pcs$PC2,
+            y = c(62, 47, 72, 52, 62, 82, 67, 82, 77, 62))
 
 #--------PC3-------
 
 
-seq_runs_count_test_pc3 <- cor.perm (x = batch_pcs$PC3, y = batch_pcs$SEQ_RUNS_COUNT)
+seq_runs_count_test_pc3 <-
+  cor.perm (x = batch_pcs$PC3, y = batch_pcs$SEQ_RUNS_COUNT)
 
 
 #permutation test on donor age
 
 
-donor_age_test_pc3 <- cor.perm (x = batch_pcs$PC3, y = c(62, 47, 72, 52, 62, 82, 67, 82, 77, 62 ))
+donor_age_test_pc3 <-
+  cor.perm (x = batch_pcs$PC3,
+            y = c(62, 47, 72, 52, 62, 82, 67, 82, 77, 62))
 
 
 #kruskal wallis test
@@ -374,51 +397,79 @@ donor_age_test_pc3 <- cor.perm (x = batch_pcs$PC3, y = c(62, 47, 72, 52, 62, 82,
 #------PC1-------
 #submission date
 
-submission_date_test_pc1 <- kruskal.test(
-  batch_pcs$PC1 ~ batch_pcs$FIRST_SUBMISSION_DATE,
-  data = batch_pcs)
+submission_date_test_pc1 <- kruskal.test(batch_pcs$PC1 ~ batch_pcs$FIRST_SUBMISSION_DATE,
+                                         data = batch_pcs)
 
 #kruskal wallis on cell type
 
-cell_type_test_pc1 <- kruskal.test(
-  batch_pcs$PC1 ~ batch_pcs$SAMPLE_DESC_3,
-  data = batch_pcs)
+cell_type_test_pc1 <- kruskal.test(batch_pcs$PC1 ~ batch_pcs$SAMPLE_DESC_3,
+                                   data = batch_pcs)
 
 #------PC2-------
 
 #submission date
 
-submission_date_test_pc2 <- kruskal.test(
-  batch_pcs$PC2 ~ batch_pcs$FIRST_SUBMISSION_DATE,
-  data = batch_pcs)
+submission_date_test_pc2 <- kruskal.test(batch_pcs$PC2 ~ batch_pcs$FIRST_SUBMISSION_DATE,
+                                         data = batch_pcs)
 
 #kruskal wallis on cell type
 
-cell_type_test_pc2 <- kruskal.test(
-  batch_pcs$PC2 ~ batch_pcs$SAMPLE_DESC_3,
-  data = batch_pcs)
+cell_type_test_pc2 <- kruskal.test(batch_pcs$PC2 ~ batch_pcs$SAMPLE_DESC_3,
+                                   data = batch_pcs)
 
 #------PC3-------
 
 #submission date
 
-submission_date_test_pc3 <- kruskal.test(
-  batch_pcs$PC3 ~ batch_pcs$FIRST_SUBMISSION_DATE,
-  data = batch_pcs)
+submission_date_test_pc3 <- kruskal.test(batch_pcs$PC3 ~ batch_pcs$FIRST_SUBMISSION_DATE,
+                                         data = batch_pcs)
 
 #kruskal wallis on cell type
 
-cell_type_test_pc3 <- kruskal.test(
-  batch_pcs$PC3 ~ batch_pcs$SAMPLE_DESC_3,
-  data = batch_pcs)
+cell_type_test_pc3 <- kruskal.test(batch_pcs$PC3 ~ batch_pcs$SAMPLE_DESC_3,
+                                   data = batch_pcs)
 
 
 #creating a matrix with p values
-p_values_matrix = matrix( 
-    c(bio_prov_test_pc1$p.value , bio_type_test_pc1$p.value, disease_test_pc1$p.value, donor_sex_test_pc1$p.value, seq_runs_count_test_pc1$p_value, donor_age_test_pc1$p_value, submission_date_test_pc1$p.value, cell_type_test_pc1$p.value,
-      bio_prov_test_pc2$p.value , bio_type_test_pc2$p.value, disease_test_pc2$p.value, donor_sex_test_pc2$p.value, seq_runs_count_test_pc2$p_value, donor_age_test_pc2$p_value, submission_date_test_pc2$p.value, cell_type_test_pc2$p.value,
-      bio_prov_test_pc3$p.value , bio_type_test_pc3$p.value, disease_test_pc3$p.value, donor_sex_test_pc3$p.value, seq_runs_count_test_pc3$p_value, donor_age_test_pc3$p_value, submission_date_test_pc3$p.value, cell_type_test_pc3$p.value), 
-     nrow=8, 
-     ncol=3) 
-rownames(p_values_matrix) <- c("BIOMATERIAL_PROVIDER", "BIOMATERIAL_TYPE", "DISEASE", "DONOR_SEX", "SEQ_RUNS_COUNT", "DONOR_AGE", "SUBMISSION_DATE", "CELL_TYPE")
+p_values_matrix = matrix(
+  c(
+    bio_prov_test_pc1$p.value ,
+    bio_type_test_pc1$p.value,
+    disease_test_pc1$p.value,
+    donor_sex_test_pc1$p.value,
+    seq_runs_count_test_pc1$p_value,
+    donor_age_test_pc1$p_value,
+    submission_date_test_pc1$p.value,
+    cell_type_test_pc1$p.value,
+    bio_prov_test_pc2$p.value ,
+    bio_type_test_pc2$p.value,
+    disease_test_pc2$p.value,
+    donor_sex_test_pc2$p.value,
+    seq_runs_count_test_pc2$p_value,
+    donor_age_test_pc2$p_value,
+    submission_date_test_pc2$p.value,
+    cell_type_test_pc2$p.value,
+    bio_prov_test_pc3$p.value ,
+    bio_type_test_pc3$p.value,
+    disease_test_pc3$p.value,
+    donor_sex_test_pc3$p.value,
+    seq_runs_count_test_pc3$p_value,
+    donor_age_test_pc3$p_value,
+    submission_date_test_pc3$p.value,
+    cell_type_test_pc3$p.value
+  ),
+  nrow = 8,
+  ncol = 3
+)
+rownames(p_values_matrix) <-
+  c(
+    "BIOMATERIAL_PROVIDER",
+    "BIOMATERIAL_TYPE",
+    "DISEASE",
+    "DONOR_SEX",
+    "SEQ_RUNS_COUNT",
+    "DONOR_AGE",
+    "SUBMISSION_DATE",
+    "CELL_TYPE"
+  )
 colnames(p_values_matrix) <- c("PC1", "PC2", "PC3")
