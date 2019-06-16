@@ -197,58 +197,78 @@ wilcox.test(
 )
 
 
+wilcox.test(
+  batch_pcs$PC1 ~ batch_pcs$DISEASE,
+  mu = 0,
+  alt = "two.sided",
+  conf.int = T,
+  conf.level = 0.95,
+  paired = F,
+  exact = T
+)
+
+wilcox.test(
+  batch_pcs$PC1 ~ batch_pcs$DONOR_SEX,
+  mu = 0,
+  alt = "two.sided",
+  conf.int = T,
+  conf.level = 0.95,
+  paired = F,
+  exact = T
+)
+
 
 # to do: find a function to apply on multiple columns at once
-
-#testing a function for apply (didn't work)
-
-
-function_wilcox <- function(x) {wilcox.test(
-  batch_pcs$PC1 ~ x,
-  mu = 0,
-  alt = "two.sided",
-  conf.int = T,
-  conf.level = 0.95,
-  paired = F,
-  exact = T
-)}
-
-
-testing_wilk_apply <- apply(batch_pcs, MARGIN = 2, FUN = function_wilcox)
-
-#testing another function (didn't work)
-
-mapply(function(x,y) {wilcox.test(
-  x ~ y,
-  mu = 0,
-  alt = "two.sided",
-  conf.int = T,
-  conf.level = 0.95,
-  paired = F,
-  exact = T
-)}, x = batch_pcs$PC1, y = batch_pcs$BIOMATERIAL_PROVIDER)
 
 
 #permutation test
 
+# on seq runs count
 
-x <- batch_pcs$PC1
-y <- batch_pcs$SEQ_RUNS_COUNT
-
-cor.perm <- function (x, y, nperm = 499)
-   {
-      r.obs <- cor (x = x, y = y)
-    p_value <- cor.test (x = x, y = y)$p.value
-     #  r.per <- replicate (nperm, expr = cor (x = x, y = sample (y)))
-         r.per <- sapply (1:nperm, FUN = function (i) cor (x = x, y = sample (y)))
-         r.per <- c(r.per, r.obs)
+cor.perm <- function (x, y, nperm = 1000)
+ {
+       r.obs <- cor (x = x, y = y)
+      p_value <- cor.test (x = x, y = y)$p.value
+      #  r.per <- replicate (nperm, expr = cor (x = x, y = sample (y)))
+        r.per <- sapply (1:nperm, FUN = function (i) cor (x = x, y = sample (y)))
+       r.per <- c(r.per, r.obs)
+         hist (r.per, xlim = c(-1,1))
+         abline (v = r.obs, col = 'red')
          P.per <- sum (abs (r.per) >= abs (r.obs))/(nperm + 1) 
          return (list (r.obs = r.obs, p_value = p_value, P.per = P.per))
        }
-> cor.perm (x = batch_pcs$PC1, y = batch_pcs$SEQ_RUNS_COUNT)
+cor.perm (x = batch_pcs$PC1, y = batch_pcs$SEQ_RUNS_COUNT)
+
+
+#permutation test on donor age
+#working with mean donor ages
+
+
+cor.perm <- function (x, y, nperm = 1000)
+{
+  r.obs <- cor (x = x, y = y)
+  p_value <- cor.test (x = x, y = y)$p.value
+  #  r.per <- replicate (nperm, expr = cor (x = x, y = sample (y)))
+  r.per <- sapply (1:nperm, FUN = function (i) cor (x = x, y = sample (y)))
+  r.per <- c(r.per, r.obs)
+  hist (r.per, xlim = c(-1,1))
+  abline (v = r.obs, col = 'red')
+  P.per <- sum (abs (r.per) >= abs (r.obs))/(nperm + 1) 
+  return (list (r.obs = r.obs, p_value = p_value, P.per = P.per))
+}
+cor.perm (x = batch_pcs$PC1, y = c(62, 47, 72, 52, 62, 82, 67, 82, 77, 62 ))
+
+
 
 #kruskal wallis test
+#submission date
 
 kruskal_PC1_sub_date <- kruskal.test(
   batch_pcs$PC1 ~ batch_pcs$FIRST_SUBMISSION_DATE,
+  data = batch_pcs)
+
+#kruskal wallis on cell type
+
+kruskal_PC1_sub_date <- kruskal.test(
+  batch_pcs$PC1 ~ batch_pcs$SAMPLE_DESC_3,
   data = batch_pcs)
