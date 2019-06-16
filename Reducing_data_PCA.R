@@ -172,11 +172,24 @@ batch_pcs <-
     "DONOR_AGE"
   )]))
 
+#making values of PC1-3 numeric for the tests
+
+batch_pcs <- within(batch_pcs, {
+  PC1 <- as.numeric(as.character(PC1))
+})
+
+batch_pcs <- within(batch_pcs, {
+      PC2 <- as.numeric(as.character(PC2))
+   })
+
+batch_pcs <- within(batch_pcs, {
+  PC3 <- as.numeric(as.character(PC3))
+})
 
 #wilcoxon test
+#--------PC1---------
 
-
-wilcox.test(
+bio_prov_test_pc1 <- wilcox.test(
      batch_pcs$PC1 ~ batch_pcs$BIOMATERIAL_PROVIDER,
     mu = 0,
      alt = "two.sided",
@@ -186,7 +199,7 @@ wilcox.test(
      exact = T
    )
 
-wilcox.test(
+bio_type_test_pc1 <- wilcox.test(
   batch_pcs$PC1 ~ batch_pcs$BIOMATERIAL_TYPE,
   mu = 0,
   alt = "two.sided",
@@ -197,58 +210,215 @@ wilcox.test(
 )
 
 
+disease_test_pc1 <- wilcox.test(
+  batch_pcs$PC1 ~ batch_pcs$DISEASE,
+  mu = 0,
+  alt = "two.sided",
+  conf.int = T,
+  conf.level = 0.95,
+  paired = F,
+  exact = T
+)
+
+donor_sex_test_pc1 <-wilcox.test(
+  batch_pcs$PC1 ~ batch_pcs$DONOR_SEX,
+  mu = 0,
+  alt = "two.sided",
+  conf.int = T,
+  conf.level = 0.95,
+  paired = F,
+  exact = T
+)
+
+#-------PC2----------
+
+bio_prov_test_pc2 <- wilcox.test(
+  batch_pcs$PC2 ~ batch_pcs$BIOMATERIAL_PROVIDER,
+  mu = 0,
+  alt = "two.sided",
+  conf.int = T,
+  conf.level = 0.95,
+  paired = F,
+  exact = T
+)
+
+bio_type_test_pc2 <- wilcox.test(
+  batch_pcs$PC2 ~ batch_pcs$BIOMATERIAL_TYPE,
+  mu = 0,
+  alt = "two.sided",
+  conf.int = T,
+  conf.level = 0.95,
+  paired = F,
+  exact = T
+)
+
+
+disease_test_pc2 <- wilcox.test(
+  batch_pcs$PC2 ~ batch_pcs$DISEASE,
+  mu = 0,
+  alt = "two.sided",
+  conf.int = T,
+  conf.level = 0.95,
+  paired = F,
+  exact = T
+)
+
+donor_sex_test_pc2 <- wilcox.test(
+  batch_pcs$PC2 ~ batch_pcs$DONOR_SEX,
+  mu = 0,
+  alt = "two.sided",
+  conf.int = T,
+  conf.level = 0.95,
+  paired = F,
+  exact = T
+)
+
+#---------PC3---------
+
+bio_prov_test_pc3 <- wilcox.test(
+  batch_pcs$PC3 ~ batch_pcs$BIOMATERIAL_PROVIDER,
+  mu = 0,
+  alt = "two.sided",
+  conf.int = T,
+  conf.level = 0.95,
+  paired = F,
+  exact = T
+)
+
+bio_type_test_pc3 <- wilcox.test(
+  batch_pcs$PC3 ~ batch_pcs$BIOMATERIAL_TYPE,
+  mu = 0,
+  alt = "two.sided",
+  conf.int = T,
+  conf.level = 0.95,
+  paired = F,
+  exact = T
+)
+
+
+disease_test_pc3 <- wilcox.test(
+  batch_pcs$PC3 ~ batch_pcs$DISEASE,
+  mu = 0,
+  alt = "two.sided",
+  conf.int = T,
+  conf.level = 0.95,
+  paired = F,
+  exact = T
+)
+
+donor_sex_test_pc3 <- wilcox.test(
+  batch_pcs$PC3 ~ batch_pcs$DONOR_SEX,
+  mu = 0,
+  alt = "two.sided",
+  conf.int = T,
+  conf.level = 0.95,
+  paired = F,
+  exact = T
+)
 
 # to do: find a function to apply on multiple columns at once
-
-#testing a function for apply (didn't work)
-
-
-function_wilcox <- function(x) {wilcox.test(
-  batch_pcs$PC1 ~ x,
-  mu = 0,
-  alt = "two.sided",
-  conf.int = T,
-  conf.level = 0.95,
-  paired = F,
-  exact = T
-)}
-
-
-testing_wilk_apply <- apply(batch_pcs, MARGIN = 2, FUN = function_wilcox)
-
-#testing another function (didn't work)
-
-mapply(function(x,y) {wilcox.test(
-  x ~ y,
-  mu = 0,
-  alt = "two.sided",
-  conf.int = T,
-  conf.level = 0.95,
-  paired = F,
-  exact = T
-)}, x = batch_pcs$PC1, y = batch_pcs$BIOMATERIAL_PROVIDER)
 
 
 #permutation test
 
+# on seq runs count
 
-x <- batch_pcs$PC1
-y <- batch_pcs$SEQ_RUNS_COUNT
+#--------PC1-------
 
-cor.perm <- function (x, y, nperm = 499)
-   {
-      r.obs <- cor (x = x, y = y)
-    p_value <- cor.test (x = x, y = y)$p.value
-     #  r.per <- replicate (nperm, expr = cor (x = x, y = sample (y)))
-         r.per <- sapply (1:nperm, FUN = function (i) cor (x = x, y = sample (y)))
-         r.per <- c(r.per, r.obs)
+cor.perm <- function (x, y, nperm = 1000)
+ {
+       r.obs <- cor (x = x, y = y)
+      p_value <- cor.test (x = x, y = y)$p.value
+      #  r.per <- replicate (nperm, expr = cor (x = x, y = sample (y)))
+        r.per <- sapply (1:nperm, FUN = function (i) cor (x = x, y = sample (y)))
+       r.per <- c(r.per, r.obs)
+         hist (r.per, xlim = c(-1,1))
+         abline (v = r.obs, col = 'red')
          P.per <- sum (abs (r.per) >= abs (r.obs))/(nperm + 1) 
          return (list (r.obs = r.obs, p_value = p_value, P.per = P.per))
        }
-> cor.perm (x = batch_pcs$PC1, y = batch_pcs$SEQ_RUNS_COUNT)
+seq_runs_count_test_pc1 <- cor.perm (x = batch_pcs$PC1, y = batch_pcs$SEQ_RUNS_COUNT)
+
+
+#permutation test on donor age
+#working with mean donor ages
+
+
+donor_age_test_pc1 <- cor.perm (x = batch_pcs$PC1, y = c(62, 47, 72, 52, 62, 82, 67, 82, 77, 62 ))
+
+#--------PC2-------
+
+
+seq_runs_count_test_pc2 <- cor.perm (x = batch_pcs$PC2, y = batch_pcs$SEQ_RUNS_COUNT)
+
+
+#permutation test on donor age
+
+
+donor_age_test_pc2 <- cor.perm (x = batch_pcs$PC2, y = c(62, 47, 72, 52, 62, 82, 67, 82, 77, 62 ))
+
+#--------PC3-------
+
+
+seq_runs_count_test_pc3 <- cor.perm (x = batch_pcs$PC3, y = batch_pcs$SEQ_RUNS_COUNT)
+
+
+#permutation test on donor age
+
+
+donor_age_test_pc3 <- cor.perm (x = batch_pcs$PC3, y = c(62, 47, 72, 52, 62, 82, 67, 82, 77, 62 ))
+
 
 #kruskal wallis test
 
-kruskal_PC1_sub_date <- kruskal.test(
+#------PC1-------
+#submission date
+
+submission_date_test_pc1 <- kruskal.test(
   batch_pcs$PC1 ~ batch_pcs$FIRST_SUBMISSION_DATE,
   data = batch_pcs)
+
+#kruskal wallis on cell type
+
+cell_type_test_pc1 <- kruskal.test(
+  batch_pcs$PC1 ~ batch_pcs$SAMPLE_DESC_3,
+  data = batch_pcs)
+
+#------PC2-------
+
+#submission date
+
+submission_date_test_pc2 <- kruskal.test(
+  batch_pcs$PC2 ~ batch_pcs$FIRST_SUBMISSION_DATE,
+  data = batch_pcs)
+
+#kruskal wallis on cell type
+
+cell_type_test_pc2 <- kruskal.test(
+  batch_pcs$PC2 ~ batch_pcs$SAMPLE_DESC_3,
+  data = batch_pcs)
+
+#------PC3-------
+
+#submission date
+
+submission_date_test_pc3 <- kruskal.test(
+  batch_pcs$PC3 ~ batch_pcs$FIRST_SUBMISSION_DATE,
+  data = batch_pcs)
+
+#kruskal wallis on cell type
+
+cell_type_test_pc3 <- kruskal.test(
+  batch_pcs$PC3 ~ batch_pcs$SAMPLE_DESC_3,
+  data = batch_pcs)
+
+
+#creating a matrix with p values
+p_values_matrix = matrix( 
+    c(bio_prov_test_pc1$p.value , bio_type_test_pc1$p.value, disease_test_pc1$p.value, donor_sex_test_pc1$p.value, seq_runs_count_test_pc1$p_value, donor_age_test_pc1$p_value, submission_date_test_pc1$p.value, cell_type_test_pc1$p.value,
+      bio_prov_test_pc2$p.value , bio_type_test_pc2$p.value, disease_test_pc2$p.value, donor_sex_test_pc2$p.value, seq_runs_count_test_pc2$p_value, donor_age_test_pc2$p_value, submission_date_test_pc2$p.value, cell_type_test_pc2$p.value,
+      bio_prov_test_pc3$p.value , bio_type_test_pc3$p.value, disease_test_pc3$p.value, donor_sex_test_pc3$p.value, seq_runs_count_test_pc3$p_value, donor_age_test_pc3$p_value, submission_date_test_pc3$p.value, cell_type_test_pc3$p.value), 
+     nrow=8, 
+     ncol=3) 
+rownames(p_values_matrix) <- c("BIOMATERIAL_PROVIDER", "BIOMATERIAL_TYPE", "DISEASE", "DONOR_SEX", "SEQ_RUNS_COUNT", "DONOR_AGE", "SUBMISSION_DATE", "CELL_TYPE")
+colnames(p_values_matrix) <- c("PC1", "PC2", "PC3")
