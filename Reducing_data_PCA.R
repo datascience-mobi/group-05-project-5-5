@@ -94,19 +94,9 @@ p <- ggplot(pcs_of_m_values, aes(PC1, PC2, group = Samples)) +
   geom_point (aes(shape = Samples, color = Samples), size = 4)
 p + scale_colour_manual(values = c("seagreen2", "indianred2"))
 
-#finding the top 25 most important genes (with the biggest influence). Therefore we will look at the loading scores (saved in "rotation") of the genes on PC1. Because it's not important
-#whether it is positive or negative we will look at the absolute values and rank these
 
-loading_scores <- pca_m_values$rotation[, 1]
-ranked_gene_loading <- sort(abs(loading_scores), decreasing = TRUE)
-top_25_genes <- names(ranked_gene_loading[1:25])
-View(top_25_genes)
 
-##loading plots with elbow method
-
-pca_m_values$rotation[top_25_genes, 1]
-
-#find out how much clusters do we need to group samples (obvisiously 2 would be perfekt because healthy/cancer)
+#find out how much clusters do we need to group samples (obviously 2 would be perfect because healthy/cancer)
 
 ##why sapply??
 
@@ -160,11 +150,13 @@ p_cluster + scale_colour_manual(values = c("seagreen2", "indianred2"))
 
 ## wilkoxon, kruskal wallis, Pearson correlation coefficient berechnen und ein permutation test
 
-
+#changing the class of the columns PC1, PC2 and PC3 of pcs_of_m_values from "factor" to "numeric"
+#to be able to work with the elements in the statistical tests
 pcs_of_m_values$PC1 <- as.numeric(as.character(pcs_of_m_values$PC1))
 pcs_of_m_values$PC2 <- as.numeric(as.character(pcs_of_m_values$PC2))
 pcs_of_m_values$PC3 <- as.numeric(as.character(pcs_of_m_values$PC3))
 
+#New matrix with the PC values from 1 to 3 of the samples + categories of interest from the sample annotation
 batch_pcs <-
   cbind(pcs_of_m_values[, 1:3], c(input_data_csv[, c(
     "BIOMATERIAL_PROVIDER",
@@ -191,8 +183,13 @@ batch_pcs <- within(batch_pcs, {
   PC3 <- as.numeric(as.character(PC3))
 })
 
-#wilcoxon test
+
+
+#####wilcoxon test####
 #--------PC1---------
+##H0: x and y differ by a location shift of mu=0
+##alternative (two-sided/greater/less) and exact (value of p value) didn't need to be set
+##(because are set like our settings by default. But it helps understanding under which conditions the test was made.
 
 bio_prov_test_pc1 <- wilcox.test(
   batch_pcs$PC1 ~ batch_pcs$BIOMATERIAL_PROVIDER,
@@ -397,37 +394,43 @@ donor_age_test_pc3 <-
 #------PC1-------
 #submission date
 
-submission_date_test_pc1 <- kruskal.test(batch_pcs$PC1 ~ batch_pcs$FIRST_SUBMISSION_DATE,
-                                         data = batch_pcs)
+submission_date_test_pc1 <-
+  kruskal.test(batch_pcs$PC1 ~ batch_pcs$FIRST_SUBMISSION_DATE,
+               data = batch_pcs)
 
 #kruskal wallis on cell type
 
-cell_type_test_pc1 <- kruskal.test(batch_pcs$PC1 ~ batch_pcs$SAMPLE_DESC_3,
-                                   data = batch_pcs)
+cell_type_test_pc1 <-
+  kruskal.test(batch_pcs$PC1 ~ batch_pcs$SAMPLE_DESC_3,
+               data = batch_pcs)
 
 #------PC2-------
 
 #submission date
 
-submission_date_test_pc2 <- kruskal.test(batch_pcs$PC2 ~ batch_pcs$FIRST_SUBMISSION_DATE,
-                                         data = batch_pcs)
+submission_date_test_pc2 <-
+  kruskal.test(batch_pcs$PC2 ~ batch_pcs$FIRST_SUBMISSION_DATE,
+               data = batch_pcs)
 
 #kruskal wallis on cell type
 
-cell_type_test_pc2 <- kruskal.test(batch_pcs$PC2 ~ batch_pcs$SAMPLE_DESC_3,
-                                   data = batch_pcs)
+cell_type_test_pc2 <-
+  kruskal.test(batch_pcs$PC2 ~ batch_pcs$SAMPLE_DESC_3,
+               data = batch_pcs)
 
 #------PC3-------
 
 #submission date
 
-submission_date_test_pc3 <- kruskal.test(batch_pcs$PC3 ~ batch_pcs$FIRST_SUBMISSION_DATE,
-                                         data = batch_pcs)
+submission_date_test_pc3 <-
+  kruskal.test(batch_pcs$PC3 ~ batch_pcs$FIRST_SUBMISSION_DATE,
+               data = batch_pcs)
 
 #kruskal wallis on cell type
 
-cell_type_test_pc3 <- kruskal.test(batch_pcs$PC3 ~ batch_pcs$SAMPLE_DESC_3,
-                                   data = batch_pcs)
+cell_type_test_pc3 <-
+  kruskal.test(batch_pcs$PC3 ~ batch_pcs$SAMPLE_DESC_3,
+               data = batch_pcs)
 
 
 #creating a matrix with p values
@@ -473,3 +476,47 @@ rownames(p_values_matrix) <-
     "CELL_TYPE"
   )
 colnames(p_values_matrix) <- c("PC1", "PC2", "PC3")
+
+
+###creating a heatmap for p_values_matrix to see if the batch/biological effects are significant in the PCs
+###and to determine which PC to use for clustering
+
+
+##ggplot(p_values_matrix, aes(rownames(p_values_matrix), colnames(p_values_matrix), z= p-values)) + geom_tile(aes(fill = Z)) + 
+  ##theme_bw() + 
+  ##scale_fill_gradient(low="white", high="blue") 
+install.packages("gplots")
+library(gplots)
+
+my_palette <- colorRampPalette(c("indianred1", "seagreen2")) (n = 3)
+color_breaks <- c(seq(0, 0.05, length = 2),
+                  seq(0.051, 1, length = 2))
+heatmap.2(p_values_matrix,
+          main = "Batch and biological effects",
+          trace = "none",
+          margins = c(10,12),
+          cexRow = 0.8,
+          Rowv = FALSE,
+          Colv = FALSE,
+          col = my_palette,
+          breaks = color_breaks)       
+#Disease is only significant in PC1! Also biological effects like cell type and biomaterial type and one batch effect biomaterial provider
+#We can still work with PC1
+
+##how many genes do we use for clustering
+
+#finding the top 25 most important genes (with the biggest influence). Therefore we will look at the loading scores (saved in "rotation") of the genes on PC1. Because it's not important
+#whether it is positive or negative we will look at the absolute values and rank these
+
+loading_scores <- pca_m_values$rotation[, 1]
+ranked_gene_loading <- sort(abs(loading_scores), decreasing = TRUE)
+
+##loading plots with elbow method
+
+plot(
+  ranked_gene_loading,
+  main = "Loading scores of genes",
+  xlab = "Genes",
+  ylab = "loading scores",
+  type = "b"
+)
