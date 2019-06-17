@@ -35,7 +35,7 @@ hist(
   breaks = "fd",
   main = "Cancer M values: Mean frequency",
   xlab = "Common logarithm of M values",
-  col = "indianred1",
+  col = "indianred",
   border = "gray20",
   xlim = c(-1, 1)
 )
