@@ -51,10 +51,10 @@ To address the research question we broke down the project into 5 parts.
 
 |1. Data processing  | 2. Data normalization and visualization | 3. Data reduction  | 4. Regression and interpretation    | 5. Annotate and interpret results
 ------------- | ------------- | ------------- | ------------- | -------------
-Remove x and y chromosome genes  | Transform beta-values into homoscedastic M-values  | Dimensionality reduction, e.g PCA  | Apply t-test        |  
-Split data in 4 data frames (cancer vs. control, beta-values and coverage)  | Add a column for mean, median and SD for better comparisons  | Apply clustering method and visualize, e.g k-means         | Apply logistic regression        | 
-Set a threshold and examine variance for reliable coverage, replace unreliable beta-values with NA | Visualization through plots | 
-Separately inspect genes of interest for MCL | Identify batch effect magnitude in the data set
+Remove x and y chromosome genes  | Transform beta-values into homoscedastic M-values $$~$$ | Dimensionality reduction, e.g PCA  | Apply t-test        |  
+Split data in 4 data frames (cancer vs. control, beta-values and coverage) $$~$$ | Add a column for mean, median and SD for better comparisons  | Apply clustering method and visualize, e.g k-means         | Apply logistic regression        | 
+Set a threshold and examine variance for reliable coverage, replace unreliable beta-values with NA $$~$$ | Visualization through plots | 
+Separately inspect genes of interest for MCL $$~$$ | Identify batch effect magnitude in the data set
 Set a threshold and remove genes under/above threshold, imputate remaining NA's | 
 
 $$~$$
@@ -176,20 +176,20 @@ By setting the lower coverage threshold to 5 % and the upper to 99.9 %, we fulfi
 ```{r}
 threshold_cancer_lower <-
   quantile(mean_cancer_coverage,
-           probs = seq(0.05, 0.05),
+           probs = 0.05,
            na.rm = TRUE)
 threshold_cancer_upper <-
   quantile(mean_cancer_coverage,
-           probs = seq(0.999, 0.999),
+           probs = 0.999,
            na.rm = TRUE)
 
 threshold_healthy_lower <-
   quantile(mean_healthy_coverage,
-           probs = seq(0.05, 0.05),
+           probs = 0.05,
            na.rm = TRUE)
 threshold_healthy_upper <-
   quantile(mean_healthy_coverage,
-           probs = seq(0.999, 0.999),
+           probs = 0.999,
            na.rm = TRUE)
 ```
 
@@ -230,7 +230,7 @@ healthy_beta_values[healthy_coverage == "NA"] <- NA
 ```
 
 Now we needed to deal with NA's in the beta-values, because they represent no information and they could cause errors in our further analysis. We had many NA's but we cannot remove every gene with a NA because this would lead to a loss of too much information.
-
+Our sum of NA's is:
 ```{r}
 sum(is.na(cancer_beta_values))
 sum(is.na(healthy_beta_values))
@@ -252,16 +252,20 @@ healthy_beta_values$Number_of_NA_cancer <-
 
 To visualize the number of NA's in the beta-values we plotted different histograms.
 
-```{r}
+```{r, include=FALSE}
 library(tidyverse)
-ggplot() +
+library(gridExtra)
+library(ggrepel)
+```
+```{r error=FALSE, warning=FALSE}
+
+p1 <- ggplot() +
   geom_bar(
     data = cancer_beta_values,
     mapping = aes(x = cancer_beta_values$Number_of_NA_cancer),
     fill = "indianred2"
   ) +
-  xlim(-0.5, 5.5) +
-  ggtitle("NA's per Gene in cancer samples") +
+  ggtitle("NA's per Gene in \n cancer samples") +
   labs(x = "Number of NA's", y = "Number of Genes") +
   theme(plot.title = element_text(
     color = "black",
@@ -270,14 +274,14 @@ ggplot() +
     hjust = 0.5
   )) 
 
-ggplot() +
+p2 <- ggplot() +
   geom_bar(
     data = cancer_beta_values,
     mapping = aes(x = cancer_beta_values$Number_of_NA_cancer),
     fill = "indianred2"
   ) +
   xlim(0.5, 5.5) +
-  ggtitle("NA's per Gene in cancer samples \n (zoomed in)") +
+  ggtitle("NA's per Gene in \n cancer samples \n (zoomed in)") +
   labs(x = "Number of NA's", y = "Number of Genes") +
   theme(plot.title = element_text(
     color = "black",
@@ -286,15 +290,13 @@ ggplot() +
     hjust = 0.5
   )) 
 
-ggplot() +
+p3 <- ggplot() +
   geom_bar(
     data = healthy_beta_values,
     mapping = aes(x = healthy_beta_values$Number_of_NA_healthy),
-    fill = "indianred2"
+    fill = "seagreen2"
   ) +
-  xlim(-0.5, 5.5) +
-  ylim(0, 50000) +
-  ggtitle("NA's per Gene in healthy samples") +
+  ggtitle("NA's per Gene in \n healthy samples") +
   labs(x = "Number of NA's", y = "Number of Genes") +
   theme(plot.title = element_text(
     color = "black",
@@ -303,14 +305,14 @@ ggplot() +
     hjust = 0.5
   )) 
   
-ggplot() +
+p4 <- ggplot() +
   geom_bar(
     data = healthy_beta_values,
     mapping = aes(x = healthy_beta_values$Number_of_NA_healthy),
-    fill = "indianred2"
+    fill = "seagreen2"
   ) +
   xlim(0.5, 5.5) +
-  ggtitle("NA's per Gene in healthy samples \n (zoomed in)") +
+  ggtitle("NA's per Gene in \n healthy samples \n (zoomed in)") +
   labs(x = "Number of NA's", y = "Number of Genes") +
   theme(plot.title = element_text(
     color = "black",
@@ -318,6 +320,8 @@ ggplot() +
     face = "bold",
     hjust = 0.5
   )) 
+grid.arrange(p1, p2, ncol = 2)
+grid.arrange(p3, p4, ncol = 2)
 ```
 
 The first histogram of cancer/healthy is to get an overview over all numbers of missing values per gene. Most genes in 'cancer_beta_values' and 'healthy_beta_values' have no NA's. That is good, because it means we have much information in our analysis and our results will be more meaningful.
@@ -384,27 +388,27 @@ sum(is.na(transposed_healthy_beta_values))
 There are some important genes for MCL which have ofen a different methylation pattern in comparison to heatlhy b-cells. These genes are:
 
 Gene   |Ensembl         |Function
--------|----------------|----------------------------------------------------------------------------------
-CCND1  |ENSG00000110092 |cycline D1 controlls cell cycle (Fu et al., 2004)
-SOX11	 |ENSG00000176887 |SRY-box related gene	(SRY = sex determining region Y chromosome ) (Amann-Vesti et al., 2018), neural transcription factor (Mohanty et al., 2019), one reason for expression in MCL is CCND1 (Mohanty et al., 2019)
-NR2F2	 |ENSG00000185551	|is a nuclear receptor (https://www.ncbi.nlm.nih.gov/gene/7026, 6-6-2019) and plays a role as transcription factor in the differentiation and pluripotency of human embrionic stam cells (Rosa and Brivanlou, 2011)
-p53  	 |ENSG00000141510	|
-AHR  	 |ENSG00000106546	|	
-ROBO1	 |ENSG00000169855	|	
-SOX9 	 |ENSG00000125398	|SRY-box related gene	(SRY = sex determining region Y chromosome ) (Amann-Vesti et al., 2018), important in developement of testicle (Amann-Vesti et al., 2018), 
-HOXA9	 |ENSG00000078399	|	
-CDH1 	 |ENSG00000039068	|	
-CDC14B |ENSG00000081377	|	
-FOXC1	 |ENSG00000054598	|
-G0S2	 |ENSG00000123689	|	
-GPX3	 |ENSG00000211445	|	
-LGALS3 |ENSG00000131981	|	
-MAL  	 |ENSG00000172005	|	
-NPTX2	 |ENSG00000106236	|	 
-PAX6	 |ENSG00000007372	|	
-TFPI2	 |ENSG00000105825	|	
-THEM4	 |ENSG00000159445	|	
-TWIST1 |ENSG00000122691	|	
+:---------:|:----------------------:|:-------------------------------------------------------------------:|
+CCND1  |ENSG00000110092 | Cycline D1 controlls cell cycle (Fu et al., 2004). CCND1 is essential for the maintenance of established MCL tumor cell lines and preserves genomic stability during DNA replication in MCL cells (Mohanty et al., 2017).  
+SOX11	 |ENSG00000176887 | SRY-box related gene	(SRY = sex determining region Y chromosome ) (Amann-Vesti et al., 2018). Critical for survival of neuronal and mesenchymal progenitor cells (Mohanty et al., 2019). One reason for expression in MCL is CCND1 (Mohanty et al., 2019). Epigenetically regulated (Wasik et al., 2013). Promotes oncogenic proliferation (Kuo et al., 2018).
+NR2F2	 |ENSG00000185551	| Is a nuclear receptor (https://www.ncbi.nlm.nih.gov/gene/7026, 6-6-2019) and plays a role as transcription factor in the differentiation and pluripotency of human embryonic stem cells (Rosa and Brivanlou, 2011).
+p53  	 |ENSG00000141510	| Transcription factor which can trigger a variety of antiproliferative programs by activating or repressing key effector genes. Modulates e.g. apoptosis, cell-cycle arrest, senescence, or modulation of autophagy (Zilfou and Lowe, 2009). 
+AHR  	 |ENSG00000106546	|	Activation of aryl hydrocarbon receptor (AhR) results in loss of apoptosis response through overexpression of cyclooxygenase-2 (COX-2) (key role in cancer development - especially in lymphoma). COX-2 upregulates antiapoptotic proteins (Vogel et al., 2007). 
+ROBO1	 |ENSG00000169855	| Tumor suppressor gene. Loss of function results in an invasive and metastasic cancer development (Parray et al., 2014). 
+SOX9 	 |ENSG00000125398	|SRY-box related gene	(SRY = sex determining region Y chromosome ) (Amann-Vesti et al., 2018). Important in developement of testicle (Amann-Vesti et al., 2018). 
+HOXA9	 |ENSG00000078399	|	Belongs to a family of highly conserved transcriptional regulators with critical roles in normal development and hematopoiesis. Effects of HoxA9 overexpression include strong self-renewal and inhibiting differentiation of progenitor cells (Brumatti et al., 2013). 
+CDH1 	 |ENSG00000039068	|	Encoding the tumour-suppressor protein E-cadherin (van der Post et al., 2015). Anaphase-promoting complex/cyclosome (APC/C) is dependent on Cdh1. Cdh1 is phosphorylated and inactivated at the Start transition of the new cell cycle (Ondracka et al., 2016). 
+CDC14B |ENSG00000081377	|	Important in DNA repair mechanisms and activation of APC/C-CDH1 complex (Zhou et al., 2016). Downregulation leads to genomic instability by enabling cells to down-regulate p53 and override cell cycle checkpoints (Klauck et al., 2018). 
+FOXC1	 |ENSG00000054598	| Forkhead box C1 (FOXC1) regulates tumor-associated genes and is regulated by multiple pathways that control its mRNA expression and protein activity (Xu et al., 2016; Yang et al., 2017). Aberrant FOXC1 expression promotes growth, migration, abnormal cell proliferation and angiogenesis therefore functions as an oncogene (Xu et al., 2016). 
+G0S2	 |ENSG00000123689	|	Lipolytic inhibitor G0/G1 switch gene 2 (G0S2) plays various important roles in cellular functions such as cell proliferation, apoptosis and oxidative phosphorylation. Upregulation leads to radioresistant cancer (Wang et al., 2019). G0S2 is normally epigenetically silenced (Welch et al., 2009). 
+GPX3	 |ENSG00000211445	|	Glutathione peroxidase 3 (GPX3) catalyzes reduction of reactive oxygen species (ROS) in plasma and acts as a redox signal modulator with tumor supressor activity. Protect cells against oxidative damage. Downregulation of GPX3 in many types of human cancer is caused by promoter hypermethylation (An et al., 2018). 
+LGALS3 |ENSG00000131981	|	Galectin-3 (LGALS3) elevates inflammatory processes. LGALS3 protects cancer cells by inducing tolerance to drug treatment. Auto-induction of Galectin-3 mRNA and pathways of inflammatory mediators (Fei et al., 2015). 
+MAL  	 |ENSG00000172005	|	Myelin and Lymphocyte protein (MAL) is a putative cancer marker associated with chemoresistance and cell survival (Zanotti et al., 2017). 
+NPTX2	 |ENSG00000106236	|	 Neuronal pentraxin-2 (NPTX2) is a proinflammatory cytokine. NPTX2 gene is hyper-methylated in MCL and thus non-apoptotic cell death is inhibited (Enjuanes et al., 2013; Li et al., 2018). 
+PAX6	 |ENSG00000007372	|	Paired box protein (Pax6) is a regulator (transcription factor) of fate determination of precursor cells (Imamura and Greer, 2013). Suppression of PAX6 promotes cell proliferation and inhibits apoptosis (Meng et al., 2014). 
+TFPI2	 |ENSG00000105825	|	Tissue factor pathway inhibitor 2 (TFPI2) is a serine protease inhibitor which regulates physiological extracellular matrix remodeling (Puttabyatappa et al., 2017). Abberant methylation (hypermethylation) of TFPI2 gene protects the extracellular matrix of cancer cells from degradation and play an important role in the carcinogenesis of cancer (Hu et al., 2017). TFPI2 is identified as a tumor suppressor (Dong et al., 2015). 
+THEM4	 |ENSG00000159445	|	Thioesterase Superfamily Member 4 (THEM4) is a mediator which negatively regulates protein kinase B (PKB). PKB is targeted by receptor tyrosine kinasis which signals via phosphatidylinositol 3-kinase (PI3K) . THEM4 is hypermethylated in MCL and mediates cell survival, growth, proliferation, cell migration and angiogenesis (Enjuanes et al., 2011; Rajapakse et al., 2018; Wang et al., 2014; Zhao et al., 2013). 
+TWIST1 |ENSG00000122691	|	Twist Family BHLH Transcription Factor 1 (TWIST1) is a key regulator in embryonic development and organogenesis.  TWIST1 is implicated in tumor initiation, stemness, angiogenesis, dissemination, and chemoresistance in various cancer types (Zhao et al., 2017). Overexpression of TWIST1 leads to suppression of transcription of pro-apoptotic BH3-only gene BCL2L11. TWIST1 promoter is hypermethylated in most cancers (Zhao et al., 2017) but has no impact on protein expression. Nevertheless, it can be a biomarker for cancer (Gort et al., 2008).
 
 To be sure we did not removed these genes in our data processing we tested if they are still all in our data frames. Because each of the 2 data frames contains the same genes it is enough to check if they are part of one of them.
 
@@ -489,7 +493,7 @@ colnames(cancer_m_values) <- c(
 Thereafter we calculated the means and standard deviations of the m values, subsequently plotting a histogram for each, to see how they are spread.
 
 ```{r warning=FALSE}
-# calculating mean, sd values and plotting a histogramm for each
+
 mean_cancer_m_values <- rowMeans(cancer_m_values)
 hist(
   log10(mean_cancer_m_values),
@@ -534,7 +538,7 @@ hist(
   breaks = "fd",
   main = "Cancer M values: SD frequency",
   xlab = "Common logarithm of M values",
-  col = "indianred1",
+  col = "indianred2",
   border = "gray20"
 )
 
@@ -552,8 +556,287 @@ hist(
 As we can see in the mean frequency histograms there are some values of common logarithms of m values which are more than 1.0 and less than -1.0, this is due to the beta values which were registered as 1 or 0 which resulted in m values of +inf and -inf. These will be removed before the principal component analysis. 
 Comparing the mean frequency histograms of cancer and healthy samples, we can conclude that both are right-skewed, whereas in healthy m values the effect is more prominent. In the mean m value histogram of healthy patients we can observe that the median lays around 0.6 which corresponds to beta values of around 0.8, in comparison to cancer where the median lays around 0.2 which correspond to beta vlues of 0.6. Important to mention is the fact that  there are far less genes which have low beta values in the healthy samples as in the cancer samples (judging by the tenth quantiles of the mean histograms). 
 
+We included mean and standard deviation values to the original data frame, therefore, we can later visualize them. Additionally, we created a data frame which only include our cancer related genes. This data frame is extended by gene name rather than ensembl name.
+```{r}
+extended_cancer_m_values <-
+  cbind.data.frame(cancer_m_values, mean_cancer_m_values, sd_cancer_m_values)
+extended_healthy_m_values <-
+  cbind.data.frame(healthy_m_values, mean_healthy_m_values, sd_healthy_m_values)
 
+extended_cancer_m_values_gene <- extended_cancer_m_values[c(
+  "ENSG00000176887",
+  "ENSG00000185551",
+  "ENSG00000141510",
+  "ENSG00000110092",
+  "ENSG00000106546",
+  "ENSG00000169855",
+  "ENSG00000125398",
+  "ENSG00000078399",
+  "ENSG00000039068",
+  "ENSG00000081377",
+  "ENSG00000054598",
+  "ENSG00000123689",
+  "ENSG00000211445",
+  "ENSG00000131981",
+  "ENSG00000172005",
+  "ENSG00000106236",
+  "ENSG00000007372",
+  "ENSG00000105825",
+  "ENSG00000159445",
+  "ENSG00000122691"
+),]
 
+extended_healthy_m_values_gene <- extended_healthy_m_values[c(
+  "ENSG00000176887",
+  "ENSG00000185551",
+  "ENSG00000141510",
+  "ENSG00000110092",
+  "ENSG00000106546",
+  "ENSG00000169855",
+  "ENSG00000125398",
+  "ENSG00000078399",
+  "ENSG00000039068",
+  "ENSG00000081377",
+  "ENSG00000054598",
+  "ENSG00000123689",
+  "ENSG00000211445",
+  "ENSG00000131981",
+  "ENSG00000172005",
+  "ENSG00000106236",
+  "ENSG00000007372",
+  "ENSG00000105825",
+  "ENSG00000159445",
+  "ENSG00000122691"
+),]
+
+extended_cancer_m_values_gene <-
+  cbind(
+    extended_cancer_m_values_gene,
+    Important_genes = c(
+      "SOX11",
+      "NR2F2",
+      "p53",
+      "CCND1",
+      "AHR",
+      "ROBO1",
+      "SOX9",
+      "HOXA9",
+      "CDH1",
+      "CDC14B",
+      "FOXC1",
+      "G0S2",
+      "GPX3",
+      "LGALS3",
+      "MAL",
+      "NPTX2",
+      "PAX6",
+      "TFPI2",
+      "THEM4",
+      "TWIST1"
+    ) 
+  )
+```
+
+Now, the task was to compare mean cancer m-values with mean healthy m-values. Our goal was, to visualize the differences and similarities in the m-values of cancer and healthy samples. A big resemblance would result in a linear line, while a curve indicates differences in the mean methylation patterns.
+$$~$$
+
+The following overview plot includes:
+
+* mean of cancer and healthy m-values (black points), 
+* general trend of points to solve overplotting problem (blue smoothed curve)
+
+``` {r}
+ggplot() +
+  geom_point(
+    mapping = aes(
+      x = extended_cancer_m_values$mean_cancer_m_values,
+      y = extended_healthy_m_values$mean_healthy_m_values
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  geom_smooth(
+    mapping = aes(
+      x = extended_cancer_m_values$mean_cancer_m_values,
+      y = extended_healthy_m_values$mean_healthy_m_values
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10,
+    colour = "darkgrey"
+  ) +
+  labs(x = "Mean cancer m-values",
+       y = "Mean healthy m-values",
+       title = "Comparison of mean m-values") +
+  theme_bw() +
+  xlim(-12, 9) +
+  ylim(-12, 9) 
+```
+After that we focused on details. The following detailed plot visualizes:
+
+* mean of cancer and healthy m-values (black points), 
+* highlights of important genes for cancer (red points), 
+* labels of specific genes,
+* straight line through origin (y=x) for better interpreting (blue line)
+
+```{r}
+ggplot() +
+  geom_point(
+    mapping = aes(
+      x = extended_cancer_m_values$mean_cancer_m_values,
+      y = extended_healthy_m_values$mean_healthy_m_values
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  geom_point(
+    mapping = aes(
+      x = extended_cancer_m_values_gene$mean_cancer_m_values,
+      y = extended_healthy_m_values_gene$mean_healthy_m_values
+    ),
+    colour = "red",
+    size = 2
+  ) +
+  geom_label_repel(
+    aes(
+      label = Important_genes,
+      x = extended_cancer_m_values_gene$mean_cancer_m_values,
+      y = extended_healthy_m_values_gene$mean_healthy_m_values
+    ),
+    data = extended_cancer_m_values_gene,
+    point.padding = 0.5,
+    label.size = 0.1,
+    segment.colour = "cornflowerblue",
+    segment.alpha = 0.9
+  ) +
+  labs(x = "Mean cancer m-values",
+       y = "Mean healthy m-values",
+       title = "Comparison of mean m-values") +
+  theme_bw() +
+  xlim(-5, 5) +
+  ylim(-5, 5) +
+  geom_abline(
+    mapping = NULL,
+    data = NULL,
+    slope = 1,
+    intercept = 0,
+    colour = "yellow2"
+  )
+```
+
+For better valuation of how conclusive following analysis are, it would be pretty neat, if we compare standard deviations (SD) of cancer and healthy m-values.
+At first, we compared general information with following attributes shown in the plot:
+
+* SD of cancer and healthy m-values (black points) 
+
+```{r}
+ggplot() +
+  geom_point(
+    mapping = aes(
+      x = extended_cancer_m_values$sd_cancer_m_values,
+      y = extended_healthy_m_values$sd_healthy_m_values
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  labs(x = "SD cancer m-values",
+       y = "SD healthy m-values",
+       title = "Comparison of SD of m-values") +
+  theme_bw()
+```
+
+For further analysis, it would be proficient if cancer related genes have low standard deviations in both sample groups. The following detailed plot visualizes:
+
+* SD of cancer and healthy m-values (black points), 
+* highlights of important genes for cancer (red points), 
+* labels of specific genes 
+
+```{r}
+ggplot() +
+  geom_point(
+    mapping = aes(
+      x = extended_cancer_m_values$sd_cancer_m_values,
+      y = extended_healthy_m_values$sd_healthy_m_values
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  geom_point(
+    mapping = aes(
+      x = extended_cancer_m_values_gene$sd_cancer_m_values,
+      y = extended_healthy_m_values_gene$sd_healthy_m_values
+    ),
+    colour = "red",
+    size = 2
+  ) +
+  geom_label_repel(
+    aes(
+      label = Important_genes,
+      x = extended_cancer_m_values_gene$sd_cancer_m_values,
+      y = extended_healthy_m_values_gene$sd_healthy_m_values
+    ),
+    data = extended_cancer_m_values_gene,
+    point.padding = 0.5,
+    label.size = 0.1,
+    segment.colour = "cornflowerblue",
+    segment.alpha = 0.9,
+    max.iter = 5000
+  ) +
+  labs(x = "SD cancer m-values",
+       y = "SD healthy m-values",
+       title = "Comparison of SD of m-values") +
+  xlim(-1, 2.5) +
+  ylim(0, 1) +
+  theme_bw()
+```
+#comparing mean beta values and mean m values (for Rmarkdown: compare to literature and say if it was successfull)
+#cancer
+```{r}
+ggplot() +
+  geom_point(
+    mapping = aes(
+      x = extended_cancer_m_values$mean_cancer_m_values,
+      y = rowMeans(cancer_beta_values)
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  geom_smooth(
+    mapping = aes(
+      x = extended_cancer_m_values$mean_cancer_m_values,
+      y = rowMeans(cancer_beta_values)
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  labs(x = "Mean cancer beta values",
+       y = "Mean cancer m values",
+       title = "Comparison of mean values") +
+  theme_bw()
+```
+#healthy
+```{r}
+ggplot() +
+  geom_point(
+    mapping = aes(
+      x = extended_healthy_m_values$mean_healthy_m_values,
+      y = rowMeans(healthy_beta_values)
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  geom_smooth(
+    mapping = aes(
+      x = extended_healthy_m_values$mean_healthy_m_values,
+      y = rowMeans(healthy_beta_values)
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  labs(x = "Mean healthy beta values",
+       y = "Mean healthy m values",
+       title = "Comparison of mean values") +
+  theme_bw()
+```
 
 
 
@@ -565,3 +848,28 @@ Comparing the mean frequency histograms of cancer and healthy samples, we can co
 # References
 
 Sharp, A.J., Stathaki, E., Migliavacca, E., Brahmachary, M., Montgomery, S.B., Dupre, Y., and Antonarakis, S.E. (2011). DNA methylation profiles of human active and inactive X chromosomes. Genome Res 21, 1592-1600.
+
+n, B.C., Choi, Y.D., Oh, I.J., Kim, J.H., Park, J.I., and Lee, S.W. (2018). GPx3-mediated redox signaling arrests the cell cycle and acts as a tumor suppressor in lung cancer cell lines. PLoS One 13, e0204170.
+Brumatti, G., Salmanidis, M., Kok, C.H., Bilardi, R.A., Sandow, J.J., Silke, N., Mason, K., Visser, J., Jabbour, A.M., Glaser, S.P., et al. (2013). HoxA9 regulated Bcl-2 expression mediates survival of myeloid progenitors and the severity of HoxA9-dependent leukemia. Oncotarget 4, 1933-1947.
+Dong, Y., Tan, Q., Tao, L., Pan, X., Pang, L., Liang, W., Liu, W., Zhang, W., Li, F., and Jia, W. (2015). Hypermethylation of TFPI2 correlates with cervical cancer incidence in the Uygur and Han populations of Xinjiang, China. Int J Clin Exp Pathol 8, 1844-1854.
+Enjuanes, A., Albero, R., Clot, G., Navarro, A., Bea, S., Pinyol, M., Martin-Subero, J.I., Klapper, W., Staudt, L.M., Jaffe, E.S., et al. (2013). Genome-wide methylation analyses identify a subset of mantle cell lymphoma with a high number of methylated CpGs and aggressive clinicopathological features. Int J Cancer 133, 2852-2863.
+Enjuanes, A., Fernandez, V., Hernandez, L., Navarro, A., Bea, S., Pinyol, M., Lopez-Guillermo, A., Rosenwald, A., Ott, G., Campo, E., et al. (2011). Identification of methylated genes associated with aggressive clinicopathological features in mantle cell lymphoma. PLoS One 6, e19736.
+Fei, F., Joo, E.J., Tarighat, S.S., Schiffer, I., Paz, H., Fabbri, M., Abdel-Azim, H., Groffen, J., and Heisterkamp, N. (2015). B-cell precursor acute lymphoblastic leukemia and stromal cells communicate through Galectin-3. Oncotarget 6, 11378-11394.
+Gort, E.H., Suijkerbuijk, K.P., Roothaan, S.M., Raman, V., Vooijs, M., van der Wall, E., and van Diest, P.J. (2008). Methylation of the TWIST1 promoter, TWIST1 mRNA levels, and immunohistochemical expression of TWIST1 in breast cancer. Cancer Epidemiol Biomarkers Prev 17, 3325-3330.
+Hu, H., Chen, X., Wang, C., Jiang, Y., Li, J., Ying, X., Yang, Y., Li, B., Zhou, C., Zhong, J., et al. (2017). The role of TFPI2 hypermethylation in the detection of gastric and colorectal cancer. Oncotarget 8, 84054-84065.
+Imamura, F., and Greer, C.A. (2013). Pax6 regulates Tbr1 and Tbr2 expressions in olfactory bulb mitral cells. Mol Cell Neurosci 54, 58-70.
+Klauck, P.J., Bagby, S.M., Capasso, A., Bradshaw-Pierce, E.L., Selby, H.M., Spreafico, A., Tentler, J.J., Tan, A.C., Kim, J., Arcaroli, J.J., et al. (2018). Antitumor activity of the polo-like kinase inhibitor, TAK-960, against preclinical models of colorectal cancer. BMC Cancer 18, 136.
+Kuo, P.Y., Jatiani, S.S., Rahman, A.H., Edwards, D., Jiang, Z., Ahr, K., Perumal, D., Leshchenko, V.V., Brody, J., Shaknovich, R., et al. (2018). SOX11 augments BCR signaling to drive MCL-like tumor development. Blood 131, 2247-2255.
+Li, Y., Han, L., Huang, C., Dai, W., Tian, G., Huang, F., Li, J., Liu, J., Wang, Q., and Zhou, Z. (2018). New Contributions to Asarum Powder on Immunology Related Toxicity Effects in Lung. Evid Based Complement Alternat Med 2018, 1054032.
+Meng, B., Wang, Y., and Li, B. (2014). Suppression of PAX6 promotes cell proliferation and inhibits apoptosis in human retinoblastoma cells. Int J Mol Med 34, 399-408.
+Mohanty, S., Mohanty, A., Sandoval, N., Tran, T., Bedell, V., Wu, J., Scuto, A., Murata-Collins, J., Weisenburger, D.D., and Ngo, V.N. (2017). Cyclin D1 depletion induces DNA damage in mantle cell lymphoma lines. Leuk Lymphoma 58, 676-688.
+Ondracka, A., Robbins, J.A., and Cross, F.R. (2016). An APC/C-Cdh1 Biosensor Reveals the Dynamics of Cdh1 Inactivation at the G1/S Transition. PLoS One 11, e0159166.
+Parray, A., Siddique, H.R., Kuriger, J.K., Mishra, S.K., Rhim, J.S., Nelson, H.H., Aburatani, H., Konety, B.R., Koochekpour, S., and Saleem, M. (2014). ROBO1, a tumor suppressor and critical molecular barrier for localized tumor cells to acquire invasive phenotype: study in African-American and Caucasian prostate cancer models. Int J Cancer 135, 2493-2506.
+Puttabyatappa, M., Al-Alem, L.F., Zakerkish, F., Rosewell, K.L., Brannstrom, M., and Curry, T.E., Jr. (2017). Induction of Tissue Factor Pathway Inhibitor 2 by hCG Regulates Periovulatory Gene Expression and Plasmin Activity. Endocrinology 158, 109-120.
+Rajapakse, V.N., Luna, A., Yamade, M., Loman, L., Varma, S., Sunshine, M., Iorio, F., Sousa, F.G., Elloumi, F., Aladjem, M.I., et al. (2018). CellMinerCDB for Integrative Cross-Database Genomics and Pharmacogenomics Analyses of Cancer Cell Lines. iScience 10, 247-264.
+van der Post, R.S., Vogelaar, I.P., Carneiro, F., Guilford, P., Huntsman, D., Hoogerbrugge, N., Caldas, C., Schreiber, K.E., Hardwick, R.H., Ausems, M.G., et al. (2015). Hereditary diffuse gastric cancer: updated clinical guidelines with an emphasis on germline CDH1 mutation carriers. J Med Genet 52, 361-374.
+Vogel, C.F., Li, W., Sciullo, E., Newman, J., Hammock, B., Reader, J.R., Tuscano, J., and Matsumura, F. (2007). Pathogenesis of aryl hydrocarbon receptor-mediated development of lymphoma is associated with increased cyclooxygenase-2 expression. Am J Pathol 171, 1538-1548.
+Wang, Q., He, Y., Shen, Y., Zhang, Q., Chen, D., Zuo, C., Qin, J., Wang, H., Wang, J., and Yu, Y. (2014). Vitamin D inhibits COX-2 expression and inflammatory response by targeting thioesterase superfamily member 4. J Biol Chem 289, 11681-11694.
+Wang, Y., Hou, Y., Zhang, W., Alvarez, A.A., Bai, Y., Hu, B., Cheng, S.Y., Yang, K., Li, Y., and Feng, H. (2019). Lipolytic inhibitor G0S2 modulates glioma stem-like cell radiation response. J Exp Clin Cancer Res 38, 147.
+Wasik, A.M., Lord, M., Wang, X., Zong, F., Andersson, P., Kimby, E., Christensson, B., Karimi, M., and Sander, B. (2013). SOXC transcription factors in mantle cell lymphoma: the role of promoter methylation in SOX11 expression. Sci Rep 3, 1400.
+Welch, C., Santra, M.K., El-Assaad, W., Zhu, X., Huber, W.E., Keys, R.A., Teodoro, J.G., and Green, M.R. (2009). Identification of a protein, G0S2, that lacks Bcl-2 homology domains and interacts with and antagonizes Bcl-2. Cancer Res 69, 6782-6789.
