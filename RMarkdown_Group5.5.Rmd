@@ -2,9 +2,9 @@
 title: "Are differentially methylated regions within genes associated with mantle cell lymphoma?"
 author: "Pascal Lafrenz, Mari Hambardzumyan, Lea Herzel, Franziska Lam"
 output:
-  pdf_document: default
-  word_document: default
   html_document: default
+  word_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -469,6 +469,54 @@ healthy_m_values <-
   data.frame(log2(healthy_beta_values / (1 - healthy_beta_values)))
 ```
 
+We included mean and standard deviation values to the original data frame, therefore, we can later visualize them.
+```{r}
+mean_healthy_m_values <- rowMeans(healthy_m_values)
+mean_cancer_m_values <- rowMeans(cancer_m_values)
+sd_cancer_m_values <- apply(cancer_m_values, 1, sd)
+sd_healthy_m_values <- apply(healthy_m_values, 1, sd)
+extended_cancer_m_values <-
+  cbind.data.frame(cancer_m_values, mean_cancer_m_values, sd_cancer_m_values)
+extended_healthy_m_values <-
+  cbind.data.frame(healthy_m_values, mean_healthy_m_values, sd_healthy_m_values)
+
+```
+
+Firstly, we want to check if our transformation was successfull by comparing it to the literature.
+```{r}
+c1 <- ggplot() +
+  geom_point(
+    mapping = aes(
+      x = extended_cancer_m_values$mean_cancer_m_values,
+      y = rowMeans(cancer_beta_values)
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  labs(x = "Mean cancer beta values",
+       y = "Mean cancer m values",
+       title = "Comparison of mean values") +
+  theme_bw()
+
+c2 <- ggplot() +
+  geom_point(
+    mapping = aes(
+      x = extended_healthy_m_values$mean_healthy_m_values,
+      y = rowMeans(healthy_beta_values)
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  labs(x = "Mean healthy beta values",
+       y = "Mean healthy m values",
+       title = "Comparison of mean values") +
+  theme_bw()
+
+grid.arrange(c1, c2, ncol = 2)
+```
+
+Compared to literature, beta-value to m-value transition worked perfectly well and we can continue our downstream analysis. Aberration of transition occured because of mean value calculation.
+
 Afterwards we changed the endings of the patinets names to make it more clear to which data frame they belonged.
 
 ```{r}
@@ -494,7 +542,6 @@ Thereafter we calculated the means and standard deviations of the m values, subs
 
 ```{r warning=FALSE}
 
-mean_cancer_m_values <- rowMeans(cancer_m_values)
 hist(
   log10(mean_cancer_m_values),
   breaks = "fd",
@@ -513,7 +560,6 @@ col = "black",
 lty = 5,
 lwd = 1)
 
-mean_healthy_m_values <- rowMeans(healthy_m_values)
 hist(
   log10(mean_healthy_m_values),
   breaks = "fd",
@@ -532,7 +578,6 @@ col = "black",
 lty = 5,
 lwd = 1)
 
-sd_cancer_m_values <- apply(cancer_m_values, 1, sd)
 hist(
   log10(sd_cancer_m_values),
   breaks = "fd",
@@ -542,7 +587,6 @@ hist(
   border = "gray20"
 )
 
-sd_healthy_m_values <- apply(healthy_m_values, 1, sd)
 hist(
   log10(sd_healthy_m_values),
   breaks = "fd",
@@ -556,12 +600,8 @@ hist(
 As we can see in the mean frequency histograms there are some values of common logarithms of m values which are more than 1.0 and less than -1.0, this is due to the beta values which were registered as 1 or 0 which resulted in m values of +inf and -inf. These will be removed before the principal component analysis. 
 Comparing the mean frequency histograms of cancer and healthy samples, we can conclude that both are right-skewed, whereas in healthy m values the effect is more prominent. In the mean m value histogram of healthy patients we can observe that the median lays around 0.6 which corresponds to beta values of around 0.8, in comparison to cancer where the median lays around 0.2 which correspond to beta vlues of 0.6. Important to mention is the fact that  there are far less genes which have low beta values in the healthy samples as in the cancer samples (judging by the tenth quantiles of the mean histograms). 
 
-We included mean and standard deviation values to the original data frame, therefore, we can later visualize them. Additionally, we created a data frame which only include our cancer related genes. This data frame is extended by gene name rather than ensembl name.
+Furthermore, we created a data frame which only include our cancer related genes. This data frame is extended by gene name rather than ensembl name.
 ```{r}
-extended_cancer_m_values <-
-  cbind.data.frame(cancer_m_values, mean_cancer_m_values, sd_cancer_m_values)
-extended_healthy_m_values <-
-  cbind.data.frame(healthy_m_values, mean_healthy_m_values, sd_healthy_m_values)
 
 extended_cancer_m_values_gene <- extended_cancer_m_values[c(
   "ENSG00000176887",
@@ -835,60 +875,6 @@ ggplot() +
 In general, our important genes for MCL have a low standard deviation which enhance the explanatory power of previous assumptions. A few genes tend to be more differently methylated in cancer samples than in healthy samples. For example one of this gene is SOX11.
 SOX11 tends to be differently methylated in cancer samples. This observation can be made because MCL can be devided into 2 groups: SOX11 positive and SOX11 negative patients. Depending on this status, different clinical outcome can be observed.
 Broadly, methylation of cancer patients have stronger discrepancies among each other because cancer in each patient differs.
-
-
-#comparing mean beta values and mean m values (for Rmarkdown: compare to literature and say if it was successfull)
-#cancer
-```{r}
-ggplot() +
-  geom_point(
-    mapping = aes(
-      x = extended_cancer_m_values$mean_cancer_m_values,
-      y = rowMeans(cancer_beta_values)
-    ),
-    na.rm = TRUE,
-    alpha = 1 / 10
-  ) +
-  geom_smooth(
-    mapping = aes(
-      x = extended_cancer_m_values$mean_cancer_m_values,
-      y = rowMeans(cancer_beta_values)
-    ),
-    na.rm = TRUE,
-    alpha = 1 / 10
-  ) +
-  labs(x = "Mean cancer beta values",
-       y = "Mean cancer m values",
-       title = "Comparison of mean values") +
-  theme_bw()
-```
-#healthy
-```{r}
-ggplot() +
-  geom_point(
-    mapping = aes(
-      x = extended_healthy_m_values$mean_healthy_m_values,
-      y = rowMeans(healthy_beta_values)
-    ),
-    na.rm = TRUE,
-    alpha = 1 / 10
-  ) +
-  geom_smooth(
-    mapping = aes(
-      x = extended_healthy_m_values$mean_healthy_m_values,
-      y = rowMeans(healthy_beta_values)
-    ),
-    na.rm = TRUE,
-    alpha = 1 / 10
-  ) +
-  labs(x = "Mean healthy beta values",
-       y = "Mean healthy m values",
-       title = "Comparison of mean values") +
-  theme_bw()
-```
-
-
-
 
 
 
