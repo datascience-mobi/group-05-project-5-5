@@ -515,7 +515,7 @@ c2 <- ggplot() +
 grid.arrange(c1, c2, ncol = 2)
 ```
 
-Compared to literature, beta-value to m-value transition worked perfectly well and we can continue our downstream analysis. Aberration of transition occured because of mean value calculation.
+Compared to literature, beta-value to m-value transition worked perfectly well and we can continue our downstream analysis (Du et al., 2010). Aberration of transition occured because of mean value calculation.
 
 Afterwards we changed the endings of the patinets names to make it more clear to which data frame they belonged.
 
