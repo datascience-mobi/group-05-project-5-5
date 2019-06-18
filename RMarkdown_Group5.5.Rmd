@@ -404,10 +404,10 @@ G0S2	 |ENSG00000123689	|	Lipolytic inhibitor G0/G1 switch gene 2 (G0S2) plays va
 GPX3	 |ENSG00000211445	|	Glutathione peroxidase 3 (GPX3) catalyzes reduction of reactive oxygen species (ROS) in plasma and acts as a redox signal modulator with tumor supressor activity. Protect cells against oxidative damage. Downregulation of GPX3 in many types of human cancer is caused by promoter hypermethylation (An et al., 2018). 
 LGALS3 |ENSG00000131981	|	Galectin-3 (LGALS3) elevates inflammatory processes. LGALS3 protects cancer cells by inducing tolerance to drug treatment. Auto-induction of Galectin-3 mRNA and pathways of inflammatory mediators (Fei et al., 2015). 
 MAL  	 |ENSG00000172005	|	Myelin and Lymphocyte protein (MAL) is a putative cancer marker associated with chemoresistance and cell survival (Zanotti et al., 2017). 
-NPTX2	 |ENSG00000106236	|	 Neuronal pentraxin-2 (NPTX2) is a proinflammatory cytokine. NPTX2 gene is hyper-methylated in MCL and thus non-apoptotic cell death is inhibited (Enjuanes et al., 2013; Li et al., 2018). 
+NPTX2	 |ENSG00000106236	|	 Neuronal pentraxin-2 (NPTX2) is a proinflammatory cytokine. NPTX2 gene is hyper-methylated in MCL and thus non-apoptotic cell death is inhibited (Enjuanes et al., 2013; Li et al., 2018).
 PAX6	 |ENSG00000007372	|	Paired box protein (Pax6) is a regulator (transcription factor) of fate determination of precursor cells (Imamura and Greer, 2013). Suppression of PAX6 promotes cell proliferation and inhibits apoptosis (Meng et al., 2014). 
 TFPI2	 |ENSG00000105825	|	Tissue factor pathway inhibitor 2 (TFPI2) is a serine protease inhibitor which regulates physiological extracellular matrix remodeling (Puttabyatappa et al., 2017). Abberant methylation (hypermethylation) of TFPI2 gene protects the extracellular matrix of cancer cells from degradation and play an important role in the carcinogenesis of cancer (Hu et al., 2017). TFPI2 is identified as a tumor suppressor (Dong et al., 2015). 
-THEM4	 |ENSG00000159445	|	Thioesterase Superfamily Member 4 (THEM4) is a mediator which negatively regulates protein kinase B (PKB). PKB is targeted by receptor tyrosine kinasis which signals via phosphatidylinositol 3-kinase (PI3K) . THEM4 is hypermethylated in MCL and mediates cell survival, growth, proliferation, cell migration and angiogenesis (Enjuanes et al., 2011; Rajapakse et al., 2018; Wang et al., 2014; Zhao et al., 2013). 
+THEM4	 |ENSG00000159445	|	Thioesterase Superfamily Member 4 (THEM4) is a mediator which negatively regulates protein kinase B (PKB). PKB is targeted by receptor tyrosine kinasis which signals via phosphatidylinositol 3-kinase (PI3K) . THEM4 is hypermethylated (promoter) in MCL and mediates cell survival, growth, proliferation, cell migration and angiogenesis (Enjuanes et al., 2011; Rajapakse et al., 2018; Wang et al., 2014; Zhao et al., 2013). 
 TWIST1 |ENSG00000122691	|	Twist Family BHLH Transcription Factor 1 (TWIST1) is a key regulator in embryonic development and organogenesis.  TWIST1 is implicated in tumor initiation, stemness, angiogenesis, dissemination, and chemoresistance in various cancer types (Zhao et al., 2017). Overexpression of TWIST1 leads to suppression of transcription of pro-apoptotic BH3-only gene BCL2L11. TWIST1 promoter is hypermethylated in most cancers (Zhao et al., 2017) but has no impact on protein expression. Nevertheless, it can be a biomarker for cancer (Gort et al., 2008).
 
 To be sure we did not removed these genes in our data processing we tested if they are still all in our data frames. Because each of the 2 data frames contains the same genes it is enough to check if they are part of one of them.
@@ -643,7 +643,8 @@ $$~$$
 The following overview plot includes:
 
 * mean of cancer and healthy m-values (black points), 
-* general trend of points to solve overplotting problem (blue smoothed curve)
+* general trend of points to solve overplotting problem (blue smoothed curve),
+* straight line through origin (y=x) for better interpreting (blue line)
 
 ``` {r}
 ggplot() +
@@ -668,15 +669,25 @@ ggplot() +
        y = "Mean healthy m-values",
        title = "Comparison of mean m-values") +
   theme_bw() +
-  xlim(-12, 9) +
-  ylim(-12, 9) 
+  geom_abline(
+    mapping = NULL,
+    data = NULL,
+    slope = 1,
+    intercept = 0,
+    colour = "yellow2"
+  ) + 
+  xlim(-12,9) + 
+  ylim(-12,9)
+
 ```
-After that we focused on details. The following detailed plot visualizes:
+We compared mean healthy and cancer m-values. Infinite values are presented at the edges. The general trend indicates that a lot of high methylated genes in healthy samples are not methylated/less methylated in cancer samples. This trend is solidified by the yellow line, shown in the plot, which would indicate a linear trend between cancer and healthy sample methylation. Nevertheless, some genes have gain a higher methylation grade. Overall, it seems that a lot of genes have pretty much the same methylation grade because they are in a huge data cloud around 0 to 5. It would be interesting to see which genes have lost  most of their methylation or gain most of it because it can be an indication of function gain (no methylation) or function loss (methylation increase).
+
+So after that we focused on details to evaluate previous mentioned important genes. The following detailed plot visualizes:
 
 * mean of cancer and healthy m-values (black points), 
 * highlights of important genes for cancer (red points), 
 * labels of specific genes,
-* straight line through origin (y=x) for better interpreting (blue line)
+* straight line through origin (y=x) for better interpreting (yellow line)
 
 ```{r}
 ggplot() +
@@ -722,6 +733,38 @@ ggplot() +
     colour = "yellow2"
   )
 ```
+For better plot evaluation we draw a line with equation y = x. Thus, we can identify if there is a linear relationship. Overall, our predicted important genes have not fully lost their methylation or gain full methylation. 
+As stated in several studies, DNA demethylation in gene regions tends to downregulate gene expression but is also dependent on several key factors, including:
+* whether embedded demethylated functional elements regain activity,
+* whether demethylated regions are located at intron-exon junctions together with destabilized nucleosomes and
+* possible effects on the rates of transcript elongation and splicing. 
+(Yang et al., 2014)
+
+Therefore, we can only predict what otucome different methylated gene regions could have.
+
+Gene   | Comparison of methylation between samples | Interpretation
+:---------:|:----------------------------:|:-------------------------------------------------------------:|
+CCND1  | healthy > cancer | Less expression in cancer samples therefore lower genomic stability during DNA replication in MCL cells.
+SOX11  | cancer > healthy | Higher expression in cancer samples therefore SOX11 activation: Change of mature B cells phenotype to aberrant cell type. Promotion of oncogenic proliferation of MCL.
+NR2F2  | cancer > healthy | Higher expression in cancer samples thus NR2F2 activation: Gain of pluripotency of MCL.
+p53    | healthy > cancer | Less expression in cancer samples thus downregulation: Loss of tumor supressor gene which is important for apoptosis initiation which is therefore disabled in MCL.
+AHR    | healthy > cancer | Less expression in cancer samples thus downregulation: No stabilization of lymphoma and no cell death escape. Other mechanisms to upregulate this gene.
+ROBO1  | healthy > cancer | Less expression in cancer samples thus downregulation: Development of invasive and metastatic tumor through loss of function of important tumor supressor gene in MCL.
+SOX9   | cancer > healthy | Higher expression in cancer samples: Gain of autosomal sex-reversal in MCL.
+HOXA9  | cancer > healthy | Higher expression in cancer samples: Overexpression leads to strong self-renewal and inhibition of differentiation of MCL cells.
+CDH1   | healthy > cancer | Gene expression is dependent on cell cycle phase therefore can not be evaluated properly.
+CDC14B | healthy > cancer | Less expression (cancer samples) and thus additional p53 deactivation and overriding cell cyle checkpoints. Enables unlimited cancer cell growth of MCL cells.
+FOXC1  | cancer > healthy | Higher expression leads to abnormal growth, migration, cell proliferation and thus functions as an oncogene for MCL.
+G0S2   | cancer > healthy | Upregulated gene enables MCL resistance towards treatment.
+GPX3   | healthy > cancer | Downregulation leads to inactivation of an important tumor supressor gene in MCL.
+LGALS3 | healthy > cancer | Downregulated therefore no drug tolerance in tested MCL samples.
+MAL    | healthy > cancer | Downregulated therefore this specific MCL marker is not active.
+PAX6   | cancer > healthy | Higher expression leads to apoptosis of MCL cells. Other mechanisms to downregulate this specific gene.
+TFPI2  | healthy > cancer | Less expression in MCL cells and therefore important tumor supressor is disabled leading to an extracellular matrix remodeling.
+THEM4  | healthy > cancer | Downregulation enables cell survival, growth, proliferation, cell migration and angiogenesis of MCL cells which are necessary for MCL survival.
+TWIST1 | healthy > cancer | Less expression of TWIST1 in cancer. Other mechanisms for overexpression in cancer than methylation.
+
+To valididate our assumptions it would be important to analyse protein concentrations in cancer cells and compare it to DNA methylation status of genes.
 
 For better valuation of how conclusive following analysis are, it would be pretty neat, if we compare standard deviations (SD) of cancer and healthy m-values.
 At first, we compared general information with following attributes shown in the plot:
@@ -743,6 +786,7 @@ ggplot() +
        title = "Comparison of SD of m-values") +
   theme_bw()
 ```
+In general, our standard deviation is sufficient and only a few have a high standard deviation.
 
 For further analysis, it would be proficient if cancer related genes have low standard deviations in both sample groups. The following detailed plot visualizes:
 
@@ -785,9 +829,14 @@ ggplot() +
        y = "SD healthy m-values",
        title = "Comparison of SD of m-values") +
   xlim(-1, 2.5) +
-  ylim(0, 1) +
+  ylim(-1, 2.5) +
   theme_bw()
 ```
+In general, our important genes for MCL have a low standard deviation which enhance the explanatory power of previous assumptions. A few genes tend to be more differently methylated in cancer samples than in healthy samples. For example one of this gene is SOX11.
+SOX11 tends to be differently methylated in cancer samples. This observation can be made because MCL can be devided into 2 groups: SOX11 positive and SOX11 negative patients. Depending on this status, different clinical outcome can be observed.
+Broadly, methylation of cancer patients have stronger discrepancies among each other because cancer in each patient differs.
+
+
 #comparing mean beta values and mean m values (for Rmarkdown: compare to literature and say if it was successfull)
 #cancer
 ```{r}
