@@ -92,9 +92,9 @@ pcs_of_m_values <-
 #generate a ggplot/scatterplot to visualize the Sample points in a coordinate system with x-axis = PC1 and y-axis = PC2
 p <- ggplot(pcs_of_m_values, aes(PC1, PC2, group = Samples)) +
   geom_point (aes(shape = Samples, color = Samples), size = 4)
-p + scale_colour_manual(values = c("seagreen2", "indianred2"))
-
-
+p <- p + scale_colour_manual(values = c("seagreen2", "indianred2"))
+p <- ggplotly(p)
+p
 
 #find out how much clusters do we need to group samples (obviously 2 would be perfect because healthy/cancer)
 
@@ -146,8 +146,9 @@ centers <-
 #visualize cluster x1 and x2 and how samples are seperated
 p_cluster <- ggplot(centers, aes(X1, X2, group = Samples)) +
   geom_point (aes(shape = Samples, color = Samples), size = 4)
-p_cluster + scale_colour_manual(values = c("seagreen2", "indianred2"))
-
+p_cluster <- p_cluster + scale_colour_manual(values = c("seagreen2", "indianred2"))
+p_cluster <- ggplotly(p_cluster)
+p_cluster
 ## wilkoxon, kruskal wallis, Pearson correlation coefficient berechnen und ein permutation test
 
 #changing the class of the columns PC1, PC2 and PC3 of pcs_of_m_values from "factor" to "numeric"

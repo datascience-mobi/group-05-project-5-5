@@ -256,6 +256,7 @@ To visualize the number of NA's in the beta-values we plotted different histogra
 library(tidyverse)
 library(gridExtra)
 library(ggrepel)
+library(plotly)
 ```
 ```{r error=FALSE, warning=FALSE}
 
@@ -513,6 +514,7 @@ c2 <- ggplot() +
   theme_bw()
 
 grid.arrange(c1, c2, ncol = 2)
+
 ```
 
 Compared to literature, beta-value to m-value transition worked perfectly well and we can continue our downstream analysis (Du et al., 2010). Aberration of transition occured because of mean value calculation.
