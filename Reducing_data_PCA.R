@@ -197,7 +197,7 @@ bio_prov_test_pc1 <- wilcox.test(
   mu = 0,
   alt = "two.sided",
   conf.int = T,
-  conf.level = 0.95,
+  conf.level = 0.99,
   paired = F,
   exact = T
 )
@@ -207,7 +207,7 @@ bio_type_test_pc1 <- wilcox.test(
   mu = 0,
   alt = "two.sided",
   conf.int = T,
-  conf.level = 0.95,
+  conf.level = 0.99,
   paired = F,
   exact = T
 )
@@ -218,7 +218,7 @@ disease_test_pc1 <- wilcox.test(
   mu = 0,
   alt = "two.sided",
   conf.int = T,
-  conf.level = 0.95,
+  conf.level = 0.99,
   paired = F,
   exact = T
 )
@@ -228,7 +228,7 @@ donor_sex_test_pc1 <- wilcox.test(
   mu = 0,
   alt = "two.sided",
   conf.int = T,
-  conf.level = 0.95,
+  conf.level = 0.99,
   paired = F,
   exact = T
 )
@@ -240,7 +240,7 @@ bio_prov_test_pc2 <- wilcox.test(
   mu = 0,
   alt = "two.sided",
   conf.int = T,
-  conf.level = 0.95,
+  conf.level = 0.99,
   paired = F,
   exact = T
 )
@@ -250,7 +250,7 @@ bio_type_test_pc2 <- wilcox.test(
   mu = 0,
   alt = "two.sided",
   conf.int = T,
-  conf.level = 0.95,
+  conf.level = 0.99,
   paired = F,
   exact = T
 )
@@ -261,7 +261,7 @@ disease_test_pc2 <- wilcox.test(
   mu = 0,
   alt = "two.sided",
   conf.int = T,
-  conf.level = 0.95,
+  conf.level = 0.99,
   paired = F,
   exact = T
 )
@@ -271,7 +271,7 @@ donor_sex_test_pc2 <- wilcox.test(
   mu = 0,
   alt = "two.sided",
   conf.int = T,
-  conf.level = 0.95,
+  conf.level = 0.99,
   paired = F,
   exact = T
 )
@@ -283,7 +283,7 @@ bio_prov_test_pc3 <- wilcox.test(
   mu = 0,
   alt = "two.sided",
   conf.int = T,
-  conf.level = 0.95,
+  conf.level = 0.99,
   paired = F,
   exact = T
 )
@@ -293,7 +293,7 @@ bio_type_test_pc3 <- wilcox.test(
   mu = 0,
   alt = "two.sided",
   conf.int = T,
-  conf.level = 0.95,
+  conf.level = 0.99,
   paired = F,
   exact = T
 )
@@ -304,7 +304,7 @@ disease_test_pc3 <- wilcox.test(
   mu = 0,
   alt = "two.sided",
   conf.int = T,
-  conf.level = 0.95,
+  conf.level = 0.99,
   paired = F,
   exact = T
 )
@@ -314,7 +314,7 @@ donor_sex_test_pc3 <- wilcox.test(
   mu = 0,
   alt = "two.sided",
   conf.int = T,
-  conf.level = 0.95,
+  conf.level = 0.99,
   paired = F,
   exact = T
 )
@@ -490,8 +490,8 @@ install.packages("gplots")
 library(gplots)
 
 my_palette <- colorRampPalette(c("indianred1", "seagreen2")) (n = 3)
-color_breaks <- c(seq(0, 0.05, length = 2),
-                  seq(0.051, 1, length = 2))
+color_breaks <- c(seq(0, 0.01, length = 2),
+                  seq(0.011, 1, length = 2))
 heatmap.2(p_values_matrix,
           main = "Batch and biological effects",
           trace = "none",
