@@ -15,51 +15,6 @@ Samples <- readRDS(file = "Mantle-Bcell_list.RDS.gz")
 input_data_csv <-
   read.csv(file = "sample_annotation.csv", sep = ",")
 
-#creating a data frame to understand the different names of the original data frame of genes.
-
-####Unnecessary?????????
-
-
-Name <-  #not in markdown
-  c(
-    "Chromosome",
-    "Start",
-    "End",
-    "Strand",
-    "Symbol",
-    "entrezID",
-    "CpG",
-    "GC",
-    "G",
-    "C",
-    ".bed",
-    ".bed_coverage",
-    "average depth of sequencing coverage",
-    "beta value",
-    "Whole genome bisulfite sequencing"
-  )
-Name2 <-  #not in markdown
-  c(
-    "...",
-    "Start position (bp)",
-    "End position (bp",
-    "...",
-    "Corresponding gene symbol (only in gene table)",
-    "Gene ID from entrezGene Database",
-    "# of CpGs in region",
-    "Number of GCs in region",
-    "Number of Gs in region",
-    "Number of Cs in region",
-    "methylation BETA value (Percentage of Methylation)",
-    "sequencing depth at this position aka. the number of reads mapped to this region",
-    "can be defined theoretically as LN/G, where L is the read length, N is the number of reads and G is the haploid genome length.",
-    " from 0 (demethylated) to 1 (fully methylated)",
-    "https://de.wikipedia.org/wiki/Bisulfit-Sequenzierung"
-  ) 
-table_names <- data.frame(Name = Name, y = Name2) #not in markdown
-
-remove(list = c("Name", "Name2")) #not in markdown
-
 #copying "genes" data from general list to create a data frame of genes
 Gene_data_frame <- Samples$genes
 dim(Gene_data_frame)

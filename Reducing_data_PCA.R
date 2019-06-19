@@ -41,7 +41,7 @@ colnames(cancer_m_values) <- c(
 m_values <- cbind(healthy_m_values, cancer_m_values)
 View(m_values)
 
-#Apply PCA on data frame "complete_m_values" with all m values. For that, the matrix needs to be transposed first
+#Apply PCA on data frame "m_values" with all m values. For that, the matrix needs to be transposed first
 #(variables are scaled to have i) standard deviation one and ii) mean zero)
 pca_m_values <- prcomp(t(m_values))
 summary(pca_m_values)
@@ -90,6 +90,8 @@ pcs_of_m_values <-
 
 ## remove the numbers in ggplot
 #generate a ggplot/scatterplot to visualize the Sample points in a coordinate system with x-axis = PC1 and y-axis = PC2
+install.packages("plotly")
+library(plotly)
 p <- ggplot(pcs_of_m_values, aes(PC1, PC2, group = Samples)) +
   geom_point (aes(shape = Samples, color = Samples), size = 4)
 p <- p + scale_colour_manual(values = c("seagreen2", "indianred2"))
@@ -98,7 +100,8 @@ p
 
 #find out how much clusters do we need to group samples (obviously 2 would be perfect because healthy/cancer)
 
-##why sapply??
+
+######################## clustering with all genes, not only the significant ones############################
 
 wss <-  sapply(1:5, function(k) {
   kmeans(x = pca_m_values$x,
@@ -144,18 +147,32 @@ centers <-
   ))
 
 #visualize cluster x1 and x2 and how samples are seperated
-p_cluster <- ggplot(centers, aes(X1, X2, group = Samples)) +
-  geom_point (aes(shape = Samples, color = Samples), size = 4)
-p_cluster <- p_cluster + scale_colour_manual(values = c("seagreen2", "indianred2"))
+PC1 <- centers$X1
+PC2 <- centers$X2
+p_cluster <-
+  ggplot(centers, aes(x = PC1, y = PC2, group = Samples)) +
+  geom_point (aes(shape = Samples, color = Samples), size = 4) +
+  theme_bw() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank()
+  )
+p_cluster <-
+  p_cluster + 
+  scale_colour_manual(values = c("seagreen2", "indianred2"))
 p_cluster <- ggplotly(p_cluster)
 p_cluster
+
+##############################################################################################################
+
 ## wilkoxon, kruskal wallis, Pearson correlation coefficient berechnen und ein permutation test
 
 #changing the class of the columns PC1, PC2 and PC3 of pcs_of_m_values from "factor" to "numeric"
 #to be able to work with the elements in the statistical tests
-pcs_of_m_values$PC1 <- as.numeric(as.character(pcs_of_m_values$PC1))
-pcs_of_m_values$PC2 <- as.numeric(as.character(pcs_of_m_values$PC2))
-pcs_of_m_values$PC3 <- as.numeric(as.character(pcs_of_m_values$PC3))
+#pcs_of_m_values$PC1 <- as.numeric(as.character(pcs_of_m_values$PC1))
+#pcs_of_m_values$PC2 <- as.numeric(as.character(pcs_of_m_values$PC2))
+#pcs_of_m_values$PC3 <- as.numeric(as.character(pcs_of_m_values$PC3))
 
 #New matrix with the PC values from 1 to 3 of the samples + categories of interest from the sample annotation
 batch_pcs <-
@@ -326,7 +343,7 @@ donor_sex_test_pc3 <- wilcox.test(
 
 # on seq runs count
 
-#--------PC1-------
+#--------PC1------------------
 
 cor.perm <- function (x, y, nperm = 1000)
 {
@@ -489,7 +506,7 @@ colnames(p_values_matrix) <- c("PC1", "PC2", "PC3")
 install.packages("gplots")
 library(gplots)
 
-my_palette <- colorRampPalette(c("indianred1", "seagreen2")) (n = 3)
+my_palette <- colorRampPalette(c("indianred2", "seagreen2")) (n = 3)
 color_breaks <- c(seq(0, 0.01, length = 2),
                   seq(0.011, 1, length = 2))
 heatmap.2(p_values_matrix,
