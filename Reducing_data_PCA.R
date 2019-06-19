@@ -91,7 +91,8 @@ pcs_of_m_values <-
 ## remove the numbers in ggplot
 #generate a ggplot/scatterplot to visualize the Sample points in a coordinate system with x-axis = PC1 and y-axis = PC2
 p <- ggplot(pcs_of_m_values, aes(PC1, PC2, group = Samples)) +
-  geom_point (aes(shape = Samples, color = Samples), size = 4)
+  geom_point (aes(shape = Samples, color = Samples), size = 4) +
+  theme_bw()
 p <- p + scale_colour_manual(values = c("seagreen2", "indianred2"))
 p <- ggplotly(p)
 p
@@ -144,8 +145,11 @@ centers <-
   ))
 
 #visualize cluster x1 and x2 and how samples are seperated
-p_cluster <- ggplot(centers, aes(X1, X2, group = Samples)) +
-  geom_point (aes(shape = Samples, color = Samples), size = 4)
+PC1 <- centers$X1
+PC2 <- centers$X2
+p_cluster <- ggplot(centers, aes(PC1, PC2, group = Samples)) +
+  geom_point (aes(shape = Samples, color = Samples), size = 4) +
+  theme(axis.text.x = element_blank(), axis.text.y = element_blank(), axis.ticks = element_blank())
 p_cluster <- p_cluster + scale_colour_manual(values = c("seagreen2", "indianred2"))
 p_cluster <- ggplotly(p_cluster)
 p_cluster
