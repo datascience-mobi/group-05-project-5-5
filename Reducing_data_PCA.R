@@ -93,7 +93,8 @@ pcs_of_m_values <-
 install.packages("plotly")
 library(plotly)
 p <- ggplot(pcs_of_m_values, aes(PC1, PC2, group = Samples)) +
-  geom_point (aes(shape = Samples, color = Samples), size = 4)
+  geom_point (aes(shape = Samples, color = Samples), size = 4) +
+  theme_bw()
 p <- p + scale_colour_manual(values = c("seagreen2", "indianred2"))
 p <- ggplotly(p)
 p
@@ -158,9 +159,6 @@ p_cluster <-
     axis.text.y = element_blank(),
     axis.ticks = element_blank()
   )
-p_cluster <-
-  p_cluster + 
-  scale_colour_manual(values = c("seagreen2", "indianred2"))
 p_cluster <- ggplotly(p_cluster)
 p_cluster
 
