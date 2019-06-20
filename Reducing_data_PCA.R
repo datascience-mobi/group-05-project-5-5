@@ -177,7 +177,7 @@ batch_pcs <-
   cbind(pcs_of_m_values[, 1:3], c(input_data_csv[, c(
     "BIOMATERIAL_PROVIDER",
     "BIOMATERIAL_TYPE",
-    "SAMPLE_DESC_3",
+    "cellTypeShort",
     "DONOR_SEX",
     "DISEASE",
     "FIRST_SUBMISSION_DATE",
@@ -248,6 +248,16 @@ donor_sex_test_pc1 <- wilcox.test(
   exact = T
 )
 
+cell_type_test_pc1 <- wilcox.test(
+  batch_pcs$PC1 ~ batch_pcs$cellTypeShort,
+  mu = 0,
+  alt = "two.sided",
+  conf.int = T,
+  conf.level = 0.99,
+  paired = F,
+  exact = T
+)
+
 #-------PC2----------
 
 bio_prov_test_pc2 <- wilcox.test(
@@ -291,6 +301,16 @@ donor_sex_test_pc2 <- wilcox.test(
   exact = T
 )
 
+cell_type_test_pc2 <- wilcox.test(
+  batch_pcs$PC2 ~ batch_pcs$cellTypeShort,
+  mu = 0,
+  alt = "two.sided",
+  conf.int = T,
+  conf.level = 0.99,
+  paired = F,
+  exact = T
+)
+
 #---------PC3---------
 
 bio_prov_test_pc3 <- wilcox.test(
@@ -326,6 +346,16 @@ disease_test_pc3 <- wilcox.test(
 
 donor_sex_test_pc3 <- wilcox.test(
   batch_pcs$PC3 ~ batch_pcs$DONOR_SEX,
+  mu = 0,
+  alt = "two.sided",
+  conf.int = T,
+  conf.level = 0.99,
+  paired = F,
+  exact = T
+)
+
+cell_type_test_pc3 <- wilcox.test(
+  batch_pcs$PC3 ~ batch_pcs$cellTypeShort,
   mu = 0,
   alt = "two.sided",
   conf.int = T,
@@ -414,12 +444,6 @@ submission_date_test_pc1 <-
   kruskal.test(batch_pcs$PC1 ~ batch_pcs$FIRST_SUBMISSION_DATE,
                data = batch_pcs)
 
-#kruskal wallis on cell type
-
-cell_type_test_pc1 <-
-  kruskal.test(batch_pcs$PC1 ~ batch_pcs$SAMPLE_DESC_3,
-               data = batch_pcs)
-
 #------PC2-------
 
 #submission date
@@ -428,11 +452,6 @@ submission_date_test_pc2 <-
   kruskal.test(batch_pcs$PC2 ~ batch_pcs$FIRST_SUBMISSION_DATE,
                data = batch_pcs)
 
-#kruskal wallis on cell type
-
-cell_type_test_pc2 <-
-  kruskal.test(batch_pcs$PC2 ~ batch_pcs$SAMPLE_DESC_3,
-               data = batch_pcs)
 
 #------PC3-------
 
@@ -440,12 +459,6 @@ cell_type_test_pc2 <-
 
 submission_date_test_pc3 <-
   kruskal.test(batch_pcs$PC3 ~ batch_pcs$FIRST_SUBMISSION_DATE,
-               data = batch_pcs)
-
-#kruskal wallis on cell type
-
-cell_type_test_pc3 <-
-  kruskal.test(batch_pcs$PC3 ~ batch_pcs$SAMPLE_DESC_3,
                data = batch_pcs)
 
 
@@ -516,23 +529,3 @@ heatmap.2(p_values_matrix,
           Colv = FALSE,
           col = my_palette,
           breaks = color_breaks)       
-#Disease is only significant in PC1! Also biological effects like cell type and biomaterial type and one batch effect biomaterial provider
-#We can still work with PC1
-
-##how many genes do we use for clustering
-
-#finding the top 25 most important genes (with the biggest influence). Therefore we will look at the loading scores (saved in "rotation") of the genes on PC1. Because it's not important
-#whether it is positive or negative we will look at the absolute values and rank these
-
-loading_scores <- pca_m_values$rotation[, 1]
-ranked_gene_loading <- sort(abs(loading_scores), decreasing = TRUE)
-
-##loading plots with elbow method
-
-plot(
-  ranked_gene_loading,
-  main = "Loading scores of genes",
-  xlab = "Genes",
-  ylab = "loading scores",
-  type = "b"
-)
