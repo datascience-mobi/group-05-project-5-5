@@ -6,7 +6,7 @@
 #(saved in "rotation") of the genes on PC1. Because it's not important
 #whether it is positive or negative we will look at the absolute values and rank these
 
-loading_scores <- pca_m_values$rotation[, 1]
+loading_scores <- pca_m_values$rotation[, 2]
 ranked_gene_loading <- sort(abs(loading_scores), decreasing = TRUE)
 
 ##loading plots with elbow method
@@ -28,18 +28,18 @@ plot(
   ylab = "loading scores",
   type = "b"
 )
-abline(v = 2000,
+abline(v = 3000,
 col = "red",
 lty = 5,
 lwd = 2)
 
-#We will work with the top 2000 genes 
+#We will work with the top 3000 genes 
 
-#pick out the names of the top 2000 genes
-top_2000_genes <- data.frame(ranked_gene_loading[1 : 2000])
+#pick out the names of the top 3000 genes
+top_3000_genes <- data.frame(ranked_gene_loading[1 : 3000])
 
 #get m values of top 3000 genes of every sample and put them into a new data frame
-clustering_data <- rbind(m_values[c(as.list.data.frame(rownames(top_2000_genes))),])
+clustering_data <- rbind(m_values[c(as.list.data.frame(rownames(top_3000_genes))),])
 
 #How many clusters do we need?
 wss2 <-  sapply(1:5, function(k) {
