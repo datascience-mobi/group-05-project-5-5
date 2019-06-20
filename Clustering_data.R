@@ -22,24 +22,24 @@ plot(
 #The kink is somewhere between 0 and 10000 genes, so lets zoom in
 
 plot(
-  ranked_gene_loading[0 : 10000],
+  ranked_gene_loading[0 : 20000],
   main = "Loading scores of genes",
   xlab = "Genes",
   ylab = "loading scores",
   type = "b"
 )
-abline(v = 3000,
+abline(v = 14000,
 col = "red",
 lty = 5,
 lwd = 2)
 
-#We will work with the top 3000 genes 
+#We will work with the top 14000 genes 
 
 #pick out the names of the top 3000 genes
-top_3000_genes <- data.frame(ranked_gene_loading[1 : 3000])
+top_14000_genes <- data.frame(ranked_gene_loading[1 : 14000])
 
 #get m values of top 3000 genes of every sample and put them into a new data frame
-clustering_data <- rbind(m_values[c(as.list.data.frame(rownames(top_3000_genes))),])
+clustering_data <- rbind(m_values[c(as.list.data.frame(rownames(top_14000_genes))),])
 
 #How many clusters do we need?
 wss2 <-  sapply(1:5, function(k) {
@@ -60,16 +60,23 @@ plot(
 
 #find out if healthy and cancer samples are seperated
 #variable with two center positions of value of rotated data
-centers2 <-
+k <-
   kmeans(
-    x = clustering_data,
+    x = t(clustering_data),
     centers = 2,
     iter.max = 100
-  )$centers
+  )#$centers
+View(k)
+
+centers2 <- kmeans(
+  x = clustering_data,
+  centers = 2,
+  iter.max = 100
+)$centers
 
 ##adding an extra column with the category of sample with which we can color the pc dots in a ggplot according to their sample group
 centers2 <-
-  data.frame(rbind(
+  as.data.frame(t(data.frame(rbind(
     centers2,
     Samples = c(
       "Healthy",
@@ -83,9 +90,9 @@ centers2 <-
       "Cancer",
       "Cancer"
     )
-  ))
+  ))))
 
-centers2 <- as.data.frame(t(centers2))
+
 
 p_cluster2 <- ggplot(centers2, aes(centers2$`1`, centers2$`2`, group = Samples))
 p_cluster2 + geom_point (aes(color = Samples), size = 4) +
