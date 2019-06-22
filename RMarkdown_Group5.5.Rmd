@@ -25,7 +25,9 @@ For that purpose we received a data set and an annotation file. Below is a short
 
 MCL is a B cell lymphoma which has its origin in the inner mantle zone of the lymph nodes (Hiddemann and Bartram, 2010). The most characteristic mutation in MCL is the translocation between the long arm of chromosome 11 and the long arm of chromosome 14 (t(11;14)(q13;q32)) (Hiddemann and Bartram, 2010). This mutation affects the heavy chains of immunoglobuline and leads to a cycline D1 (CCD1) overexpression (Hiddemann and Bartram, 2010). Cyclin D1 is a transcription factor which controlls the cell cycle (Hiddemann and Bartram, 2010). Through the overexpression of CCD1 the cell is able to proliferate but it can also influence the gene expression of other genes (Hiddemann and Bartram, 2010). It is observed, that a CCD1 overexpression leads to a deregulation of transcription factors and repair genes (Hiddemann and Bartram, 2010). 
 
-methylation
+Epigenetic modifications have an impact on DNA expression (Gibney and Nolan, 2010) and are important in some tumor genesis (Horn et al., 2009). These modifications are for example DNA methylation, histone modification and RNA mediated processes (Gibney and Nolan, 2010). In our project we want to focus on DNA methylation. In humans only cytosines can be methylated (Walter and Hümpel, 2017). If the methylation should be inherited it needs to be in a CpG dimer, because in such a dimer there is a cytosine in the mother and the doughter strand (Horn et al., 2009). After the DNA replication the enzyme DNA-methyltransferase 1 is able to methylate the doughter stand if there is a methypation in the CpG of the mother strand (Horn et al., 2009). During the lifetime of a cell different genes need to be expressed and therefore methylated. DNA methyltransferase 3a and 3b is able to methylate cytosine even though the there is no mehtylation in the complementary strand (Horn et al., 2009).
+Methylation in promoters lead normally to an inactivation of the the following gene (Horn et al., 2009). But there is also the possibility of activating a gene by methylation. For this the methylation needs to be in the gene.                         Quelle??
+
 
 bisulfite sequencing
 
@@ -98,7 +100,7 @@ hist(
   breaks = "fd",
   main = "Cancer coverage: Mean frequency",
   xlab = "Common logarithm of coverages",
-  col = "indianred1",
+  col = "indianred2",
   border = "gray20"
 )
 abline(v = log10(quantile(
@@ -140,7 +142,7 @@ hist(log10(sd_cancer_coverage),
      breaks = "fd",
      main = "Cancer coverage: SD frequency",
      xlab = "Common logarithm of coverages",
-     col = "indianred1",
+     col = "indianred2",
      border = "gray20"
 )
 abline(v = log10(quantile(
@@ -253,10 +255,12 @@ healthy_beta_values$Number_of_NA_cancer <-
 To visualize the number of NA's in the beta-values we plotted different histograms.
 
 ```{r, include=FALSE}
+
 library(tidyverse)
 library(gridExtra)
 library(ggrepel)
 library(plotly)
+
 ```
 ```{r error=FALSE, warning=FALSE}
 
@@ -549,7 +553,7 @@ hist(
   breaks = "fd",
   main = "Cancer M values: Mean frequency",
   xlab = "Common logarithm of M values",
-  col = "indianred1",
+  col = "indianred2",
   border = "gray20",
   xlim = c(-1, 1)
 )
@@ -775,8 +779,10 @@ ggplot() +
     colour = "yellow2"
   )
 ```
+
 For better plot evaluation we draw a line with equation y = x. Thus, we can identify if there is a linear relationship. Overall, our predicted important genes have not fully lost their methylation or gain full methylation. 
 As stated in several studies, DNA demethylation in gene regions tends to downregulate gene expression but is also dependent on several key factors, including:
+
 * whether embedded demethylated functional elements regain activity,
 * whether demethylated regions are located at intron-exon junctions together with destabilized nucleosomes and
 * possible effects on the rates of transcript elongation and splicing. 
@@ -887,26 +893,49 @@ Broadly, methylation of cancer patients have stronger discrepancies among each o
 Sharp, A.J., Stathaki, E., Migliavacca, E., Brahmachary, M., Montgomery, S.B., Dupre, Y., and Antonarakis, S.E. (2011). DNA methylation profiles of human active and inactive X chromosomes. Genome Res 21, 1592-1600.
 
 n, B.C., Choi, Y.D., Oh, I.J., Kim, J.H., Park, J.I., and Lee, S.W. (2018). GPx3-mediated redox signaling arrests the cell cycle and acts as a tumor suppressor in lung cancer cell lines. PLoS One 13, e0204170.
+
 Brumatti, G., Salmanidis, M., Kok, C.H., Bilardi, R.A., Sandow, J.J., Silke, N., Mason, K., Visser, J., Jabbour, A.M., Glaser, S.P., et al. (2013). HoxA9 regulated Bcl-2 expression mediates survival of myeloid progenitors and the severity of HoxA9-dependent leukemia. Oncotarget 4, 1933-1947.
+
 Dong, Y., Tan, Q., Tao, L., Pan, X., Pang, L., Liang, W., Liu, W., Zhang, W., Li, F., and Jia, W. (2015). Hypermethylation of TFPI2 correlates with cervical cancer incidence in the Uygur and Han populations of Xinjiang, China. Int J Clin Exp Pathol 8, 1844-1854.
+
 Enjuanes, A., Albero, R., Clot, G., Navarro, A., Bea, S., Pinyol, M., Martin-Subero, J.I., Klapper, W., Staudt, L.M., Jaffe, E.S., et al. (2013). Genome-wide methylation analyses identify a subset of mantle cell lymphoma with a high number of methylated CpGs and aggressive clinicopathological features. Int J Cancer 133, 2852-2863.
+
 Enjuanes, A., Fernandez, V., Hernandez, L., Navarro, A., Bea, S., Pinyol, M., Lopez-Guillermo, A., Rosenwald, A., Ott, G., Campo, E., et al. (2011). Identification of methylated genes associated with aggressive clinicopathological features in mantle cell lymphoma. PLoS One 6, e19736.
+
 Fei, F., Joo, E.J., Tarighat, S.S., Schiffer, I., Paz, H., Fabbri, M., Abdel-Azim, H., Groffen, J., and Heisterkamp, N. (2015). B-cell precursor acute lymphoblastic leukemia and stromal cells communicate through Galectin-3. Oncotarget 6, 11378-11394.
+
 Gort, E.H., Suijkerbuijk, K.P., Roothaan, S.M., Raman, V., Vooijs, M., van der Wall, E., and van Diest, P.J. (2008). Methylation of the TWIST1 promoter, TWIST1 mRNA levels, and immunohistochemical expression of TWIST1 in breast cancer. Cancer Epidemiol Biomarkers Prev 17, 3325-3330.
+
 Hu, H., Chen, X., Wang, C., Jiang, Y., Li, J., Ying, X., Yang, Y., Li, B., Zhou, C., Zhong, J., et al. (2017). The role of TFPI2 hypermethylation in the detection of gastric and colorectal cancer. Oncotarget 8, 84054-84065.
+
 Imamura, F., and Greer, C.A. (2013). Pax6 regulates Tbr1 and Tbr2 expressions in olfactory bulb mitral cells. Mol Cell Neurosci 54, 58-70.
+
 Klauck, P.J., Bagby, S.M., Capasso, A., Bradshaw-Pierce, E.L., Selby, H.M., Spreafico, A., Tentler, J.J., Tan, A.C., Kim, J., Arcaroli, J.J., et al. (2018). Antitumor activity of the polo-like kinase inhibitor, TAK-960, against preclinical models of colorectal cancer. BMC Cancer 18, 136.
+
 Kuo, P.Y., Jatiani, S.S., Rahman, A.H., Edwards, D., Jiang, Z., Ahr, K., Perumal, D., Leshchenko, V.V., Brody, J., Shaknovich, R., et al. (2018). SOX11 augments BCR signaling to drive MCL-like tumor development. Blood 131, 2247-2255.
+
 Li, Y., Han, L., Huang, C., Dai, W., Tian, G., Huang, F., Li, J., Liu, J., Wang, Q., and Zhou, Z. (2018). New Contributions to Asarum Powder on Immunology Related Toxicity Effects in Lung. Evid Based Complement Alternat Med 2018, 1054032.
+
 Meng, B., Wang, Y., and Li, B. (2014). Suppression of PAX6 promotes cell proliferation and inhibits apoptosis in human retinoblastoma cells. Int J Mol Med 34, 399-408.
+
 Mohanty, S., Mohanty, A., Sandoval, N., Tran, T., Bedell, V., Wu, J., Scuto, A., Murata-Collins, J., Weisenburger, D.D., and Ngo, V.N. (2017). Cyclin D1 depletion induces DNA damage in mantle cell lymphoma lines. Leuk Lymphoma 58, 676-688.
+
 Ondracka, A., Robbins, J.A., and Cross, F.R. (2016). An APC/C-Cdh1 Biosensor Reveals the Dynamics of Cdh1 Inactivation at the G1/S Transition. PLoS One 11, e0159166.
+
 Parray, A., Siddique, H.R., Kuriger, J.K., Mishra, S.K., Rhim, J.S., Nelson, H.H., Aburatani, H., Konety, B.R., Koochekpour, S., and Saleem, M. (2014). ROBO1, a tumor suppressor and critical molecular barrier for localized tumor cells to acquire invasive phenotype: study in African-American and Caucasian prostate cancer models. Int J Cancer 135, 2493-2506.
+
 Puttabyatappa, M., Al-Alem, L.F., Zakerkish, F., Rosewell, K.L., Brannstrom, M., and Curry, T.E., Jr. (2017). Induction of Tissue Factor Pathway Inhibitor 2 by hCG Regulates Periovulatory Gene Expression and Plasmin Activity. Endocrinology 158, 109-120.
+
 Rajapakse, V.N., Luna, A., Yamade, M., Loman, L., Varma, S., Sunshine, M., Iorio, F., Sousa, F.G., Elloumi, F., Aladjem, M.I., et al. (2018). CellMinerCDB for Integrative Cross-Database Genomics and Pharmacogenomics Analyses of Cancer Cell Lines. iScience 10, 247-264.
+
 van der Post, R.S., Vogelaar, I.P., Carneiro, F., Guilford, P., Huntsman, D., Hoogerbrugge, N., Caldas, C., Schreiber, K.E., Hardwick, R.H., Ausems, M.G., et al. (2015). Hereditary diffuse gastric cancer: updated clinical guidelines with an emphasis on germline CDH1 mutation carriers. J Med Genet 52, 361-374.
+
 Vogel, C.F., Li, W., Sciullo, E., Newman, J., Hammock, B., Reader, J.R., Tuscano, J., and Matsumura, F. (2007). Pathogenesis of aryl hydrocarbon receptor-mediated development of lymphoma is associated with increased cyclooxygenase-2 expression. Am J Pathol 171, 1538-1548.
+
 Wang, Q., He, Y., Shen, Y., Zhang, Q., Chen, D., Zuo, C., Qin, J., Wang, H., Wang, J., and Yu, Y. (2014). Vitamin D inhibits COX-2 expression and inflammatory response by targeting thioesterase superfamily member 4. J Biol Chem 289, 11681-11694.
+
 Wang, Y., Hou, Y., Zhang, W., Alvarez, A.A., Bai, Y., Hu, B., Cheng, S.Y., Yang, K., Li, Y., and Feng, H. (2019). Lipolytic inhibitor G0S2 modulates glioma stem-like cell radiation response. J Exp Clin Cancer Res 38, 147.
+
 Wasik, A.M., Lord, M., Wang, X., Zong, F., Andersson, P., Kimby, E., Christensson, B., Karimi, M., and Sander, B. (2013). SOXC transcription factors in mantle cell lymphoma: the role of promoter methylation in SOX11 expression. Sci Rep 3, 1400.
+
 Welch, C., Santra, M.K., El-Assaad, W., Zhu, X., Huber, W.E., Keys, R.A., Teodoro, J.G., and Green, M.R. (2009). Identification of a protein, G0S2, that lacks Bcl-2 homology domains and interacts with and antagonizes Bcl-2. Cancer Res 69, 6782-6789.
