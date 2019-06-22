@@ -537,7 +537,15 @@ heatmap.2(p_values_matrix,
 #---------biomaterial provider-------
 
 p_cluster_bio_prov <-
-  ggplot(centers, aes(x = PC1, y = PC2, group = Samples, fill = input_data_csv$BIOMATERIAL_PROVIDER)) +
+  ggplot(
+    centers,
+    aes(
+      x = PC1,
+      y = PC2,
+      group = Samples,
+      fill = input_data_csv$BIOMATERIAL_PROVIDER
+    )
+  ) +
   geom_point (aes(shape = Samples, color = Samples), size = 4) +
   theme_bw() +
   ggtitle("Biomaterial provider") +
@@ -552,7 +560,13 @@ p_cluster_bio_prov
 #---------cell type------------
 
 p_cluster_cell_type <-
-  ggplot(centers, aes(x = PC1, y = PC2, group = Samples, fill = input_data_csv$cellTypeShort)) +
+  ggplot(centers,
+         aes(
+           x = PC1,
+           y = PC2,
+           group = Samples,
+           fill = input_data_csv$cellTypeShort
+         )) +
   geom_point (aes(shape = Samples, color = Samples), size = 4) +
   theme_bw() +
   ggtitle("Cell type") +
@@ -566,9 +580,14 @@ p_cluster_cell_type
 
 #---------disease---------------
 
-
 p_cluster_disease <-
-  ggplot(centers, aes(x = PC1, y = PC2, group = Samples, fill = input_data_csv$DISEASE)) +
+  ggplot(centers,
+         aes(
+           x = PC1,
+           y = PC2,
+           group = Samples,
+           fill = input_data_csv$DISEASE
+         )) +
   geom_point (aes(shape = Samples, color = Samples), size = 4) +
   theme_bw() +
   ggtitle("Disease") +
