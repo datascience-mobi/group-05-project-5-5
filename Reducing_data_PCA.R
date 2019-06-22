@@ -520,16 +520,21 @@ library(gplots)
 my_palette <- colorRampPalette(c("indianred2", "seagreen2")) (n = 3)
 color_breaks <- c(seq(0, 0.01, length = 2),
                   seq(0.011, 1, length = 2))
-heatmap.2(p_values_matrix,
-          main = "Batch and biological effects",
-          trace = "none",
-          margins = c(10,12),
-          cexRow = 0.8,
-          Rowv = FALSE,
-          Colv = FALSE,
-          col = my_palette,
-          breaks = color_breaks)      
-
+heatmap.2(
+  p_values_matrix,
+  main = "Batch and biological effects",
+  trace = "none",
+  margins = c(10, 12),
+  cexRow = 0.8,
+  Rowv = FALSE,
+  Colv = FALSE,
+  col = my_palette,
+  breaks = color_breaks,
+  sepwidth = c(0.01, 0.01),
+  sepcolor = "black",
+  colsep = 1:ncol(p_values_matrix),
+  rowsep = 1:nrow(p_values_matrix)
+)      
 
 #------------ Conclusion from heatmap: biomaterial provider, cell type and disease have significant p-values in PC1
 # visualisation of the batch effects/biological factors on the PC1 against PC2 plot
