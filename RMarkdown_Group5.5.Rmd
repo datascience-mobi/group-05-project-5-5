@@ -888,6 +888,74 @@ Broadly, methylation of cancer patients have stronger discrepancies among each o
 
 
 
+
+
+
+
+
+
+
+
+$$~$$
+
+
+## Part 3: Data reduction
+$$~$$
+
+The aim of this part of the project is to narrow down our data to the significant genes which account for the majority of the variation between methylation values of healthy and cancer samples. A common way to identify the direction of highest variability in the data is by conducting a principal component analysis (PCA) which we also applied to our data.
+But first we need to twick our data. There are several +/- inf values in our m-values dataset, with which PCA doesn't function. These were cause by beta values of 0 and 1. The most straightforward solution would be to approximate these values with 0.00001 and 0.99999.
+
+```{r}
+cancer_beta_values[cancer_beta_values == 0] <- 0.00001
+cancer_beta_values[cancer_beta_values == 1] <- 0.99999
+healthy_beta_values[healthy_beta_values == 0] <- 0.00001
+healthy_beta_values[healthy_beta_values == 1] <- 0.99999
+```
+
+
+Aferward we merged the healthy and cancer m-value datasets with each other and applied the function for pca, which is `prcomb()`.
+
+```{r}
+m_values <- cbind(healthy_m_values, cancer_m_values)
+pca_m_values <- prcomp(t(m_values))
+summary(pca_m_values)
+```
+
+From the summary we can conclude that PC1 and PC2 together account for nearly 50% of the varaince in the data.
+Now, we want to find out the number of PC's we want to work with using the elbow method. 
+For that we need to calculate the proportion of variance "by hand" and plot that against the number of PC's.
+
+```{r}
+
+std_dev <- pca_m_values$sdev
+variance <- std_dev ^ 2
+prop_var <- variance / sum(variance)
+
+plot(
+  prop_var,
+  main = "Variance explained by principal components",
+  xlab = "Principal Components",
+  ylab = "Proportion of Variance Explained",
+  type = "b"
+)
+```
+
+The knick in the graph is not that apparent but by eyeballing we deciding to go with the first 3 PC's.
+To get a feel of how the samples were spread across PC1 and PC2 we plottet a scatterplot using `ggplot()`. Additionally we used the function plotly()` to define each point on the plot by pointing on it.
+
+```{r}
+install.packages("plotly")
+library(plotly)
+p <- ggplot(pcs_of_m_values, aes(PC1, PC2, group = Samples)) +
+  geom_point (aes(shape = Samples, color = Samples), size = 4) +
+  theme_bw()
+p <- p + scale_colour_manual(values = c("seagreen2", "indianred2"))
+p <- ggplotly(p)
+p
+```
+
+We can see that healthy and cancer samples are clustered into two different groups, although the individual samples group are not as tightly clustered. Reason for that can be batch effects which are an unwanted source of variation in our data. Thus we need to identify which PC has the most batch effects so that we can neglcets it further down the line of our analysis. 
+
 # References
 
 Sharp, A.J., Stathaki, E., Migliavacca, E., Brahmachary, M., Montgomery, S.B., Dupre, Y., and Antonarakis, S.E. (2011). DNA methylation profiles of human active and inactive X chromosomes. Genome Res 21, 1592-1600.

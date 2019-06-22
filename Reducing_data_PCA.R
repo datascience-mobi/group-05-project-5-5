@@ -520,12 +520,86 @@ library(gplots)
 my_palette <- colorRampPalette(c("indianred2", "seagreen2")) (n = 3)
 color_breaks <- c(seq(0, 0.01, length = 2),
                   seq(0.011, 1, length = 2))
-heatmap.2(p_values_matrix,
-          main = "Batch and biological effects",
-          trace = "none",
-          margins = c(10,12),
-          cexRow = 0.8,
-          Rowv = FALSE,
-          Colv = FALSE,
-          col = my_palette,
-          breaks = color_breaks)       
+heatmap.2(
+  p_values_matrix,
+  main = "Batch and biological effects",
+  trace = "none",
+  margins = c(10, 12),
+  cexRow = 0.8,
+  Rowv = FALSE,
+  Colv = FALSE,
+  col = my_palette,
+  breaks = color_breaks,
+  sepwidth = c(0.01, 0.01),
+  sepcolor = "black",
+  colsep = 1:ncol(p_values_matrix),
+  rowsep = 1:nrow(p_values_matrix)
+)      
+
+#------------ Conclusion from heatmap: biomaterial provider, cell type and disease have significant p-values in PC1
+# visualisation of the batch effects/biological factors on the PC1 against PC2 plot
+
+#---------biomaterial provider-------
+
+p_cluster_bio_prov <-
+  ggplot(
+    centers,
+    aes(
+      x = PC1,
+      y = PC2,
+      group = Samples,
+      fill = input_data_csv$BIOMATERIAL_PROVIDER
+    )
+  ) +
+  geom_point (aes(shape = Samples, color = Samples), size = 4) +
+  theme_bw() +
+  ggtitle("Biomaterial provider") +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank()
+  )
+p_cluster_bio_prov <- ggplotly(p_cluster_bio_prov)
+p_cluster_bio_prov
+
+#---------cell type------------
+
+p_cluster_cell_type <-
+  ggplot(centers,
+         aes(
+           x = PC1,
+           y = PC2,
+           group = Samples,
+           fill = input_data_csv$cellTypeShort
+         )) +
+  geom_point (aes(shape = Samples, color = Samples), size = 4) +
+  theme_bw() +
+  ggtitle("Cell type") +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank()
+  )
+p_cluster_cell_type <- ggplotly(p_cluster_cell_type)
+p_cluster_cell_type
+
+#---------disease---------------
+
+p_cluster_disease <-
+  ggplot(centers,
+         aes(
+           x = PC1,
+           y = PC2,
+           group = Samples,
+           fill = input_data_csv$DISEASE
+         )) +
+  geom_point (aes(shape = Samples, color = Samples), size = 4) +
+  theme_bw() +
+  ggtitle("Disease") +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank()
+  )
+p_cluster_disease <- ggplotly(p_cluster_disease)
+p_cluster_disease
