@@ -41,7 +41,7 @@ hist(
   breaks = "fd",
   main = "Cancer coverage: Mean frequency",
   xlab = "Common logarithm of coverages",
-  col = "indianred1",
+  col = "indianred2",
   border = "gray20"
 )
 abline(
@@ -81,7 +81,7 @@ hist(
   breaks = "fd",
   main = "Cancer coverage: SD frequency",
   xlab = "Common logarithm of coverages",
-  col = "indianred1",
+  col = "indianred2",
   border = "gray20"
 )
 abline(
