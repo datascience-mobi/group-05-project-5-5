@@ -605,6 +605,7 @@ hist(
 
 As we can see in the mean frequency histograms there are some values of common logarithms of m values which are more than 1.0 and less than -1.0, this is due to the beta values which were registered as 1 or 0 which resulted in m values of +inf and -inf. These will be removed before the principal component analysis. 
 Comparing the mean frequency histograms of cancer and healthy samples, we can conclude that both are right-skewed, whereas in healthy m values the effect is more prominent. In the mean m value histogram of healthy patients we can observe that the median lays around 0.6 which corresponds to beta values of around 0.8, in comparison to cancer where the median lays around 0.2 which correspond to beta vlues of 0.6. Important to mention is the fact that  there are far less genes which have low beta values in the healthy samples as in the cancer samples (judging by the tenth quantiles of the mean histograms). 
+But overall we can assume a normal distribution in healthy and cancer distribution.
 
 Furthermore, we created a data frame which only include our cancer related genes. This data frame is extended by gene name rather than ensembl name.
 ```{r}
@@ -947,8 +948,6 @@ The knick in the graph is not that apparent but by eyeballing we deciding to go 
 To get a feel of how the samples were spread across PC1 and PC2 we plottet a scatterplot using `ggplot()`. Additionally we used the function plotly()` to define each point on the plot by pointing on it.
 
 ```{r}
-install.packages("plotly")
-library(plotly)
 p <- ggplot(pcs_of_m_values, aes(PC1, PC2, group = Samples)) +
   geom_point (aes(shape = Samples, color = Samples), size = 4) +
   theme_bw()
@@ -958,6 +957,7 @@ p
 ```
 
 We can see that healthy and cancer samples are clustered into two different groups, although the individual samples group are not as tightly clustered. Reason for that can be batch effects which are an unwanted source of variation in our data. Thus we need to identify which PC has the most batch effects so that we can neglcets it further down the line of our analysis. 
+
 
 # References
 

@@ -103,31 +103,32 @@ p_cluster2 <- p_cluster2 + scale_colour_manual(values = c("seagreen2", "indianre
 #applying t test for each gene between the contron and cancer groups, generating a p value matrix for each gene
 
 #transposing the matrix for the t.test()
-transposed_clustering_data <- t(clustering_data)
-
+transposed_clustering_data <- as.data.frame(t(clustering_data))
 
 p_value_each_gene <-
   sapply(1:ncol(transposed_clustering_data), function(k) {
-    t.test(transposed_clustering_data[1:5, k],
+   t.test(transposed_clustering_data[1:5, k],
            transposed_clustering_data[6:10, k],
            var.equal = F)$p.value
   })
 
 p_value_each_gene <- as.data.frame(p_value_each_gene)
 
+# --------to do: adjust p values for multiple comparisons with p.adjust() Bonferroni-Holm ("BH") method
 
-# --------to do: adjust p values for multiple comparisons with p.adjust() "bonferroni" method
-
+p_value_each_gene$BH <-  p.adjust(p_value_each_gene$p_value_each_gene, 
+                                          method = "BH")
 #adding the rownames (gene names) to the matrix
 
-f2 <- cbind(f2, rownames(clustering_data))
+p_value_each_gene$Names <- rownames(clustering_data)
 
 # setting threshold for p-values to 0.05, and keeping the genes which fulfill this condition
 
-f2 <- f2[which(f2$f2 < 0.05), ]
+p_value_each_gene <- p_value_each_gene[which(p_value_each_gene$BH < 0.05), ]
 
-rownames(f2) <- f2$`rownames(clustering_data)`
+rownames(p_value_each_gene) <- p_value_each_gene$Names
 
 #leaving only the genes which fulfill the threshhold condition in the clustering_data dataset, which their corresponding m-values
 
-clustering_data <- clustering_data[c(rownames(f2)), ]
+clustering_data <- clustering_data[c(rownames(p_value_each_gene)), ]
+
