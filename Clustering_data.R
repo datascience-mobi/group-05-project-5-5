@@ -19,7 +19,7 @@ plot(
   type = "b"
 )
 
-#The kink is somewhere between 0 and 10000 genes, so lets zoom in
+#The kink is somewhere between 0 and 20000 genes, so lets zoom in
 
 plot(
   ranked_gene_loading[0 : 20000],
@@ -35,7 +35,7 @@ lwd = 2)
 
 #We will work with the top 14000 genes 
 
-#pick out the names of the top 3000 genes
+#pick out the names of the top 14000 genes
 top_14000_genes <- data.frame(ranked_gene_loading[1 : 14000])
 
 #get m values of top 3000 genes of every sample and put them into a new data frame
@@ -98,3 +98,36 @@ p_cluster2 <- ggplot(centers2, aes(centers2$`1`, centers2$`2`, group = Samples))
 p_cluster2 + geom_point (aes(color = Samples), size = 4) +
   theme_bw() 
 p_cluster2 <- p_cluster2 + scale_colour_manual(values = c("seagreen2", "indianred2"))  
+
+
+#applying t test for each gene between the contron and cancer groups, generating a p value matrix for each gene
+
+#transposing the matrix for the t.test()
+transposed_clustering_data <- t(clustering_data)
+
+
+p_value_each_gene <-
+  sapply(1:ncol(transposed_clustering_data), function(k) {
+    t.test(transposed_clustering_data[1:5, k],
+           transposed_clustering_data[6:10, k],
+           var.equal = F)$p.value
+  })
+
+p_value_each_gene <- as.data.frame(p_value_each_gene)
+
+
+# --------to do: adjust p values for multiple comparisons with p.adjust() "bonferroni" method
+
+#adding the rownames (gene names) to the matrix
+
+f2 <- cbind(f2, rownames(clustering_data))
+
+# setting threshold for p-values to 0.05, and keeping the genes which fulfill this condition
+
+f2 <- f2[which(f2$f2 < 0.05), ]
+
+rownames(f2) <- f2$`rownames(clustering_data)`
+
+#leaving only the genes which fulfill the threshhold condition in the clustering_data dataset, which their corresponding m-values
+
+clustering_data <- clustering_data[c(rownames(f2)), ]
