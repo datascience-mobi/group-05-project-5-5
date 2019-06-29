@@ -204,8 +204,24 @@ batch_pcs <- within(batch_pcs, {
 
 
 #####wilcoxon test####
-for ( ){
-  bio_prov_test_pc1 <- wilcox.test(
+p_lea_values_matrix <- matrix( , nrow = 8, ncol = 3)
+colnames(p_lea_values_matrix) <- c("PC1", "PC2", "PC3")
+rownames(p_lea_values_matrix) <-
+  c(
+    "BIOMATERIAL_PROVIDER",
+    "BIOMATERIAL_TYPE",
+    "DISEASE",
+    "DONOR_SEX",
+    "SEQ_RUNS_COUNT",
+    "DONOR_AGE",
+    "SUBMISSION_DATE",
+    "CELL_TYPE"
+  )
+
+
+for (column in 1: ncol(p_lea_values_matrix)) {
+  for (row in 1:1) {
+  wilcox.test(
     batch_pcs$PC1 ~ batch_pcs$BIOMATERIAL_PROVIDER,
     mu = 0,
     alt = "two.sided",
@@ -213,7 +229,7 @@ for ( ){
     conf.level = 0.99,
     paired = F,
     exact = T
-  )
+  )}}
   
   bio_type_test_pc1 <- wilcox.test(
     batch_pcs$PC1 ~ batch_pcs$BIOMATERIAL_TYPE,
@@ -568,9 +584,9 @@ colnames(p_values_matrix) <- c("PC1", "PC2", "PC3")
 ###and to determine which PC to use for clustering
 
 
-##ggplot(p_values_matrix, aes(rownames(p_values_matrix), colnames(p_values_matrix), z= p-values)) + geom_tile(aes(fill = Z)) + 
-  ##theme_bw() + 
-  ##scale_fill_gradient(low="white", high="blue") 
+##ggplot(p_values_matrix, aes(rownames(p_values_matrix), colnames(p_values_matrix), z= p-values)) + geom_tile(aes(fill = Z)) +
+##theme_bw() +
+##scale_fill_gradient(low="white", high="blue")
 install.packages("gplots")
 library(gplots)
 
@@ -591,7 +607,7 @@ heatmap.2(
   sepcolor = "black",
   colsep = 1:ncol(p_values_matrix),
   rowsep = 1:nrow(p_values_matrix)
-)      
+)
 
 #------------ Conclusion from heatmap: biomaterial provider, cell type and disease have significant p-values in PC1
 # visualisation of the batch effects/biological factors on the PC1 against PC2 plot
