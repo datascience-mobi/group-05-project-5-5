@@ -129,8 +129,9 @@ p_value_each_gene$hommel <-  p.adjust(p_value_each_gene$p_value_each_gene,
 p_value_each_gene$BY <-  p.adjust(p_value_each_gene$p_value_each_gene, 
                                   method = "BY")
 
-ggplot(p_value_each_gene, aes(x=p_value_each_gene[1], y = BH, col= )) + 
-  geom_line()
+plot(p_value_each_gene)
+#-> huge differences in adjustment of p values
+
 #adding the rownames (gene names) to the matrix
 
 p_value_each_gene$Names <- rownames(clustering_data)
