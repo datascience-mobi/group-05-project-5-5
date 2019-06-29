@@ -2,9 +2,9 @@
 title: "Are differentially methylated regions within genes associated with mantle cell lymphoma?"
 author: "Pascal Lafrenz, Mari Hambardzumyan, Lea Herzel, Franziska Lam"
 output:
+  pdf_document: default
   html_document: default
   word_document: default
-  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -25,7 +25,7 @@ For that purpose we received a data set and an annotation file. Below is a short
 
 MCL is a B cell lymphoma which has its origin in the inner mantle zone of the lymph nodes (Hiddemann and Bartram, 2010). The most characteristic mutation in MCL is the translocation between the long arm of chromosome 11 and the long arm of chromosome 14 (t(11;14)(q13;q32)) (Hiddemann and Bartram, 2010). This mutation affects the heavy chains of immunoglobuline and leads to a cycline D1 (CCD1) overexpression (Hiddemann and Bartram, 2010). Cyclin D1 is a transcription factor which controlls the cell cycle (Hiddemann and Bartram, 2010). Through the overexpression of CCD1 the cell is able to proliferate but it can also influence the gene expression of other genes (Hiddemann and Bartram, 2010). It is observed, that a CCD1 overexpression leads to a deregulation of transcription factors and repair genes (Hiddemann and Bartram, 2010). 
 
-Epigenetic modifications have an impact on DNA expression (Gibney and Nolan, 2010) and are important in some tumor genesis (Horn et al., 2009). These modifications are for example DNA methylation, histone modification and RNA mediated processes (Gibney and Nolan, 2010). In our project we want to focus on DNA methylation. In humans only cytosines can be methylated (Walter and Hümpel, 2017). If the methylation should be inherited it needs to be in a CpG dimer, because in such a dimer there is a cytosine in the mother and the doughter strand (Horn et al., 2009). After the DNA replication the enzyme DNA-methyltransferase 1 is able to methylate the doughter stand if there is a methypation in the CpG of the mother strand (Horn et al., 2009). During the lifetime of a cell different genes need to be expressed and therefore methylated. DNA methyltransferase 3a and 3b is able to methylate cytosine even though the there is no mehtylation in the complementary strand (Horn et al., 2009).
+Epigenetic modifications have an impact on DNA expression (Gibney and Nolan, 2010) and are important in some tumor genesis (Horn et al., 2009). These modifications are for example DNA methylation, histone modification and RNA mediated processes (Gibney and Nolan, 2010). In our project we want to focus on DNA methylation. In humans only cytosines can be methylated (Walter and HÃ¼mpel, 2017). If the methylation should be inherited it needs to be in a CpG dimer, because in such a dimer there is a cytosine in the mother and the doughter strand (Horn et al., 2009). After the DNA replication the enzyme DNA-methyltransferase 1 is able to methylate the doughter stand if there is a methypation in the CpG of the mother strand (Horn et al., 2009). During the lifetime of a cell different genes need to be expressed and therefore methylated. DNA methyltransferase 3a and 3b is able to methylate cytosine even though the there is no mehtylation in the complementary strand (Horn et al., 2009).
 Methylation in promoters lead normally to an inactivation of the the following gene (Horn et al., 2009). But there is also the possibility of activating a gene by methylation. For this the methylation needs to be in the gene.                         Quelle??
 
 
@@ -605,6 +605,7 @@ hist(
 
 As we can see in the mean frequency histograms there are some values of common logarithms of m values which are more than 1.0 and less than -1.0, this is due to the beta values which were registered as 1 or 0 which resulted in m values of +inf and -inf. These will be removed before the principal component analysis. 
 Comparing the mean frequency histograms of cancer and healthy samples, we can conclude that both are right-skewed, whereas in healthy m values the effect is more prominent. In the mean m value histogram of healthy patients we can observe that the median lays around 0.6 which corresponds to beta values of around 0.8, in comparison to cancer where the median lays around 0.2 which correspond to beta vlues of 0.6. Important to mention is the fact that  there are far less genes which have low beta values in the healthy samples as in the cancer samples (judging by the tenth quantiles of the mean histograms). 
+But overall we can assume a normal distribution in healthy and cancer distribution.
 
 Furthermore, we created a data frame which only include our cancer related genes. This data frame is extended by gene name rather than ensembl name.
 ```{r}
@@ -902,7 +903,10 @@ $$~$$
 ## Part 3: Data reduction
 $$~$$
 
-The aim of this part of the project is to narrow down our data to the significant genes which account for the majority of the variation between methylation values of healthy and cancer samples. A common way to identify the direction of highest variability in the data is by conducting a principal component analysis (PCA) which we also applied to our data.
+The aim of this part of the project is to narrow down our data to the significant genes which account for the majority of the variation between methylation values of healthy and cancer samples. Therefore, we need to reduce high dimensional data into low dimensional data with few information loss. 
+A common way to identify the direction of highest variability in the data is by conducting a principal component analysis (PCA) which we also applied to our data. Hence the covariance matrix is used to calculate the eigenvector which correspond to the largest eigenvalues (the principal components). These eigenvectors are used to reconstruct a significant fraction of the variance of the original data.
+These new principal components (features) can now be used for predictive analysis and model building. A crucial benefit is, that each principal component is independent of one another.
+
 But first we need to twick our data. There are several +/- inf values in our m-values dataset, with which PCA doesn't function. These were cause by beta values of 0 and 1. The most straightforward solution would be to approximate these values with 0.00001 and 0.99999.
 
 ```{r}
@@ -913,7 +917,7 @@ healthy_beta_values[healthy_beta_values == 1] <- 0.99999
 ```
 
 
-Aferward we merged the healthy and cancer m-value datasets with each other and applied the function for pca, which is `prcomb()`.
+Aferwards we merged the healthy and cancer m-value datasets with each other and applied the function for pca, which is `prcomp()`.
 
 ```{r}
 m_values <- cbind(healthy_m_values, cancer_m_values)
@@ -944,8 +948,6 @@ The knick in the graph is not that apparent but by eyeballing we deciding to go 
 To get a feel of how the samples were spread across PC1 and PC2 we plottet a scatterplot using `ggplot()`. Additionally we used the function plotly()` to define each point on the plot by pointing on it.
 
 ```{r}
-install.packages("plotly")
-library(plotly)
 p <- ggplot(pcs_of_m_values, aes(PC1, PC2, group = Samples)) +
   geom_point (aes(shape = Samples, color = Samples), size = 4) +
   theme_bw()
@@ -955,6 +957,7 @@ p
 ```
 
 We can see that healthy and cancer samples are clustered into two different groups, although the individual samples group are not as tightly clustered. Reason for that can be batch effects which are an unwanted source of variation in our data. Thus we need to identify which PC has the most batch effects so that we can neglcets it further down the line of our analysis. 
+
 
 # References
 
