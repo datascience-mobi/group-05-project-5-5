@@ -1,3 +1,5 @@
+#----data preparation for pca-----------------------------------------------------------------------------------------
+
 ## replacing 0 and 1 in beta values with approximate values, thus no -inf and +inf values in m values
 
 cancer_beta_values[cancer_beta_values == 0] <- 0.00001
@@ -102,7 +104,7 @@ p
 #find out how much clusters do we need to group samples (obviously 2 would be perfect because healthy/cancer)
 
 
-######################## clustering with all genes, not only the significant ones############################
+#--------------clustering with all genes, not only the significant ones-----------------------------------------------
 
 wss <-  sapply(1:5, function(k) {
   kmeans(x = pca_m_values$x,
@@ -202,10 +204,65 @@ batch_pcs <- within(batch_pcs, {
 
 
 #####wilcoxon test####
+for ( ){
+  bio_prov_test_pc1 <- wilcox.test(
+    batch_pcs$PC1 ~ batch_pcs$BIOMATERIAL_PROVIDER,
+    mu = 0,
+    alt = "two.sided",
+    conf.int = T,
+    conf.level = 0.99,
+    paired = F,
+    exact = T
+  )
+  
+  bio_type_test_pc1 <- wilcox.test(
+    batch_pcs$PC1 ~ batch_pcs$BIOMATERIAL_TYPE,
+    mu = 0,
+    alt = "two.sided",
+    conf.int = T,
+    conf.level = 0.99,
+    paired = F,
+    exact = T
+  )
+  
+  
+  disease_test_pc1 <- wilcox.test(
+    batch_pcs$PC1 ~ batch_pcs$DISEASE,
+    mu = 0,
+    alt = "two.sided",
+    conf.int = T,
+    conf.level = 0.99,
+    paired = F,
+    exact = T
+  )
+  
+  donor_sex_test_pc1 <- wilcox.test(
+    batch_pcs$PC1 ~ batch_pcs$DONOR_SEX,
+    mu = 0,
+    alt = "two.sided",
+    conf.int = T,
+    conf.level = 0.99,
+    paired = F,
+    exact = T
+  )
+  
+  cell_type_test_pc1 <- wilcox.test(
+    batch_pcs$PC1 ~ batch_pcs$cellTypeShort,
+    mu = 0,
+    alt = "two.sided",
+    conf.int = T,
+    conf.level = 0.99,
+    paired = F,
+    exact = T
+  )
+}
+
 #--------PC1---------
 ##H0: x and y differ by a location shift of mu=0
 ##alternative (two-sided/greater/less) and exact (value of p value) didn't need to be set
 ##(because are set like our settings by default. But it helps understanding under which conditions the test was made.
+
+
 
 bio_prov_test_pc1 <- wilcox.test(
   batch_pcs$PC1 ~ batch_pcs$BIOMATERIAL_PROVIDER,
