@@ -109,7 +109,7 @@ p_value_each_gene <-
   sapply(1:ncol(transposed_clustering_data), function(k) {
    t.test(transposed_clustering_data[1:5, k],
            transposed_clustering_data[6:10, k],
-           var.equal = F)$p.value
+           var.equal = T)$p.value
   })
 
 p_value_each_gene <- as.data.frame(p_value_each_gene)
