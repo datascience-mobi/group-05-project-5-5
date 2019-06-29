@@ -66,7 +66,6 @@ k <-
     centers = 2,
     iter.max = 100
   )#$centers
-View(k)
 
 centers2 <- kmeans(
   x = clustering_data,
@@ -169,4 +168,11 @@ mean_values_together <- as.matrix(cbind(cancer_mean_m_values_diff_methylated, he
 absolute_diff_m_values <- as.matrix(
   sapply(1:nrow(mean_values_together), function(k) {
     abs(diff(mean_values_together[k,]))}))
+# p_values and mean m-value differences in one data frame
+
+p_value_each_gene <- as.data.frame( cbind(p_value_each_gene, absolute_diff_m_values))
+
+#finding diff methyalated genes based on 2 criteria: p_value < 1.5e-03 and mean m-value diff > 1.5
+
+p_value_each_gene <- p_value_each_gene[(p_value_each_gene$BH < 0.0197) & (p_value_each_gene$absolute_diff_m_values > 10),]
 
