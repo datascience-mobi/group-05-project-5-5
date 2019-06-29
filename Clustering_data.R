@@ -117,7 +117,20 @@ p_value_each_gene <- as.data.frame(p_value_each_gene)
 # --------to do: adjust p values for multiple comparisons with p.adjust() Bonferroni-Holm ("BH") method
 
 p_value_each_gene$BH <-  p.adjust(p_value_each_gene$p_value_each_gene, 
-                                          method = "BH")
+                                  method = "BH")
+p_value_each_gene$bonferroni <-  p.adjust(p_value_each_gene$p_value_each_gene, 
+                                  method = "bonferroni")
+p_value_each_gene$holm <-  p.adjust(p_value_each_gene$p_value_each_gene, 
+                                  method = "holm")
+p_value_each_gene$hochberg <-  p.adjust(p_value_each_gene$p_value_each_gene, 
+                                  method = "hochberg")
+p_value_each_gene$hommel <-  p.adjust(p_value_each_gene$p_value_each_gene, 
+                                  method = "hommel")
+p_value_each_gene$BY <-  p.adjust(p_value_each_gene$p_value_each_gene, 
+                                  method = "BY")
+
+ggplot(p_value_each_gene, aes(x=p_value_each_gene[1], y = BH, col= )) + 
+  geom_line()
 #adding the rownames (gene names) to the matrix
 
 p_value_each_gene$Names <- rownames(clustering_data)
