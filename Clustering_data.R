@@ -132,3 +132,27 @@ rownames(p_value_each_gene) <- p_value_each_gene$Names
 
 clustering_data <- clustering_data[c(rownames(p_value_each_gene)), ]
 
+
+#findin top differentially methylated genes based on p-values and differences in mean m-values
+
+# in an additional columns calculating mean m-value of healthy and cancer samples in clustering_data
+
+#healthy
+
+healthy_mean_m_values_diff_methylated <- as.matrix(
+sapply(1:nrow(clustering_data), function(k) {
+  rowMeans(clustering_data[k, 1:5])}))
+
+#cancer
+
+cancer_mean_m_values_diff_methylated <- as.matrix(
+  sapply(1:nrow(clustering_data), function(k) {
+    rowMeans(clustering_data[k, 6:10])}))
+mean_values_together <- as.matrix(cbind(cancer_mean_m_values_diff_methylated, healthy_mean_m_values_diff_methylated))
+
+#calculating abs difference
+
+absolute_diff_m_values <- as.matrix(
+  sapply(1:nrow(mean_values_together), function(k) {
+    abs(diff(mean_values_together[k,]))}))
+
