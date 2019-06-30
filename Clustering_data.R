@@ -56,8 +56,8 @@ plot(
   ylab = "Total within-clusters sum of squares"
 )
 
-##it seems like we need 3 clusters (kink in the curve)
-##but we will go with 2 because our samples should only be put into 2 clusters (healthy/cancer)
+##it seems like we need 2 clusters (kink in the curve)
+##therefore we will go with 2 because our samples should only be put into 2 clusters (healthy/cancer)
 
 ##---------------maybe we should delete this following part or look up again how to plot k means clustering--------------------------------------
 
