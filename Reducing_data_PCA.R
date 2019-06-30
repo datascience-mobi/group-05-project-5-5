@@ -203,8 +203,8 @@ batch_pcs <- within(batch_pcs, {
 
 
 
-#####wilcoxon test####
-p_lea_values_matrix <- matrix( , nrow = 8, ncol = 3)
+#####wilcoxon test####PC1
+p_lea_values_matrix <- matrix(nrow = 8, ncol = 3)
 colnames(p_lea_values_matrix) <- c("PC1", "PC2", "PC3")
 rownames(p_lea_values_matrix) <-
   c(
@@ -219,31 +219,21 @@ rownames(p_lea_values_matrix) <-
   )
 
 
-for (column in 1: ncol(p_lea_values_matrix)) {
-  for (row in 1:1) {
-  wilcox.test(
-    batch_pcs$PC1 ~ batch_pcs$BIOMATERIAL_PROVIDER,
+for (i in 1: ncol(p_lea_values_matrix)) {
+  
+    bio_prov_test <- wilcox.test(
+    batch_pcs [ ,i] ~ batch_pcs$BIOMATERIAL_PROVIDER,    
     mu = 0,
     alt = "two.sided",
     conf.int = T,
     conf.level = 0.99,
     paired = F,
     exact = T
-  )}}
+    )
+    p_lea_values_matrix  [1, i] <- as.matrix(bio_prov_test$p.value)
   
-  bio_type_test_pc1 <- wilcox.test(
-    batch_pcs$PC1 ~ batch_pcs$BIOMATERIAL_TYPE,
-    mu = 0,
-    alt = "two.sided",
-    conf.int = T,
-    conf.level = 0.99,
-    paired = F,
-    exact = T
-  )
-  
-  
-  disease_test_pc1 <- wilcox.test(
-    batch_pcs$PC1 ~ batch_pcs$DISEASE,
+  bio_type_test <- wilcox.test(
+    batch_pcs [ ,i] ~ batch_pcs$BIOMATERIAL_TYPE,
     mu = 0,
     alt = "two.sided",
     conf.int = T,
@@ -251,9 +241,10 @@ for (column in 1: ncol(p_lea_values_matrix)) {
     paired = F,
     exact = T
   )
+  p_lea_values_matrix  [2, i] <- as.matrix(bio_type_test$p.value)
   
-  donor_sex_test_pc1 <- wilcox.test(
-    batch_pcs$PC1 ~ batch_pcs$DONOR_SEX,
+  disease_test <- wilcox.test(
+    batch_pcs[ ,i] ~ batch_pcs$DISEASE,
     mu = 0,
     alt = "two.sided",
     conf.int = T,
@@ -261,9 +252,10 @@ for (column in 1: ncol(p_lea_values_matrix)) {
     paired = F,
     exact = T
   )
+  p_lea_values_matrix  [3, i] <- as.matrix(disease_test$p.value)
   
-  cell_type_test_pc1 <- wilcox.test(
-    batch_pcs$PC1 ~ batch_pcs$cellTypeShort,
+  donor_sex_test <- wilcox.test(
+    batch_pcs [ ,i] ~ batch_pcs$DONOR_SEX,
     mu = 0,
     alt = "two.sided",
     conf.int = T,
@@ -271,6 +263,54 @@ for (column in 1: ncol(p_lea_values_matrix)) {
     paired = F,
     exact = T
   )
+  p_lea_values_matrix  [4, i] <- as.matrix(donor_sex_test$p.value)
+  
+  cor.perm <- function (x, y, nperm = 1000)
+  {
+    r.obs <- cor (x = x, y = y)
+    p_value <- cor.test (x = x, y = y)$p.value
+    #  r.per <- replicate (nperm, expr = cor (x = x, y = sample (y)))
+    r.per <-
+      sapply (
+        1:nperm,
+        FUN = function (i)
+          cor (x = x, y = sample (y))
+      )
+    r.per <- c(r.per, r.obs)
+    hist (r.per, xlim = c(-1, 1))
+    abline (v = r.obs, col = 'red')
+    P.per <- sum (abs (r.per) >= abs (r.obs)) / (nperm + 1)
+    return (list (
+      r.obs = r.obs,
+      p_value = p_value,
+      P.per = P.per
+    ))
+  }
+  
+  seq_runs_count_test <-
+    cor.perm (x = batch_pcs [ ,i], y = batch_pcs$SEQ_RUNS_COUNT)
+  p_lea_values_matrix  [5, i] <- as.matrix(seq_runs_count_test$p_value)
+  
+  donor_age_test <-
+    cor.perm (x = batch_pcs [ ,i],
+              y = c(62, 47, 72, 52, 62, 82, 67, 82, 77, 62))
+  p_lea_values_matrix  [6, i] <- as.matrix(donor_age_test$p_value)
+  
+  submission_date_test <-
+    kruskal.test(batch_pcs [ ,i] ~ batch_pcs$FIRST_SUBMISSION_DATE,
+                 data = batch_pcs)
+  p_lea_values_matrix  [7, i] <- as.matrix(submission_date_test$p.value)
+  
+  cell_type_test <- wilcox.test(
+    batch_pcs [ ,i] ~ batch_pcs$cellTypeShort,
+    mu = 0,
+    alt = "two.sided",
+    conf.int = T,
+    conf.level = 0.99,
+    paired = F,
+    exact = T
+  )
+  p_lea_values_matrix  [8, i] <- as.matrix(cell_type_test$p.value)
 }
 
 #--------PC1---------
