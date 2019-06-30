@@ -15,21 +15,23 @@ library(corpcor)
 #how much does our variables correlate
 correlation_top_genes <- cor(clustering_data)
 corrplot(correlation_top_genes)
-ggpairs(clustering_data)
+ggpairs(as.data.frame(t(clustering_data)))
+heatmap(as.matrix(clustering_data))
+hist(cor(t(clustering_data)), main = "Genes correlation", xlab = "Correlation value")
 #-> pretty heavy correlation
 
 #first creating data frame which has dichotomous outcome variable included, 0 -> healthy, 1 -> cancer
-regression_data <- cbind(Health_status = as.factor(c(
-  "Healthy",
-  "Healthy",
-  "Healthy",
-  "Healthy",
-  "Healthy",
-  "Cancer",
-  "Cancer",
-  "Cancer",
-  "Cancer",
-  "Cancer"
+regression_data <- cbind(Health_status = as.numeric(c(
+  0,
+  0,
+  0,
+  0,
+  0,
+  1,
+  1,
+  1,
+  1,
+  1
 )), as.data.frame(t(clustering_data)))
 
 regression_data <- regression_data[, sample(ncol(regression_data))]
