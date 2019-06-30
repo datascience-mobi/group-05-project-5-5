@@ -120,8 +120,15 @@ p_value_each_gene <- as.data.frame(p_value_each_gene)
 #--------------------------t test for important genes according to literature-----------------------------
 #put clustering data of imortant genes into a new data frame to apply t test (unlist the list of important genes because with "c" we are expecting a vector)
 clust_data_important_genes <- cbind(transposed_clustering_data[,c(unlist(important_genes))])
-clustering_data <- rbind(m_values[c(as.list.data.frame(rownames(top_14000_genes))),])
 
+p_value_important_genes <-
+  sapply(1:ncol(clust_data_important_genes), function(k) {
+    t.test(clust_data_important_genes[1:5, k],
+           clust_data_important_genes[6:10, k],
+           var.equal = T)$p.value
+  })
+
+p_value_important_genes <- as.data.frame(cbind(important_genes, p_value_important_genes))
 
 # --------to do: adjust p values for multiple comparisons with p.adjust() Bonferroni-Holm ("BH") method
 
