@@ -38,7 +38,7 @@ lwd = 2)
 #pick out the names of the top 14000 genes
 top_14000_genes <- data.frame(ranked_gene_loading[1 : 14000])
 
-#get m values of top 3000 genes of every sample and put them into a new data frame
+#get m values of top 14000 genes of every sample and put them into a new data frame
 clustering_data <- rbind(m_values[c(as.list.data.frame(rownames(top_14000_genes))),])
 
 #How many clusters do we need?
@@ -56,7 +56,10 @@ plot(
   ylab = "Total within-clusters sum of squares"
 )
 
-##--> it seems we need 2 clusters (kink in the curve)
+##it seems like we need 3 clusters (kink in the curve)
+##but we will go with 2 because our samples should only be put into 2 clusters (healthy/cancer)
+
+##---------------maybe we should delete this following part or look up again how to plot k means clustering--------------------------------------
 
 #find out if healthy and cancer samples are seperated
 #variable with two center positions of value of rotated data
@@ -98,8 +101,9 @@ p_cluster2 + geom_point (aes(color = Samples), size = 4) +
   theme_bw() 
 p_cluster2 <- p_cluster2 + scale_colour_manual(values = c("seagreen2", "indianred2"))  
 
+#-----------------------------------------------------------------------------------------------
 
-#applying t test for each gene between the contron and cancer groups, generating a p value matrix for each gene
+#applying t test for each gene between the control and cancer groups, generating a p value matrix for each gene
 
 #transposing the matrix for the t.test()
 transposed_clustering_data <- as.data.frame(t(clustering_data))
@@ -112,6 +116,12 @@ p_value_each_gene <-
   })
 
 p_value_each_gene <- as.data.frame(p_value_each_gene)
+
+#--------------------------t test for important genes according to literature-----------------------------
+#put clustering data of imortant genes into a new data frame to apply t test (unlist the list of important genes because with "c" we are expecting a vector)
+clust_data_important_genes <- cbind(transposed_clustering_data[,c(unlist(important_genes))])
+clustering_data <- rbind(m_values[c(as.list.data.frame(rownames(top_14000_genes))),])
+
 
 # --------to do: adjust p values for multiple comparisons with p.adjust() Bonferroni-Holm ("BH") method
 
