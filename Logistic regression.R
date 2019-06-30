@@ -37,7 +37,7 @@ regression_data <- cbind(Health_status = as.numeric(c(
 regression_data <- regression_data[, sample(ncol(regression_data))]
 #regression model, family: logistic regression, robust: robust standard errors (HC1: stata analysis), confint = TRUE + digits = 3: confidence intervall
 regression_model <- glm(formula = Health_status ~ ., family = binomial(link = "logit"), data = regression_data, maxit = 4)
-Lr <- step(regression_model)
+
 
 summary(regression_model)
 summ(regression_model, robust = "HC1")
