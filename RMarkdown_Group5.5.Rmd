@@ -912,7 +912,7 @@ The aim of this part of the project is to narrow down our data to the significan
 A common way to identify the direction of highest variability in the data is by conducting a principal component analysis (PCA) which we also applied to our data. Hence the covariance matrix is used to calculate the eigenvector which correspond to the largest eigenvalues (the principal components). These eigenvectors are used to reconstruct a significant fraction of the variance of the original data.
 These new principal components (features) can now be used for predictive analysis and model building. A crucial benefit is, that each principal component is independent of one another.
 
-But first we need to twick our data. There are several +/- inf values in our m-values dataset, with which PCA doesn't function. These were cause by beta values of 0 and 1. The most straightforward solution would be to approximate these values with 0.00001 and 0.99999.
+But first we need to tweak our data. There are several +/- infinity values in our m-values dataset, with which PCA doesn't function. These were cause by beta values of 0 and 1. The most straightforward solution would be to approximate these values with 0.00001 and 0.99999.
 
 ```{r}
 cancer_beta_values[cancer_beta_values == 0] <- 0.00001
@@ -920,6 +920,9 @@ cancer_beta_values[cancer_beta_values == 1] <- 0.99999
 healthy_beta_values[healthy_beta_values == 0] <- 0.00001
 healthy_beta_values[healthy_beta_values == 1] <- 0.99999
 ```
+
+
+Aferwards we merged the healthy and cancer m-value datasets with each other and applied the function for pca.
 
 ```{r, echo=FALSE}
 cancer_m_values <-
@@ -951,11 +954,11 @@ Aferwards we merged the healthy and cancer m-value datasets with each other and 
 m_values <- cbind(healthy_m_values, cancer_m_values)
 pca_m_values <- prcomp(t(m_values))
 summary(pca_m_values)
+
 ```
 
 From the summary we can conclude that PC1 and PC2 together account for nearly 50% of the varaince in the data.
-Now, we want to find out the number of PC's we want to work with using the elbow method. 
-For that we need to calculate the proportion of variance "by hand" and plot that against the number of PC's.
+Now, we want to find out the number of PC's we want to work with using the elbow method. For that we need to calculate the proportion of variance "by hand" and plot that against the number of PC's.
 
 ```{r}
 
@@ -973,7 +976,27 @@ plot(
 ```
 
 The knick in the graph is not that apparent but by eyeballing we deciding to go with the first 3 PC's.
-To get a feel of how the samples were spread across PC1 and PC2 we plottet a scatterplot using `ggplot()`. Additionally we used the function plotly()` to define each point on the plot by pointing on it.
+
+Now we want to perform kmeans clustering. We know that there should be two clusters (healthy/cancer) but we still wanted to additionaly prove that. So we plotted the number of clusteres against the total within-clusters sum of squares.
+To get a feel of how the samples were spread across PC1 and PC2 we plottet a scatterplot. Additionally we used the function `plotly()` to define each point on the plot by pointing on it.
+
+
+```{r}
+wss <-  sapply(1:5, function(k) {
+  kmeans(x = pca_m_values$x,
+         centers = k,
+         iter.max = 100)$tot.withinss
+})
+plot(
+  1:5,
+  wss,
+  type = "b",
+  pch = 19,
+  xlab = "Number of clusters K",
+  ylab = "Total within-clusters sum of squares"
+)
+```
+
 
 ```{r}
 pcs_of_m_values <-
@@ -999,6 +1022,22 @@ p <- p + scale_colour_manual(values = c("seagreen2", "indianred2"))
 p <- ggplotly(p)
 p
 ```
+
+
+We can see that healthy and cancer samples are clustered into two different groups, although the individual samples group are not as tightly clustered. Healthy samples are more tightly clustered than that of cancer, because as we have seen different mutations have been associated with MCL. Another reason for long distances between samples of each cluster can be batch effects which are an unwanted source of variation in our data (Leek, 2012). Thus we need to identify which PC has the most batch effects so that we can neglcets it further down the line of our analysis. 
+
+
+```{r}
+plot(
+  prop_var,
+  main = "Variance explained by principal components",
+  xlab = "Principal Components",
+  ylab = "Proportion of Variance Explained",
+  type = "b"
+)
+```
+
+With the help of the elbow method we have chosen 2
 
 We can see that healthy and cancer samples are clustered into two different groups, although the individual samples group are not as tightly clustered. Reason for that can be batch effects which are an unwanted source of variation in our data. Thus we need to identify which PC has the most batch effects so that we can neglect it further down the line of our analysis. 
 
@@ -1242,3 +1281,6 @@ Wang, Y., Hou, Y., Zhang, W., Alvarez, A.A., Bai, Y., Hu, B., Cheng, S.Y., Yang,
 Wasik, A.M., Lord, M., Wang, X., Zong, F., Andersson, P., Kimby, E., Christensson, B., Karimi, M., and Sander, B. (2013). SOXC transcription factors in mantle cell lymphoma: the role of promoter methylation in SOX11 expression. Sci Rep 3, 1400.
 
 Welch, C., Santra, M.K., El-Assaad, W., Zhu, X., Huber, W.E., Keys, R.A., Teodoro, J.G., and Green, M.R. (2009). Identification of a protein, G0S2, that lacks Bcl-2 homology domains and interacts with and antagonizes Bcl-2. Cancer Res 69, 6782-6789.
+
+Leek, J.T., Johnson, W.E., Parker, H.S., Jaffe, A.E., and Storey, J.D. (2012). The sva package for removing batch effects and other unwanted variation in high-throughput experiments. BIOINFORMATICS 28, 2 S.
+

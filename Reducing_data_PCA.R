@@ -203,10 +203,10 @@ batch_pcs <- within(batch_pcs, {
 
 
 
-#####wilcoxon test####PC1
-p_lea_values_matrix <- matrix(nrow = 8, ncol = 3)
-colnames(p_lea_values_matrix) <- c("PC1", "PC2", "PC3")
-rownames(p_lea_values_matrix) <-
+#------p-values---------------------------------------------------------
+p_values_matrix <- matrix(nrow = 8, ncol = 3)
+colnames(p_values_matrix) <- c("PC1", "PC2", "PC3")
+rownames(p_values_matrix) <-
   c(
     "BIOMATERIAL_PROVIDER",
     "BIOMATERIAL_TYPE",
@@ -218,274 +218,7 @@ rownames(p_lea_values_matrix) <-
     "CELL_TYPE"
   )
 
-
-for (i in 1: ncol(p_lea_values_matrix)) {
-  
-    bio_prov_test <- wilcox.test(
-    batch_pcs [ ,i] ~ batch_pcs$BIOMATERIAL_PROVIDER,    
-    mu = 0,
-    alt = "two.sided",
-    conf.int = T,
-    conf.level = 0.99,
-    paired = F,
-    exact = T
-    )
-    p_lea_values_matrix  [1, i] <- as.matrix(bio_prov_test$p.value)
-  
-  bio_type_test <- wilcox.test(
-    batch_pcs [ ,i] ~ batch_pcs$BIOMATERIAL_TYPE,
-    mu = 0,
-    alt = "two.sided",
-    conf.int = T,
-    conf.level = 0.99,
-    paired = F,
-    exact = T
-  )
-  p_lea_values_matrix  [2, i] <- as.matrix(bio_type_test$p.value)
-  
-  disease_test <- wilcox.test(
-    batch_pcs[ ,i] ~ batch_pcs$DISEASE,
-    mu = 0,
-    alt = "two.sided",
-    conf.int = T,
-    conf.level = 0.99,
-    paired = F,
-    exact = T
-  )
-  p_lea_values_matrix  [3, i] <- as.matrix(disease_test$p.value)
-  
-  donor_sex_test <- wilcox.test(
-    batch_pcs [ ,i] ~ batch_pcs$DONOR_SEX,
-    mu = 0,
-    alt = "two.sided",
-    conf.int = T,
-    conf.level = 0.99,
-    paired = F,
-    exact = T
-  )
-  p_lea_values_matrix  [4, i] <- as.matrix(donor_sex_test$p.value)
-  
-  cor.perm <- function (x, y, nperm = 1000)
-  {
-    r.obs <- cor (x = x, y = y)
-    p_value <- cor.test (x = x, y = y)$p.value
-    #  r.per <- replicate (nperm, expr = cor (x = x, y = sample (y)))
-    r.per <-
-      sapply (
-        1:nperm,
-        FUN = function (i)
-          cor (x = x, y = sample (y))
-      )
-    r.per <- c(r.per, r.obs)
-    hist (r.per, xlim = c(-1, 1))
-    abline (v = r.obs, col = 'red')
-    P.per <- sum (abs (r.per) >= abs (r.obs)) / (nperm + 1)
-    return (list (
-      r.obs = r.obs,
-      p_value = p_value,
-      P.per = P.per
-    ))
-  }
-  
-  seq_runs_count_test <-
-    cor.perm (x = batch_pcs [ ,i], y = batch_pcs$SEQ_RUNS_COUNT)
-  p_lea_values_matrix  [5, i] <- as.matrix(seq_runs_count_test$p_value)
-  
-  donor_age_test <-
-    cor.perm (x = batch_pcs [ ,i],
-              y = c(62, 47, 72, 52, 62, 82, 67, 82, 77, 62))
-  p_lea_values_matrix  [6, i] <- as.matrix(donor_age_test$p_value)
-  
-  submission_date_test <-
-    kruskal.test(batch_pcs [ ,i] ~ batch_pcs$FIRST_SUBMISSION_DATE,
-                 data = batch_pcs)
-  p_lea_values_matrix  [7, i] <- as.matrix(submission_date_test$p.value)
-  
-  cell_type_test <- wilcox.test(
-    batch_pcs [ ,i] ~ batch_pcs$cellTypeShort,
-    mu = 0,
-    alt = "two.sided",
-    conf.int = T,
-    conf.level = 0.99,
-    paired = F,
-    exact = T
-  )
-  p_lea_values_matrix  [8, i] <- as.matrix(cell_type_test$p.value)
-}
-
-#--------PC1---------
-##H0: x and y differ by a location shift of mu=0
-##alternative (two-sided/greater/less) and exact (value of p value) didn't need to be set
-##(because are set like our settings by default. But it helps understanding under which conditions the test was made.
-
-
-
-bio_prov_test_pc1 <- wilcox.test(
-  batch_pcs$PC1 ~ batch_pcs$BIOMATERIAL_PROVIDER,
-  mu = 0,
-  alt = "two.sided",
-  conf.int = T,
-  conf.level = 0.99,
-  paired = F,
-  exact = T
-)
-
-bio_type_test_pc1 <- wilcox.test(
-  batch_pcs$PC1 ~ batch_pcs$BIOMATERIAL_TYPE,
-  mu = 0,
-  alt = "two.sided",
-  conf.int = T,
-  conf.level = 0.99,
-  paired = F,
-  exact = T
-)
-
-
-disease_test_pc1 <- wilcox.test(
-  batch_pcs$PC1 ~ batch_pcs$DISEASE,
-  mu = 0,
-  alt = "two.sided",
-  conf.int = T,
-  conf.level = 0.99,
-  paired = F,
-  exact = T
-)
-
-donor_sex_test_pc1 <- wilcox.test(
-  batch_pcs$PC1 ~ batch_pcs$DONOR_SEX,
-  mu = 0,
-  alt = "two.sided",
-  conf.int = T,
-  conf.level = 0.99,
-  paired = F,
-  exact = T
-)
-
-cell_type_test_pc1 <- wilcox.test(
-  batch_pcs$PC1 ~ batch_pcs$cellTypeShort,
-  mu = 0,
-  alt = "two.sided",
-  conf.int = T,
-  conf.level = 0.99,
-  paired = F,
-  exact = T
-)
-
-#-------PC2----------
-
-bio_prov_test_pc2 <- wilcox.test(
-  batch_pcs$PC2 ~ batch_pcs$BIOMATERIAL_PROVIDER,
-  mu = 0,
-  alt = "two.sided",
-  conf.int = T,
-  conf.level = 0.99,
-  paired = F,
-  exact = T
-)
-
-bio_type_test_pc2 <- wilcox.test(
-  batch_pcs$PC2 ~ batch_pcs$BIOMATERIAL_TYPE,
-  mu = 0,
-  alt = "two.sided",
-  conf.int = T,
-  conf.level = 0.99,
-  paired = F,
-  exact = T
-)
-
-
-disease_test_pc2 <- wilcox.test(
-  batch_pcs$PC2 ~ batch_pcs$DISEASE,
-  mu = 0,
-  alt = "two.sided",
-  conf.int = T,
-  conf.level = 0.99,
-  paired = F,
-  exact = T
-)
-
-donor_sex_test_pc2 <- wilcox.test(
-  batch_pcs$PC2 ~ batch_pcs$DONOR_SEX,
-  mu = 0,
-  alt = "two.sided",
-  conf.int = T,
-  conf.level = 0.99,
-  paired = F,
-  exact = T
-)
-
-cell_type_test_pc2 <- wilcox.test(
-  batch_pcs$PC2 ~ batch_pcs$cellTypeShort,
-  mu = 0,
-  alt = "two.sided",
-  conf.int = T,
-  conf.level = 0.99,
-  paired = F,
-  exact = T
-)
-
-#---------PC3---------
-
-bio_prov_test_pc3 <- wilcox.test(
-  batch_pcs$PC3 ~ batch_pcs$BIOMATERIAL_PROVIDER,
-  mu = 0,
-  alt = "two.sided",
-  conf.int = T,
-  conf.level = 0.99,
-  paired = F,
-  exact = T
-)
-
-bio_type_test_pc3 <- wilcox.test(
-  batch_pcs$PC3 ~ batch_pcs$BIOMATERIAL_TYPE,
-  mu = 0,
-  alt = "two.sided",
-  conf.int = T,
-  conf.level = 0.99,
-  paired = F,
-  exact = T
-)
-
-
-disease_test_pc3 <- wilcox.test(
-  batch_pcs$PC3 ~ batch_pcs$DISEASE,
-  mu = 0,
-  alt = "two.sided",
-  conf.int = T,
-  conf.level = 0.99,
-  paired = F,
-  exact = T
-)
-
-donor_sex_test_pc3 <- wilcox.test(
-  batch_pcs$PC3 ~ batch_pcs$DONOR_SEX,
-  mu = 0,
-  alt = "two.sided",
-  conf.int = T,
-  conf.level = 0.99,
-  paired = F,
-  exact = T
-)
-
-cell_type_test_pc3 <- wilcox.test(
-  batch_pcs$PC3 ~ batch_pcs$cellTypeShort,
-  mu = 0,
-  alt = "two.sided",
-  conf.int = T,
-  conf.level = 0.99,
-  paired = F,
-  exact = T
-)
-
-# to do: find a function to apply on multiple columns at once
-
-
-#permutation test
-
-# on seq runs count
-
-#--------PC1------------------
-
+# define function for permutation test before the for-loop, because it is not necessary to define it every time the loop runs
 cor.perm <- function (x, y, nperm = 1000)
 {
   r.obs <- cor (x = x, y = y)
@@ -507,117 +240,92 @@ cor.perm <- function (x, y, nperm = 1000)
     P.per = P.per
   ))
 }
-seq_runs_count_test_pc1 <-
-  cor.perm (x = batch_pcs$PC1, y = batch_pcs$SEQ_RUNS_COUNT)
 
-
-#permutation test on donor age
-#working with mean donor ages
-
-
-donor_age_test_pc1 <-
-  cor.perm (x = batch_pcs$PC1,
-            y = c(62, 47, 72, 52, 62, 82, 67, 82, 77, 62))
-
-#--------PC2-------
-
-
-seq_runs_count_test_pc2 <-
-  cor.perm (x = batch_pcs$PC2, y = batch_pcs$SEQ_RUNS_COUNT)
-
-
-#permutation test on donor age
-
-
-donor_age_test_pc2 <-
-  cor.perm (x = batch_pcs$PC2,
-            y = c(62, 47, 72, 52, 62, 82, 67, 82, 77, 62))
-
-#--------PC3-------
-
-
-seq_runs_count_test_pc3 <-
-  cor.perm (x = batch_pcs$PC3, y = batch_pcs$SEQ_RUNS_COUNT)
-
-
-#permutation test on donor age
-
-
-donor_age_test_pc3 <-
-  cor.perm (x = batch_pcs$PC3,
-            y = c(62, 47, 72, 52, 62, 82, 67, 82, 77, 62))
-
-
-#kruskal wallis test
-
-#------PC1-------
-#submission date
-
-submission_date_test_pc1 <-
-  kruskal.test(batch_pcs$PC1 ~ batch_pcs$FIRST_SUBMISSION_DATE,
-               data = batch_pcs)
-
-#------PC2-------
-
-#submission date
-
-submission_date_test_pc2 <-
-  kruskal.test(batch_pcs$PC2 ~ batch_pcs$FIRST_SUBMISSION_DATE,
-               data = batch_pcs)
-
-
-#------PC3-------
-
-#submission date
-
-submission_date_test_pc3 <-
-  kruskal.test(batch_pcs$PC3 ~ batch_pcs$FIRST_SUBMISSION_DATE,
-               data = batch_pcs)
-
-
-#creating a matrix with p values
-p_values_matrix = matrix(
-  c(
-    bio_prov_test_pc1$p.value ,
-    bio_type_test_pc1$p.value,
-    disease_test_pc1$p.value,
-    donor_sex_test_pc1$p.value,
-    seq_runs_count_test_pc1$p_value,
-    donor_age_test_pc1$p_value,
-    submission_date_test_pc1$p.value,
-    cell_type_test_pc1$p.value,
-    bio_prov_test_pc2$p.value ,
-    bio_type_test_pc2$p.value,
-    disease_test_pc2$p.value,
-    donor_sex_test_pc2$p.value,
-    seq_runs_count_test_pc2$p_value,
-    donor_age_test_pc2$p_value,
-    submission_date_test_pc2$p.value,
-    cell_type_test_pc2$p.value,
-    bio_prov_test_pc3$p.value ,
-    bio_type_test_pc3$p.value,
-    disease_test_pc3$p.value,
-    donor_sex_test_pc3$p.value,
-    seq_runs_count_test_pc3$p_value,
-    donor_age_test_pc3$p_value,
-    submission_date_test_pc3$p.value,
-    cell_type_test_pc3$p.value
-  ),
-  nrow = 8,
-  ncol = 3
-)
-rownames(p_values_matrix) <-
-  c(
-    "BIOMATERIAL_PROVIDER",
-    "BIOMATERIAL_TYPE",
-    "DISEASE",
-    "DONOR_SEX",
-    "SEQ_RUNS_COUNT",
-    "DONOR_AGE",
-    "SUBMISSION_DATE",
-    "CELL_TYPE"
+for (i in 1:ncol(p_values_matrix)) {
+  
+  # wilcoxon test: biomaterial provider
+  ##H0: x and y differ by a location shift of mu=0
+  ##alternative (two-sided/greater/less) and exact (value of p value) didn't need to be set
+  ##(because are set like our settings by default. But it helps understanding under which conditions the test was made.
+  bio_prov_test <- wilcox.test(
+    batch_pcs [, i] ~ batch_pcs$BIOMATERIAL_PROVIDER,
+    mu = 0,
+    alt = "two.sided",
+    conf.int = T,
+    conf.level = 0.99,
+    paired = F,
+    exact = T
   )
-colnames(p_values_matrix) <- c("PC1", "PC2", "PC3")
+  p_values_matrix  [1, i] <- as.matrix(bio_prov_test$p.value)
+  
+  # wilcoxon test: biomaterial type
+  bio_type_test <- wilcox.test(
+    batch_pcs [, i] ~ batch_pcs$BIOMATERIAL_TYPE,
+    mu = 0,
+    alt = "two.sided",
+    conf.int = T,
+    conf.level = 0.99,
+    paired = F,
+    exact = T
+  )
+  p_values_matrix  [2, i] <- as.matrix(bio_type_test$p.value)
+  
+  # wilcoxon test: disease 
+  disease_test <- wilcox.test(
+    batch_pcs[, i] ~ batch_pcs$DISEASE,
+    mu = 0,
+    alt = "two.sided",
+    conf.int = T,
+    conf.level = 0.99,
+    paired = F,
+    exact = T
+  )
+  p_values_matrix  [3, i] <- as.matrix(disease_test$p.value)
+  
+  #wilcoxon test: donor sex
+  donor_sex_test <- wilcox.test(
+    batch_pcs [, i] ~ batch_pcs$DONOR_SEX,
+    mu = 0,
+    alt = "two.sided",
+    conf.int = T,
+    conf.level = 0.99,
+    paired = F,
+    exact = T
+  )
+  p_values_matrix  [4, i] <- as.matrix(donor_sex_test$p.value)
+
+  #permutation test: seq run count  
+  seq_runs_count_test <-
+    cor.perm (x = batch_pcs [, i], y = batch_pcs$SEQ_RUNS_COUNT)
+  p_values_matrix  [5, i] <-
+    as.matrix(seq_runs_count_test$p_value)
+  
+  # permutation test: donor age
+  ## to do: find a function to apply on multiple columns at once
+  donor_age_test <-
+    cor.perm (x = batch_pcs [, i],
+              y = c(62, 47, 72, 52, 62, 82, 67, 82, 77, 62))
+  p_values_matrix  [6, i] <- as.matrix(donor_age_test$p_value)
+  
+  # kruskal test: submission data
+  submission_date_test <-
+    kruskal.test(batch_pcs [, i] ~ batch_pcs$FIRST_SUBMISSION_DATE,
+                 data = batch_pcs)
+  p_values_matrix  [7, i] <-
+    as.matrix(submission_date_test$p.value)
+  
+  #wilcoxon test: cell type
+  cell_type_test <- wilcox.test(
+    batch_pcs [, i] ~ batch_pcs$cellTypeShort,
+    mu = 0,
+    alt = "two.sided",
+    conf.int = T,
+    conf.level = 0.99,
+    paired = F,
+    exact = T
+  )
+  p_values_matrix  [8, i] <- as.matrix(cell_type_test$p.value)
+}
 
 
 ###creating a heatmap for p_values_matrix to see if the batch/biological effects are significant in the PCs
