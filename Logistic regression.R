@@ -15,7 +15,7 @@ library(corpcor)
 #how much does our variables correlate
 correlation_top_genes <- cor(clustering_data)
 corrplot(correlation_top_genes)
-ggpairs(as.data.frame(t(clustering_data)))
+ggpairs(as.data.frame(clustering_data))
 heatmap(as.matrix(clustering_data))
 hist(cor(t(clustering_data)), main = "Genes correlation", xlab = "Correlation value")
 #-> pretty heavy correlation

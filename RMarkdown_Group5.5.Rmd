@@ -2,8 +2,8 @@
 title: "Are differentially methylated regions within genes associated with mantle cell lymphoma?"
 author: "Pascal Lafrenz, Mari Hambardzumyan, Lea Herzel, Franziska Lam"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
   word_document: default
 ---
 
@@ -921,7 +921,34 @@ healthy_beta_values[healthy_beta_values == 0] <- 0.00001
 healthy_beta_values[healthy_beta_values == 1] <- 0.99999
 ```
 
+
 Aferwards we merged the healthy and cancer m-value datasets with each other and applied the function for pca.
+
+```{r, echo=FALSE}
+cancer_m_values <-
+  data.frame(log2(cancer_beta_values / (1 - cancer_beta_values)))
+healthy_m_values <-
+  data.frame(log2(healthy_beta_values / (1 - healthy_beta_values)))
+
+colnames(healthy_m_values) <-
+  c(
+    "Bcell_naive_VB_NBC_NC11_41.M",
+    "Bcell_naive_VB_NBC_NC11_83.M",
+    "Bcell_naive_VB_S001JP51.M",
+    "Bcell_naive_VB_S00DM851.M",
+    "Bcell_naive_VB_S01ECGA1.M"
+  )
+
+colnames(cancer_m_values) <- c(
+  "cancer_VB_S01FE8A1.M",
+  "cancer_VB_S01FF6A1.M",
+  "cancer_VB_S01FH2A1.M",
+  "cancer_VB_S01FJZA1.M",
+  "cancer_VB_S01FKXA1.M"
+)
+```
+
+Aferwards we merged the healthy and cancer m-value datasets with each other and applied the function for pca, which is `prcomp()`.
 
 ```{r}
 m_values <- cbind(healthy_m_values, cancer_m_values)
@@ -972,6 +999,22 @@ plot(
 
 
 ```{r}
+pcs_of_m_values <-
+  data.frame(cbind(
+    pca_m_values$x,
+    Samples = c(
+      "Healthy",
+      "Healthy",
+      "Healthy",
+      "Healthy",
+      "Healthy",
+      "Cancer",
+      "Cancer",
+      "Cancer",
+      "Cancer",
+      "Cancer"
+    )
+  ))
 p <- ggplot(pcs_of_m_values, aes(PC1, PC2, group = Samples)) +
   geom_point (aes(shape = Samples, color = Samples), size = 4) +
   theme_bw()
@@ -979,6 +1022,7 @@ p <- p + scale_colour_manual(values = c("seagreen2", "indianred2"))
 p <- ggplotly(p)
 p
 ```
+
 
 We can see that healthy and cancer samples are clustered into two different groups, although the individual samples group are not as tightly clustered. Healthy samples are more tightly clustered than that of cancer, because as we have seen different mutations have been associated with MCL. Another reason for long distances between samples of each cluster can be batch effects which are an unwanted source of variation in our data (Leek, 2012). Thus we need to identify which PC has the most batch effects so that we can neglcets it further down the line of our analysis. 
 
@@ -995,7 +1039,30 @@ plot(
 
 With the help of the elbow method we have chosen 2
 
+We can see that healthy and cancer samples are clustered into two different groups, although the individual samples group are not as tightly clustered. Reason for that can be batch effects which are an unwanted source of variation in our data. Thus we need to identify which PC has the most batch effects so that we can neglect it further down the line of our analysis. 
 
+## Part 5: Logistic Regression
+
+
+To obtain a "good" prediction system, we first had to check on correlation between our final genes. A high correlation would result in a bad regression model because of insufficient information.
+
+```{r}
+#library(effects)
+#library(jtools)
+#library(sandwich)
+library(corrplot)
+#library(GGally)
+#library(mctest)
+#library(corpcor)
+```
+
+```{r}
+correlation_top_genes <- cor(clustering_data)
+corrplot(correlation_top_genes)
+ggpairs(as.data.frame(t(clustering_data)))
+heatmap(as.matrix(clustering_data))
+hist(cor(t(clustering_data)), main = "Genes correlation", xlab = "Correlation value")
+```
 # References
 
 Sharp, A.J., Stathaki, E., Migliavacca, E., Brahmachary, M., Montgomery, S.B., Dupre, Y., and Antonarakis, S.E. (2011). DNA methylation profiles of human active and inactive X chromosomes. Genome Res 21, 1592-1600.
