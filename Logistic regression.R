@@ -63,7 +63,8 @@ regression_model <-
 
 
 summary(regression_model)
-summ(regression_model, robust = "HC1")
+summ(regression_model
+     , robust = "HC1")
 #-> many na's and "singularities" : too much correlation but how to solve it???
 
 #trying to solve it through cross validation
@@ -88,3 +89,4 @@ plot(allEffects(regression_model))
 
 #predict on data set
 predict(regression_model, newdata = regression_data, type = "response")
+
