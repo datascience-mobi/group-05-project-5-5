@@ -28,18 +28,16 @@ For that purpose we received a data set and an annotation file. Below is a short
 
 MCL is a B cell lymphoma which has its origin in the inner mantle zone of the lymph nodes (Hiddemann and Bartram, 2010). The most characteristic mutation in MCL is the translocation between the long arm of chromosome 11 and the long arm of chromosome 14 (t(11;14)(q13;q32)) (Hiddemann and Bartram, 2010). This mutation affects the heavy chains of immunoglobuline and leads to a cycline D1 (CCD1) overexpression (Hiddemann and Bartram, 2010). Cyclin D1 is a transcription factor which controlls the cell cycle (Hiddemann and Bartram, 2010). Through the overexpression of CCD1 the cell is able to proliferate but it can also influence the gene expression of other genes (Hiddemann and Bartram, 2010). It is observed, that a CCD1 overexpression leads to a deregulation of transcription factors and repair genes (Hiddemann and Bartram, 2010). 
 
+Our data from MCL patients and the healty control group originate from a project called BLUEPRINT (Blueprint Project). It was a research association from 2011 to 2016 with the goal to understand the geneactivation and generexpression better (Blueprint Project). To do so they generated referecne epigenomes (Blueprint Project). They focused on certain haematopoietic cells from healthy and leukeamic people, but also on some auto immune diseases (Blueprint Project). 
+
 Epigenetic modifications have an impact on DNA expression (Gibney and Nolan, 2010) and are important in some tumor genesis (Horn et al., 2009). These modifications are for example DNA methylation, histone modification and RNA mediated processes (Gibney and Nolan, 2010). In our project we want to focus on DNA methylation. In humans only cytosine can be methylated to 5-mehtylcytosine (5mC) (Walter and Hümpel, 2017). If the methylation should be inherited it needs to be in a CpG dimer, because in such a dimer there is a cytosine in the mother and the doughter strand (Horn et al., 2009). After the DNA replication the enzyme DNA-methyltransferase 1 is able to methylate the doughter stand if there is a methypation in the CpG of the mother strand (Horn et al., 2009). During the lifetime of a cell different genes need to be expressed and therefore methylated. DNA methyltransferase 3a and 3b is able to methylate cytosine even though the there is no mehtylation in the complementary strand (Horn et al., 2009).
 Methylation in promoters lead normally to an inactivation of the the following gene (Horn et al., 2009). But there is also the possibility of activating a gene by methylation. For this the methylation needs to be in the gene.
 
 Quelle??
 
-For an analysis of DNA methylation a few more steps than in a normal DNA-sequencing are required, because it needs to be distinguished between "normal" cytosine and 5-mC. The methylation pattern of the samples in our data set was analyzed by the bisulfite sequencing method (bisulfite seq). The chemical sodium bisulfite converts unmethylated cytosine into uracil (Bock, 2012). The DNA with the converted bases can be amplified by PCR and after that it can be analysed by a next generation sequencing mehtod (Bock, 2012). In our case they used Ilumina. 
-After the analysis of the converted and unconverted DNA both sequences can be compared (Bock, 2012).  If there is a thymine which pairs with a cytosin there was an unmethylated cytosine in this position in the original DNA (Bock, 2012). Thymine which pairs with adenine were originally thymine and every cytosine in the bisulfite treated DNA stands for a 5-mC (Bock, 2012). One problem in the bisulife seq is that bisulfite can not distinguish between 5-mC and 5-hydroxymethylcytosine (5-hmC) (Huang et al., 2010). So we do not really know if every methylated cytosine in our data set is really a 5-mC (Huang et al., 2010). The problem of this fact is that it has been observed that 5-hmC has not the same effect on gene expression as 5-mC has (Moen et al., 2015). Advantages of bisulfite seq are very good reproducibility, a high accuracy and acomprehensive genomic coverage (Bock, 2012).
+For an analysis of DNA methylation a few more steps than in a normal DNA-sequencing are required, because it needs to be distinguished between "normal" cytosine and 5-mC. The methylation pattern of the samples in our data set was analyzed by the bisulfite sequencing method (bisulfite seq). The chemical sodium bisulfite converts unmethylated cytosine into uracil (Bock, 2012). The DNA with the converted bases can be amplified by PCR and after that it can be analysed by a next generation sequencing mehtod (Bock, 2012). In our case they used Ilumina. After the analysis of the converted and unconverted DNA both sequences can be compared (Bock, 2012).  If there is a thymine which pairs with a cytosin there was an unmethylated cytosine in this position in the original DNA (Bock, 2012). Thymine which pairs with adenine were originally thymine and every cytosine in the bisulfite treated DNA stands for a 5-mC (Bock, 2012). One problem in the bisulife seq is that bisulfite can not distinguish between 5-mC and 5-hydroxymethylcytosine (5-hmC) (Huang et al., 2010). So we do not really know if every methylated cytosine in our data set is really a 5-mC (Huang et al., 2010). The problem of this fact is that it has been observed that 5-hmC has not the same effect on gene expression as 5-mC has (Moen et al., 2015). Advantages of bisulfite seq are very good reproducibility, a high accuracy and acomprehensive genomic coverage (Bock, 2012).
 
-
-Ilumina?
-
-Our data originate from a project called BLUEPRINT. It was an research association from 2011 to 2016 with the goal to understand the geneactivation and generepression better. 
+ 
 
 
 # Data summary
@@ -473,7 +471,8 @@ $$~$$
 
 ## Part 2: Data normalization and vizualisation
 
-In this part we want to normalise the beta values in order to make them more homoscedastic for further statistical tests and downstream analysis. For that purpose we apply logit transformation and turn them into m values.
+In this part we want to normalise the beta values in order to make them more homoscedastic for further statistical tests and downstream analysis. For that purpose we apply logit transformation and turn them into m values. For the conversion to m values we used the following formula: 
+M~i~ = log~2~(beta~i~(1-beta~i~)) 
 
 ```{r}
 cancer_m_values <-
@@ -915,24 +914,23 @@ The aim of this part of the project is to narrow down our data to the significan
 A common way to identify the direction of highest variability in the data is by conducting a principal component analysis (PCA) which we also applied to our data. Hence the covariance matrix is used to calculate the eigenvector which correspond to the largest eigenvalues (the principal components). These eigenvectors are used to reconstruct a significant fraction of the variance of the original data.
 These new principal components (features) can now be used for predictive analysis and model building. A crucial benefit is, that each principal component is independent of one another.
 
-But first we need to tweak our data. There are several +/- infinity values in our m-values dataset, with which PCA doesn't function. These were cause by beta values of 0 and 1. The most straightforward solution would be to approximate these values with 0.00001 and 0.99999.
+But first we need to tweak our data. There are several +/- infinity values in our m-value dataset, with which PCA does not function. These were caused by beta values of 0 and 1. The most straightforward solution would be to approximate these values with 0.00001 and 0.99999 and calculate the m-values again.
 
 ```{r}
 cancer_beta_values[cancer_beta_values == 0] <- 0.00001
 cancer_beta_values[cancer_beta_values == 1] <- 0.99999
 healthy_beta_values[healthy_beta_values == 0] <- 0.00001
 healthy_beta_values[healthy_beta_values == 1] <- 0.99999
-```
 
-
-Aferwards we merged the healthy and cancer m-value datasets with each other and applied the function for pca.
-
-```{r, echo=FALSE}
 cancer_m_values <-
   data.frame(log2(cancer_beta_values / (1 - cancer_beta_values)))
 healthy_m_values <-
   data.frame(log2(healthy_beta_values / (1 - healthy_beta_values)))
+```
 
+After that we changed the ending of the columnnames in our new m-values dataframe from .bed to .M because there are m-values in the dataframe and no beta values anymore.
+
+```{r, echo=FALSE}
 colnames(healthy_m_values) <-
   c(
     "Bcell_naive_VB_NBC_NC11_41.M",
@@ -951,7 +949,7 @@ colnames(cancer_m_values) <- c(
 )
 ```
 
-Aferwards we merged the healthy and cancer m-value datasets with each other and applied the function for pca, which is `prcomp()`.
+Aferwards we merged the healthy and cancer m-value datasets with each other and applied the function for pca.
 
 ```{r}
 m_values <- cbind(healthy_m_values, cancer_m_values)
@@ -964,7 +962,6 @@ From the summary we can conclude that PC1 and PC2 together account for nearly 50
 Now, we want to find out the number of PC's we want to work with using the elbow method. For that we need to calculate the proportion of variance "by hand" and plot that against the number of PC's.
 
 ```{r}
-
 std_dev <- pca_m_values$sdev
 variance <- std_dev ^ 2
 prop_var <- variance / sum(variance)
@@ -980,26 +977,8 @@ plot(
 
 The knick in the graph is not that apparent but by eyeballing we deciding to go with the first 3 PC's.
 
-Now we want to perform kmeans clustering. We know that there should be two clusters (healthy/cancer) but we still wanted to additionaly prove that. So we plotted the number of clusteres against the total within-clusters sum of squares.
 To get a feel of how the samples were spread across PC1 and PC2 we plottet a scatterplot. Additionally we used the function `plotly()` to define each point on the plot by pointing on it.
-
-
-```{r}
-wss <-  sapply(1:5, function(k) {
-  kmeans(x = pca_m_values$x,
-         centers = k,
-         iter.max = 100)$tot.withinss
-})
-plot(
-  1:5,
-  wss,
-  type = "b",
-  pch = 19,
-  xlab = "Number of clusters K",
-  ylab = "Total within-clusters sum of squares"
-)
-```
-
+For a better clearness we first added an extra column with the information if the sample is from a healthy person or a cancer patient to the data frame before drawing the scatterplot. This is necessary because we want to be able to colour the points in the kmeans clustering red in the case of cancer and green in case of a healthy sample.
 
 ```{r}
 pcs_of_m_values <-
@@ -1027,22 +1006,80 @@ p
 ```
 
 
-We can see that healthy and cancer samples are clustered into two different groups, although the individual samples group are not as tightly clustered. Healthy samples are more tightly clustered than that of cancer, because as we have seen different mutations have been associated with MCL. Another reason for long distances between samples of each cluster can be batch effects which are an unwanted source of variation in our data (Leek, 2012). Thus we need to identify which PC has the most batch effects so that we can neglcets it further down the line of our analysis. 
+#In this scatter plot we can see that healthy and cancer samples are clustered into two different groups, although the individual samples group are not as tightly clustered. Healthy samples are more tightly clustered than that of cancer, because as we have seen different mutations have been associated with MCL. Another reason for long distances between samples of each cluster can be batch effects which are an unwanted source of variation in our data (Leek, 2012). Thus we need to identify which PC has the most batch effects so that we can neglcets it further down the line of our analysis. 
 
+
+Now we want to perform kmeans clustering. We know that there should be two clusters (healthy/cancer) but we still wanted to additionaly prove that. So we plotted the number of clusteres against the total within-clusters sum of squares.
 
 ```{r}
+wss <-  sapply(1:5, function(k) {
+  kmeans(x = pca_m_values$x,
+         centers = k,
+         iter.max = 100)$tot.withinss
+})
 plot(
-  prop_var,
-  main = "Variance explained by principal components",
-  xlab = "Principal Components",
-  ylab = "Proportion of Variance Explained",
-  type = "b"
+  1:5,
+  wss,
+  type = "b",
+  pch = 19,
+  xlab = "Number of clusters K",
+  ylab = "Total within-clusters sum of squares"
 )
 ```
 
-With the help of the elbow method we have chosen 2
+The knick in the elbow is as expected at 2 clusters. 
 
-We can see that healthy and cancer samples are clustered into two different groups, although the individual samples group are not as tightly clustered. Reason for that can be batch effects which are an unwanted source of variation in our data. Thus we need to identify which PC has the most batch effects so that we can neglect it further down the line of our analysis. 
+
+
+
+
+```{r}
+centers <-
+  kmeans(
+    x = t(pcs_of_m_values[1:10]),
+    centers = 2,
+    iter.max = 100
+  )$centers
+```
+
+
+```{r}
+centers <-
+  data.frame(cbind(
+    t(centers),
+    Samples = c(
+      "Healthy",
+      "Healthy",
+      "Healthy",
+      "Healthy",
+      "Healthy",
+      "Cancer",
+      "Cancer",
+      "Cancer",
+      "Cancer",
+      "Cancer"
+    )
+  ))
+```
+
+
+```{r}
+
+```
+
+#We can see that healthy and cancer samples are clustered into two different groups, although the individual samples group are not as tightly clustered. Reason for that can be batch effects which are an unwanted source of variation in our data. Thus we need to identify which PC has the most batch effects so that we can neglect it further down the line of our analysis.
+
+
+
+
+
+
+
+
+
+
+
+$$~$$
 
 ## Part 5: Logistic Regression
 
