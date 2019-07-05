@@ -957,27 +957,8 @@ pca_m_values <- prcomp(t(m_values))
 summary(pca_m_values)
 ```
 
-From the summary of the PCA we can conclude that PC1 and PC2 together account for nearly 50% of the varaince in the data.
-Now, we want to find out the number of PC's we want to work with using the elbow method. For that we need to calculate the proportion of variance "by hand" and plot that against the number of PC's.
-
-```{r}
-std_dev <- pca_m_values$sdev
-variance <- std_dev ^ 2
-prop_var <- variance / sum(variance)
-
-plot(
-  prop_var,
-  main = "Variance explained by principal components",
-  xlab = "Principal Components",
-  ylab = "Proportion of Variance Explained",
-  type = "b"
-)
-```
-
-The knick in the graph is not that apparent but by eyeballing we deciding to go with the first 3 PC's.
-
-To get a feel of how the samples were spread across PC1 and PC2 we plottet a scatterplot. Additionally we used the function `plotly()` to define each point on the plot by pointing on it.
-For a better clearness we first added an extra column with the information if the sample is from a healthy person or a cancer patient to the data frame before drawing the scatterplot. This is necessary because we want to be able to colour the points in the kmeans clustering red in the case of cancer and green in case of a healthy sample.
+From the summary of the PCA we can conclude that PC1 and PC2 together account for nearly 50% of the varaince in the data. To get a feel of how the samples were spread across PC1 and PC2 we plottet a scatterplot. Additionally we used the function `plotly()` to define each point on the plot by pointing on it.
+We also added an extra column with information about the patients' health status so that cancer patients would be shown as red and healthy patients as green points.
 
 ```{r}
 pcs_of_m_values <-
@@ -996,19 +977,24 @@ pcs_of_m_values <-
       "Cancer"
     )
   ))
-p <- ggplot(pcs_of_m_values, aes(PC1, PC2, group = Samples)) +
+
+install.packages("plotly")
+library(plotly)
+p <-
+  ggplot(pcs_of_m_values, aes(x = PC1, y = PC2, group = Samples)) +
   geom_point (aes(shape = Samples, color = Samples), size = 4) +
-  theme_bw()
-p <- p + scale_colour_manual(values = c("seagreen2", "indianred2"))
+  theme_bw() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank()
+  )
+p <- p + scale_colour_manual(values = c("indianred2", "seagreen2"))
 p <- ggplotly(p)
 p
 ```
 
-
-#In this scatter plot we can see that healthy and cancer samples are clustered into two different groups, although the individual samples group are not as tightly clustered. Healthy samples are more tightly clustered than that of cancer, because as we have seen different mutations have been associated with MCL. Another reason for long distances between samples of each cluster can be batch effects which are an unwanted source of variation in our data (Leek, 2012). Thus we need to identify which PC has the most batch effects so that we can neglcets it further down the line of our analysis. 
-
-
-Now we want to perform kmeans clustering. We know that there should be two clusters (healthy/cancer) but we still wanted to additionaly prove that. So we plotted the number of clusteres against the total within-clusters sum of squares.
+Now we can perform kmeans clustering. We know that there should be two clusters (healthy/cancer) but we still wanted to prove that, so we plotted the number of clusteres against the total within-clusters sum of squares.
 
 ```{r}
 wss <-  sapply(1:5, function(k) {
@@ -1026,10 +1012,8 @@ plot(
 )
 ```
 
-The knick in the elbow is as expected at 2 clusters. 
-
-
-
+The knick in the elbow is as expected at 2 clusters.
+The following code performs kmeans clustering with 2 centroids based on the first 10 PCs. 
 
 
 ```{r}
@@ -1041,6 +1025,7 @@ centers <-
   )$centers
 ```
 
+In order to visualise our kmeans clutering data we also added an extra column to `centers` data-set so that we can later color code the healthy and cancer patinets. 
 
 ```{r}
 centers <-
@@ -1061,22 +1046,266 @@ centers <-
   ))
 ```
 
+Here we plot the results of kmeans clustering. 
 
 ```{r}
-
+PC1 <- centers$X1
+PC2 <- centers$X2
+p_cluster <-
+  ggplot(centers, aes(x = PC1, y = PC2, group = Samples)) +
+  geom_point (aes(shape = Samples, color = Samples), size = 4) +
+  theme_bw() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank()
+  )
+p_cluster <- ggplotly(p_cluster)
+p_cluster
 ```
 
-#We can see that healthy and cancer samples are clustered into two different groups, although the individual samples group are not as tightly clustered. Reason for that can be batch effects which are an unwanted source of variation in our data. Thus we need to identify which PC has the most batch effects so that we can neglect it further down the line of our analysis.
+We can see that healthy and cancer samples are clustered into two different groups, although the individual samples group are not as tightly clustered. Healthy samples are more tightly clustered than that of cancer, because as we have seen different mutations have been associated with MCL. Another reason for long distances between samples of each cluster can be batch effects which are an unwanted source of variation in our data (Leek, 2012). Thus we need to identify which PC has the most batch effects so that we can neglcets it further down the line of our analysis. We can do that using the elbow method. For that we need to calculate the proportion of variance "by hand" and plot that against the number of PC's.
 
+```{r}
+std_dev <- pca_m_values$sdev
+variance <- std_dev ^ 2
+prop_var <- variance / sum(variance)
 
+plot(
+  prop_var,
+  main = "Variance explained by principal components",
+  xlab = "Principal Components",
+  ylab = "Proportion of Variance Explained",
+  type = "b"
+)
+```
 
+The knick in the graph is not that apparent but by eyeballing we deciding to go with the first 3 PC's. Therefore we will be testing each batch effect in the first three principal components because they account for the majority of the variation in the data. 
+Batch effects are technical/non-biological sources of variation (Goh et al., 2017). So looking through our annotation file `input_data_scv` we found 8 possible batch effect sources. For each of those we needed to obtain a p-value in order to assess it's sigificance, thus we created a matrix for those p-values in order to later visualise our results with a heatmap. The following code shows the backbone of that matrix.
 
+```{r}
+p_values_matrix <- matrix(nrow = 8, ncol = 3)
+colnames(p_values_matrix) <- c("PC1", "PC2", "PC3")
+rownames(p_values_matrix) <-
+  c(
+    "BIOMATERIAL_PROVIDER",
+    "BIOMATERIAL_TYPE",
+    "DISEASE",
+    "DONOR_SEX",
+    "SEQ_RUNS_COUNT",
+    "DONOR_AGE",
+    "SUBMISSION_DATE",
+    "CELL_TYPE"
+  )
+```
 
+As the ctieria which we are testing for possible batch effects have differnt formats, we need to apply appropriate statistical test for each of them. The statistical test which we chose are: Monte Carlo permutation test, Wilcoxon Rank Sum and Kruskal-Wallis Rank Sum Test.  
+For the Monte Carlo permutation test we defined a function wich we applied to the corresponding criteria.
+```{r}
+cor.perm <- function (x, y, nperm = 1000)
+{
+  r.obs <- cor (x = x, y = y)
+  p_value <- cor.test (x = x, y = y)$p.value
+  #  r.per <- replicate (nperm, expr = cor (x = x, y = sample (y)))
+  r.per <-
+    sapply (
+      1:nperm,
+      FUN = function (i)
+        cor (x = x, y = sample (y))
+    )
+  r.per <- c(r.per, r.obs)
+  hist (r.per, xlim = c(-1, 1))
+  abline (v = r.obs, col = 'red')
+  P.per <- sum (abs (r.per) >= abs (r.obs)) / (nperm + 1)
+  return (list (
+    r.obs = r.obs,
+    p_value = p_value,
+    P.per = P.per
+  ))
+}
+```
 
+Here we filled the `p_values_matrix` with the corresponding test statistics p-values. "for-loop" was used in order to avoid redundantly performing the same test on PC1, PC2 and PC3. 
 
+```{r}
+for (i in 1:ncol(p_values_matrix)) {
+  bio_prov_test <- wilcox.test(
+    batch_pcs [, i] ~ batch_pcs$BIOMATERIAL_PROVIDER,
+    mu = 0,
+    alt = "two.sided",
+    conf.int = T,
+    conf.level = 0.99,
+    paired = F,
+    exact = T
+  )
+  p_values_matrix  [1, i] <- as.matrix(bio_prov_test$p.value)
+  
+  # wilcoxon test: biomaterial type
+  bio_type_test <- wilcox.test(
+    batch_pcs [, i] ~ batch_pcs$BIOMATERIAL_TYPE,
+    mu = 0,
+    alt = "two.sided",
+    conf.int = T,
+    conf.level = 0.99,
+    paired = F,
+    exact = T
+  )
+  p_values_matrix  [2, i] <- as.matrix(bio_type_test$p.value)
+  
+  # wilcoxon test: disease 
+  disease_test <- wilcox.test(
+    batch_pcs[, i] ~ batch_pcs$DISEASE,
+    mu = 0,
+    alt = "two.sided",
+    conf.int = T,
+    conf.level = 0.99,
+    paired = F,
+    exact = T
+  )
+  p_values_matrix  [3, i] <- as.matrix(disease_test$p.value)
+  
+  #wilcoxon test: donor sex
+  donor_sex_test <- wilcox.test(
+    batch_pcs [, i] ~ batch_pcs$DONOR_SEX,
+    mu = 0,
+    alt = "two.sided",
+    conf.int = T,
+    conf.level = 0.99,
+    paired = F,
+    exact = T
+  )
+  p_values_matrix  [4, i] <- as.matrix(donor_sex_test$p.value)
 
+  #permutation test: seq run count  
+  seq_runs_count_test <-
+    cor.perm (x = batch_pcs [, i], y = batch_pcs$SEQ_RUNS_COUNT)
+  p_values_matrix  [5, i] <-
+    as.matrix(seq_runs_count_test$p_value)
+  
+  # permutation test: donor age
+  ## to do: find a function to apply on multiple columns at once
+  donor_age_test <-
+    cor.perm (x = batch_pcs [, i],
+              y = c(62, 47, 72, 52, 62, 82, 67, 82, 77, 62))
+  p_values_matrix  [6, i] <- as.matrix(donor_age_test$p_value)
+  
+  # kruskal test: submission data
+  submission_date_test <-
+    kruskal.test(batch_pcs [, i] ~ batch_pcs$FIRST_SUBMISSION_DATE,
+                 data = batch_pcs)
+  p_values_matrix  [7, i] <-
+    as.matrix(submission_date_test$p.value)
+  
+  #wilcoxon test: cell type
+  cell_type_test <- wilcox.test(
+    batch_pcs [, i] ~ batch_pcs$cellTypeShort,
+    mu = 0,
+    alt = "two.sided",
+    conf.int = T,
+    conf.level = 0.99,
+    paired = F,
+    exact = T
+  )
+  p_values_matrix  [8, i] <- as.matrix(cell_type_test$p.value)
+}
+```
 
+Thereafter a heatmap of `p_values_matrix` was created to see whether the batch/biological effects are significant in the PCs and to determine which PCs to use for the downstream analysis.
 
+```{r}
+install.packages("gplots")
+library(gplots)
+
+my_palette <- colorRampPalette(c("indianred2", "seagreen2")) (n = 3)
+color_breaks <- c(seq(0, 0.01, length = 2),
+                  seq(0.011, 1, length = 2))
+heatmap.2(
+  p_values_matrix,
+  main = "Batch and biological effects",
+  trace = "none",
+  margins = c(10, 12),
+  cexRow = 0.8,
+  Rowv = FALSE,
+  Colv = FALSE,
+  col = my_palette,
+  breaks = color_breaks,
+  sepwidth = c(0.01, 0.01),
+  sepcolor = "black",
+  colsep = 1:ncol(p_values_matrix),
+  rowsep = 1:nrow(p_values_matrix)
+)
+```
+
+As expected the criteria of "DISEASE" came out significant which is a biological effect rather a batch one. The only two batch effects turned out to be the biomaterial and cell type which are both is PC1. Although the criteria of "DISEASE" in only significant in PC1 we still decided to continue working with PC2 as it is completely batch-effect-free.
+
+Additionally, we decided to visualise our biological/batch effects on the kmeans clustering graph in order to see how they are clustered.  
+
+```{r}
+#biomaterial provider
+
+p_cluster_bio_prov <-
+  ggplot(
+    centers,
+    aes(
+      x = PC1,
+      y = PC2,
+      group = Samples,
+      fill = input_data_csv$BIOMATERIAL_PROVIDER
+    )
+  ) +
+  geom_point (aes(shape = Samples, color = Samples), size = 4) +
+  theme_bw() +
+  ggtitle("Biomaterial provider") +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank()
+  )
+p_cluster_bio_prov <- ggplotly(p_cluster_bio_prov)
+p_cluster_bio_prov
+
+#cell type
+
+p_cluster_cell_type <-
+  ggplot(centers,
+         aes(
+           x = PC1,
+           y = PC2,
+           group = Samples,
+           fill = input_data_csv$cellTypeShort
+         )) +
+  geom_point (aes(shape = Samples, color = Samples), size = 4) +
+  theme_bw() +
+  ggtitle("Cell type") +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank()
+  )
+p_cluster_cell_type <- ggplotly(p_cluster_cell_type)
+p_cluster_cell_type
+
+#disease
+
+p_cluster_disease <-
+  ggplot(centers,
+         aes(
+           x = PC1,
+           y = PC2,
+           group = Samples,
+           fill = input_data_csv$DISEASE
+         )) +
+  geom_point (aes(shape = Samples, color = Samples), size = 4) +
+  theme_bw() +
+  ggtitle("Disease") +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank()
+  )
+p_cluster_disease <- ggplotly(p_cluster_disease)
+p_cluster_disease
+```
 
 $$~$$
 

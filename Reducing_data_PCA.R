@@ -92,7 +92,7 @@ pcs_of_m_values <-
 
 ## remove the numbers in ggplot
 #generate a ggplot / scatterplot to visualize the Sample points in a coordinate system with x -
-axis = PC1 and y - axis = PC2
+#axis = PC1 and y - axis = PC2
 install.packages("plotly")
 library(plotly)
 p <-
