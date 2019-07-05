@@ -911,7 +911,7 @@ $$~$$
 $$~$$
 
 The aim of this part of the project is to narrow down our data to the significant genes which account for the majority of the variation between methylation values of healthy and cancer samples. Therefore, we need to reduce high dimensional data into low dimensional data with few information loss. 
-A common way to identify the direction of highest variability in the data is by conducting a principal component analysis (PCA) which we also applied to our data. Hence the covariance matrix is used to calculate the eigenvector which correspond to the largest eigenvalues (the principal components). These eigenvectors are used to reconstruct a significant fraction of the variance of the original data.
+A common way to identify the direction of highest variability in the data is by conducting a principal component analysis (PCA) which we also applied to our data (Ma and Dai, 2011). Hence the covariance matrix is used to calculate the eigenvector which correspond to the largest eigenvalues (the principal components). These eigenvectors are used to reconstruct a significant fraction of the variance of the original data.
 These new principal components (features) can now be used for predictive analysis and model building. A crucial benefit is, that each principal component is independent of one another.
 
 But first we need to tweak our data. There are several +/- infinity values in our m-value dataset, with which PCA does not function. These were caused by beta values of 0 and 1. The most straightforward solution would be to approximate these values with 0.00001 and 0.99999 and calculate the m-values again.
@@ -928,7 +928,7 @@ healthy_m_values <-
   data.frame(log2(healthy_beta_values / (1 - healthy_beta_values)))
 ```
 
-After that we changed the ending of the columnnames in our new m-values dataframe from .bed to .M because there are m-values in the dataframe and no beta values anymore.
+After that we changed the endings of the column names in our new m-values dataframe from .bed to .M for better distinctiveness between the two data frames of beta and m-values. 
 
 ```{r, echo=FALSE}
 colnames(healthy_m_values) <-
@@ -955,10 +955,9 @@ Aferwards we merged the healthy and cancer m-value datasets with each other and 
 m_values <- cbind(healthy_m_values, cancer_m_values)
 pca_m_values <- prcomp(t(m_values))
 summary(pca_m_values)
-
 ```
 
-From the summary we can conclude that PC1 and PC2 together account for nearly 50% of the varaince in the data.
+From the summary of the PCA we can conclude that PC1 and PC2 together account for nearly 50% of the varaince in the data.
 Now, we want to find out the number of PC's we want to work with using the elbow method. For that we need to calculate the proportion of variance "by hand" and plot that against the number of PC's.
 
 ```{r}
@@ -1331,3 +1330,6 @@ Welch, C., Santra, M.K., El-Assaad, W., Zhu, X., Huber, W.E., Keys, R.A., Teodor
 
 Leek, J.T., Johnson, W.E., Parker, H.S., Jaffe, A.E., and Storey, J.D. (2012). The sva package for removing batch effects and other unwanted variation in high-throughput experiments. BIOINFORMATICS 28, 2 S.
 
+
+Ma, S., and Dai, Y. (2011). Principal component analysis based methods in bioinformatics studies
+Special Issue: Collaborative Bioinformatics and RNA Analysis. Briefings in Bioinformatics 12, 9 S.
