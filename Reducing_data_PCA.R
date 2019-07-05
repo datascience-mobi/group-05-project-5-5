@@ -94,10 +94,10 @@ pcs_of_m_values <-
 #generate a ggplot/scatterplot to visualize the Sample points in a coordinate system with x-axis = PC1 and y-axis = PC2
 install.packages("plotly")
 library(plotly)
-p <- ggplot(pcs_of_m_values, aes(PC1, PC2, group = Samples)) +
+p <- ggplot(pcs_of_m_values, aes(x = PC1,y = PC2, group = Samples)) +
   geom_point (aes(shape = Samples, color = Samples), size = 4) +
   theme_bw()
-p <- p + scale_colour_manual(values = c("seagreen2", "indianred2"))
+p <- p + scale_colour_manual(values = c("indianred2", "seagreen2"))
 p <- ggplotly(p)
 p
 
