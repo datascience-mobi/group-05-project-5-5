@@ -91,13 +91,20 @@ pcs_of_m_values <-
   ))
 
 ## remove the numbers in ggplot
-#generate a ggplot/scatterplot to visualize the Sample points in a coordinate system with x-axis = PC1 and y-axis = PC2
+#generate a ggplot / scatterplot to visualize the Sample points in a coordinate system with x -
+#axis = PC1 and y - axis = PC2
 install.packages("plotly")
 library(plotly)
-p <- ggplot(pcs_of_m_values, aes(PC1, PC2, group = Samples)) +
+p <-
+  ggplot(pcs_of_m_values, aes(x = PC1, y = PC2, group = Samples)) +
   geom_point (aes(shape = Samples, color = Samples), size = 4) +
-  theme_bw()
-p <- p + scale_colour_manual(values = c("seagreen2", "indianred2"))
+  theme_bw() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank()
+  )
+p <- p + scale_colour_manual(values = c("indianred2", "seagreen2"))
 p <- ggplotly(p)
 p
 
@@ -131,6 +138,14 @@ centers <-
     iter.max = 100
   )$centers
 
+#testLea Angabe welcher Punkt zu welchem cluster gehört
+cluster <-
+  kmeans(
+    x = t(pcs_of_m_values[1:10]),
+    centers = 2,
+    iter.max = 100
+  )$cluster
+
 ##adding an extra column with the category of sample with which we can color the pc dots in a ggplot according to their sample group
 centers <-
   data.frame(cbind(
@@ -150,19 +165,24 @@ centers <-
   ))
 
 #visualize cluster x1 and x2 and how samples are seperated
+#testLea die punkte der beiden cluster unterschiedliche Formen
 PC1 <- centers$X1
 PC2 <- centers$X2
 p_cluster <-
   ggplot(centers, aes(x = PC1, y = PC2, group = Samples)) +
-  geom_point (aes(shape = Samples, color = Samples), size = 4) +
+  geom_point (aes(shape = as.factor(cluster), color = Samples), size = 4) +
   theme_bw() +
   theme(
     axis.text.x = element_blank(),
     axis.text.y = element_blank(),
     axis.ticks = element_blank()
   )
+p_cluster <- p_cluster + scale_colour_manual(values = c("indianred2", "seagreen2"))
+p_cluster <- p_cluster + scale_shape_manual(values = c(16, 17))
 p_cluster <- ggplotly(p_cluster)
 p_cluster
+
+
 
 ##############################################################################################################
 
@@ -372,7 +392,7 @@ p_cluster_bio_prov <-
       fill = input_data_csv$BIOMATERIAL_PROVIDER
     )
   ) +
-  geom_point (aes(shape = Samples, color = Samples), size = 4) +
+  geom_point (aes(shape = as.factor(cluster), color = Samples), size = 4) +
   theme_bw() +
   ggtitle("Biomaterial provider") +
   theme(
@@ -380,8 +400,12 @@ p_cluster_bio_prov <-
     axis.text.y = element_blank(),
     axis.ticks = element_blank()
   )
+p_cluster_bio_prov <- p_cluster_bio_prov + scale_fill_manual(values = c("indianred2", "seagreen2"))
+p_cluster_bio_prov <- p_cluster_bio_prov + scale_colour_manual(values = c("indianred2", "seagreen2"))
+p_cluster_bio_prov <- p_cluster_bio_prov + scale_shape_manual(values = c(16, 17))
 p_cluster_bio_prov <- ggplotly(p_cluster_bio_prov)
 p_cluster_bio_prov
+
 
 #---------cell type------------
 
@@ -393,7 +417,7 @@ p_cluster_cell_type <-
            group = Samples,
            fill = input_data_csv$cellTypeShort
          )) +
-  geom_point (aes(shape = Samples, color = Samples), size = 4) +
+  geom_point (aes(shape = as.factor(cluster), color = Samples), size = 4) +
   theme_bw() +
   ggtitle("Cell type") +
   theme(
@@ -401,6 +425,8 @@ p_cluster_cell_type <-
     axis.text.y = element_blank(),
     axis.ticks = element_blank()
   )
+p_cluster_cell_type <- p_cluster_cell_type + scale_fill_manual(values = c("seagreen2", "indianred2"))
+p_cluster_cell_type <- p_cluster_cell_type + scale_colour_manual(values = c("indianred2", "seagreen2"))
 p_cluster_cell_type <- ggplotly(p_cluster_cell_type)
 p_cluster_cell_type
 
@@ -414,7 +440,7 @@ p_cluster_disease <-
            group = Samples,
            fill = input_data_csv$DISEASE
          )) +
-  geom_point (aes(shape = Samples, color = Samples), size = 4) +
+  geom_point (aes(shape = as.factor(cluster), color = Samples), size = 4) +
   theme_bw() +
   ggtitle("Disease") +
   theme(
@@ -422,5 +448,8 @@ p_cluster_disease <-
     axis.text.y = element_blank(),
     axis.ticks = element_blank()
   )
+p_cluster_disease <- p_cluster_disease + scale_fill_manual (values = c("indianred2", "seagreen2"))
+p_cluster_disease <- p_cluster_disease + scale_colour_manual (values= c("indianred2", "seagreen2"))
 p_cluster_disease <- ggplotly(p_cluster_disease)
 p_cluster_disease
+
