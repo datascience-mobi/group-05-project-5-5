@@ -13,7 +13,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ---
 ```{r, include=FALSE}
-install.packages("kableExtra")
 library(kableExtra)
 ```
 The alterations in cancer cell DNA methylation pattern have long been detected (Vogelstein and Feinberg, 1983). In many cancer types methylation level has also been shown to have effects on gene deregulation,  (Melnick, 2013). But not much research has been done associated with methylation in *mantle cell lymphoma* (MCL) cells. Therefore in the following project we want to address the following question.
@@ -472,7 +471,7 @@ $$~$$
 ## Part 2: Data normalization and vizualisation
 
 In this part we want to normalise the beta values in order to make them more homoscedastic for further statistical tests and downstream analysis. For that purpose we apply logit transformation and turn them into m values. For the conversion to m values we used the following formula: 
-M~i~ = log~2~(beta~i~(1-beta~i~)) 
+$$ M_i~ = log_2(\frac{beta_i}{1-beta_i}) $$
 
 ```{r}
 cancer_m_values <-
