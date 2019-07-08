@@ -133,15 +133,15 @@ plot(
 #variable with two center positions of value of rotated data
 centers <-
   kmeans(
-    x = t(pcs_of_m_values[1:10]),
+    x = pcs_of_m_values[1:10],
     centers = 2,
     iter.max = 100
   )$centers
 
-#testLea Angabe welcher Punkt zu welchem cluster gehört
+#testLea Angabe welcher Punkt zu welchem cluster geh?rt
 cluster <-
   kmeans(
-    x = t(pcs_of_m_values[1:10]),
+    x = pcs_of_m_values[1:10],
     centers = 2,
     iter.max = 100
   )$cluster
@@ -175,12 +175,12 @@ p_cluster <-
   theme(
     axis.text.x = element_blank(),
     axis.text.y = element_blank(),
-    axis.ticks = element_blank()
-  )
-p_cluster <- p_cluster + scale_colour_manual(values = c("indianred2", "seagreen2"))
-p_cluster <- p_cluster + scale_shape_manual(values = c(16, 17))
-p_cluster <- ggplotly(p_cluster)
-p_cluster
+    axis.ticks = element_blank() 
+  ) +
+  scale_colour_manual(values = c("indianred2", "seagreen2")) + 
+  scale_shape_manual(values = c(16, 17))
+ggplotly(p_cluster)
+
 
 
 
