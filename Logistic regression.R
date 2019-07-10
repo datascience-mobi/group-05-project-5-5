@@ -90,3 +90,39 @@ plot(allEffects(regression_model))
 #predict on data set
 predict(regression_model, newdata = regression_data, type = "response")
 
+#include our previous assumed genes
+rownames(important_genes) <- important_genes[,1]
+m_values_pp <-  m_values[c(rownames(important_genes)),]
+
+regression_data3 <- cbind(Health_status = as.numeric(c(0,
+                                                      0,
+                                                      0,
+                                                      0,
+                                                      0,
+                                                      1,
+                                                      1,
+                                                      1,
+                                                      1,
+                                                      1)
+), 
+as.data.frame(t(m_values_pp))
+)
+
+regression_model3 <-
+  glm(
+    formula = Health_status ~ .,
+    family = binomial(link = "logit"),
+    data = regression_data3,
+    maxit = 40
+  )
+
+summ(regression_model3
+     , robust = "HC1")
+
+
+
+
+
+
+
+

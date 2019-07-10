@@ -103,10 +103,10 @@ p <-
     axis.text.x = element_blank(),
     axis.text.y = element_blank(),
     axis.ticks = element_blank()
-  )
-p <- p + scale_colour_manual(values = c("indianred2", "seagreen2"))
-p <- ggplotly(p)
-p
+  )  + 
+  scale_colour_manual(values = c("indianred2", "seagreen2"))
+ggplotly(p)
+
 
 #find out how much clusters do we need to group samples (obviously 2 would be perfect because healthy/cancer)
 
@@ -138,7 +138,7 @@ centers <-
     iter.max = 100
   )$centers
 
-#testLea Angabe welcher Punkt zu welchem cluster geh?rt
+#Angabe welcher Punkt zu welchem cluster gehört
 cluster <-
   kmeans(
     x = pcs_of_m_values[1:10],
@@ -399,12 +399,12 @@ p_cluster_bio_prov <-
     axis.text.x = element_blank(),
     axis.text.y = element_blank(),
     axis.ticks = element_blank()
-  )
-p_cluster_bio_prov <- p_cluster_bio_prov + scale_fill_manual(values = c("indianred2", "seagreen2"))
-p_cluster_bio_prov <- p_cluster_bio_prov + scale_colour_manual(values = c("indianred2", "seagreen2"))
-p_cluster_bio_prov <- p_cluster_bio_prov + scale_shape_manual(values = c(16, 17))
-p_cluster_bio_prov <- ggplotly(p_cluster_bio_prov)
-p_cluster_bio_prov
+  ) + 
+  scale_fill_manual(values = c("indianred2", "seagreen2")) + 
+  scale_colour_manual(values = c("indianred2", "seagreen2")) + 
+  scale_shape_manual(values = c(16, 17))
+ggplotly(p_cluster_bio_prov)
+
 
 
 #---------cell type------------
@@ -424,11 +424,12 @@ p_cluster_cell_type <-
     axis.text.x = element_blank(),
     axis.text.y = element_blank(),
     axis.ticks = element_blank()
-  )
-p_cluster_cell_type <- p_cluster_cell_type + scale_fill_manual(values = c("seagreen2", "indianred2"))
-p_cluster_cell_type <- p_cluster_cell_type + scale_colour_manual(values = c("indianred2", "seagreen2"))
-p_cluster_cell_type <- ggplotly(p_cluster_cell_type)
-p_cluster_cell_type
+  ) + 
+  scale_fill_manual(values = c("seagreen2", "indianred2")) + 
+  scale_colour_manual(values = c("indianred2", "seagreen2")) +
+  scale_shape_manual(values = c(16, 17))
+ggplotly(p_cluster_cell_type)
+
 
 #---------disease---------------
 
@@ -447,9 +448,10 @@ p_cluster_disease <-
     axis.text.x = element_blank(),
     axis.text.y = element_blank(),
     axis.ticks = element_blank()
-  )
-p_cluster_disease <- p_cluster_disease + scale_fill_manual (values = c("indianred2", "seagreen2"))
-p_cluster_disease <- p_cluster_disease + scale_colour_manual (values= c("indianred2", "seagreen2"))
-p_cluster_disease <- ggplotly(p_cluster_disease)
-p_cluster_disease
+  ) +
+  scale_fill_manual (values = c("indianred2", "seagreen2")) +
+  scale_colour_manual (values = c("indianred2", "seagreen2")) +
+  scale_shape_manual(values = c(16,17))
+ggplotly(p_cluster_disease)
+
 
