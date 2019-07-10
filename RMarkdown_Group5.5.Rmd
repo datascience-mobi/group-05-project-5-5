@@ -1316,6 +1316,190 @@ Interpretation
 
 
 $$~$$
+## Part 4: Clustering
+
+$$~$$
+With this part we intended to find the genes that are the most differentially methylated between the healthy and cancer samples and therefore influenced our PCA the most. ...... We chose k-means clustering as a method to select the important features.
+Additionally, because we detected batch effects in PC1 that influenced the reliability of it we chose PC2 for further analysis.
+
+To find the number of the most influencing genes on our PC we look at the loading scores of each gene and rank these by their absolute value. Then we plot the loadings to find a kink in the curve that indicates up until what gene the influence is significant. 
+
+```{r}
+loading_scores <- pca_m_values$rotation[, 2]
+ranked_gene_loading <- sort(abs(loading_scores), decreasing = TRUE)
+plot(
+  ranked_gene_loading,
+  main = "Loading scores of genes",
+  xlab = "Genes",
+  ylab = "loading scores",
+  type = "b"
+)
+```
+The kink is somewhere between 0 and 20000 genes so we adjusted the x-axis to have a better look at the kink.
+=======
+
+Interpretation
+>>>>>>> 32f224d3e282f65c11411ef72e6a21d1c5b2eade
+
+```{r}
+plot(
+  ranked_gene_loading[0 : 20000],
+  main = "Loading scores of genes",
+  xlab = "Genes",
+  ylab = "loading scores",
+  type = "b"
+)
+abline(v = 14000,
+col = "red",
+lty = 5,
+lwd = 2)
+```
+
+Determing where the kink is is a subjective task. To assure that we wouldn't use too few genes we set our threshold for genes on 14000 genes where clearly the kink already occured. For clustering purposes we needed the m values of these genes from every sample, so we put these into a new data frame.
+
+```{r}
+top_14000_genes <- data.frame(ranked_gene_loading[1 : 14000])
+clustering_data <- rbind(m_values[c(as.list.data.frame(rownames(top_14000_genes))),])
+```
+Before we could cluster our data we had to find the right amount of clusters we needed. Because the purpose of our clustering was to see whether our samples coincide with their labels (healthy/cancer) or not it would make sense to use two. We wanted to check if our chosen amount of data suggest this too.
+Therefore we ran k-means for 1 - 5 clusters and looked at the total within-clusters sum of squares (that is the distance of every point inside the cluster to the center) and plotted the values. 
+
+```{r}
+wss2 <-  sapply(1:5, function(k) {
+  kmeans(x = clustering_data,
+         centers = k,
+         iter.max = 100)$tot.withinss
+})
+plot(
+  1:5,
+  wss2,
+  type = "b",
+  pch = 19,
+  xlab = "Number of clusters K",
+  ylab = "Total within-clusters sum of squares"
+)
+```
+
+As expected 2 clusters is the most suitable number of clusters for our data (kink in the curve). 
+The significance of the difference between healthy and cancer samples for each gene was evaluated by measuring the p-value through a t test.
+
+```{r}
+transposed_clustering_data <- as.data.frame(t(clustering_data))
+
+p_value_each_gene <-
+  sapply(1:ncol(transposed_clustering_data), function(k) {
+   t.test(transposed_clustering_data[1:5, k],
+           transposed_clustering_data[6:10, k],
+           var.equal = T)$p.value
+  })
+
+p_value_each_gene <- as.data.frame(p_value_each_gene)
+```
+
+Out of interest we looked at the p-values of the important genes for MCL we found in literature and whether the difference of these genes is significant in our data, too.
+
+```{r}
+clust_data_important_genes <- cbind(transposed_clustering_data[,c(unlist(important_genes))])
+
+p_value_important_genes <-
+  sapply(1:ncol(clust_data_important_genes), function(k) {
+    t.test(clust_data_important_genes[1:5, k],
+           clust_data_important_genes[6:10, k],
+           var.equal = T)$p.value
+  })
+
+p_value_important_genes <- as.data.frame(cbind(important_genes, p_value_important_genes))
+```
+
+To visualise our p-values and thus easier setting of a threshold for our p-values we made a volcano plot. The volcano plot .....
+The x-axis is log2 of the fold change (which is the beta value mean difference between healthy and cancer samples), while the y-axis is -log10 of the p values. 
+
+```{r}
+top_genes_beta_values <- rbind(healthy_beta_values[c(as.list.data.frame(rownames(top_14000_genes))),])
+top_genes_beta_values <- cbind(top_genes_beta_values, cancer_beta_values[c(as.list.data.frame(rownames(top_14000_genes))),])
+
+top_genes_beta_values <- cbind(top_genes_beta_values, Mean_Healthy = log2(rowMeans(top_genes_beta_values[,1:5])), Mean_Cancer = log2(rowMeans(top_genes_beta_values[,6:10])))
+
+top_genes_beta_values <- cbind(top_genes_beta_values, Mean_Difference = top_genes_beta_values[,11] - top_genes_beta_values[,12])
+
+plot(x = top_genes_beta_values[,13], y = -log10(p_value_each_gene[,1]), xlab="log2 fold change", ylab="-log10 p-value")
+
+```
+
+
+Next we had to adjust the p values to avoid type I errors (false negatives).
+To find the best method for this we apllied different methods and compared them.
+
+```{r}
+p_value_each_gene$BH <-  p.adjust(p_value_each_gene$p_value_each_gene, 
+                                  method = "BH")
+p_value_each_gene$bonferroni <-  p.adjust(p_value_each_gene$p_value_each_gene, 
+                                  method = "bonferroni")
+p_value_each_gene$holm <-  p.adjust(p_value_each_gene$p_value_each_gene, 
+                                  method = "holm")
+p_value_each_gene$hochberg <-  p.adjust(p_value_each_gene$p_value_each_gene, 
+                                  method = "hochberg")
+p_value_each_gene$hommel <-  p.adjust(p_value_each_gene$p_value_each_gene, 
+                                  method = "hommel")
+p_value_each_gene$BY <-  p.adjust(p_value_each_gene$p_value_each_gene, 
+                                  method = "BY")
+
+plot(p_value_each_gene)
+```
+
+There are big differences in the adjustment of the p values.
+
+```{r}
+#adding the rownames (gene names) to the matrix
+
+p_value_each_gene$Names <- rownames(clustering_data)
+
+# setting threshold for p-values to 0.05, and keeping the genes which fulfill this condition
+
+p_value_each_gene <- p_value_each_gene[which(p_value_each_gene$BH < 0.05), ]
+
+rownames(p_value_each_gene) <- p_value_each_gene$Names
+
+#leaving only the genes which fulfill the threshhold condition in the clustering_data dataset, which their corresponding m-values
+
+clustering_data <- clustering_data[c(rownames(p_value_each_gene)), ]
+
+
+#findin top differentially methylated genes based on p-values and differences in mean m-values
+
+# in an additional columns calculating mean m-value of healthy and cancer samples in clustering_data
+
+#healthy
+
+healthy_mean_m_values_diff_methylated <- as.matrix(
+sapply(1:nrow(clustering_data), function(k) {
+  rowMeans(clustering_data[k, 1:5])}))
+
+#cancer
+
+cancer_mean_m_values_diff_methylated <- as.matrix(
+  sapply(1:nrow(clustering_data), function(k) {
+    rowMeans(clustering_data[k, 6:10])}))
+mean_values_together <- as.matrix(cbind(cancer_mean_m_values_diff_methylated, healthy_mean_m_values_diff_methylated))
+
+#calculating abs difference
+
+absolute_diff_m_values <- as.matrix(
+  sapply(1:nrow(mean_values_together), function(k) {
+    abs(diff(mean_values_together[k,]))}))
+# p_values and mean m-value differences in one data frame
+
+p_value_each_gene <- as.data.frame( cbind(p_value_each_gene, absolute_diff_m_values))
+
+#finding diff methyalated genes based on 2 criteria: p_value < 1.5e-03 and mean m-value diff > 1.5
+
+p_value_each_gene <- p_value_each_gene[(p_value_each_gene$BH < 0.05) & (p_value_each_gene$absolute_diff_m_values > 5),]
+view(p_value_each_gene)
+
+```
+
+
+
 ## Part 5: Logistic Regression
 $$~$$
 To obtain a "good" prediction system, we first had to check on correlation between our final genes. A high correlation would result in a bad regression model because of insufficient information. Correlation ranges from 0 to 1. The value 0 means no correlation, therefore, maximum information. In the contrast, the value 1 means high correlation, therefore, no information in our case. 
@@ -1621,7 +1805,7 @@ Blueprint Project, http://www.blueprint-epigenome.eu/index.cfm?p=31AD6D30-9B3C-B
 $$~$$
 Goh, W.W.B., Wang, W., and Wong, L. (2017). Why Batch Effects Matter in Omics Data, and How to Avoid Them. Trends in Biotechnology 35, 10 S.
 $$~$$
-Amann-Vesti, B., Arnold, C., Panzer, U., Stahl, R.A.K., Thaiss, F., and Wenzel, U., eds. (2018). Klinische Pathophysiologie, 10., vollständig überarbeitete und erweiterte Auflage edn (Stuttgart ; New York: Georg Thieme Verlag).
+Amann-Vesti, B., Arnold, C., Panzer, U., Stahl, R.A.K., Thaiss, F., and Wenzel, U., eds. (2018). Klinische Pathophysiologie, 10., vollst?ndig ?berarbeitete und erweiterte Auflage edn (Stuttgart ; New York: Georg Thieme Verlag).
 $$~$$
 Bock, C. (2012). Analysing and interpreting DNA methylation data. Nature Reviews Genetics 13, 705.
 $$~$$
@@ -1631,7 +1815,7 @@ Gibney, E.R., and Nolan, C.M. (2010). Epigenetics and gene expression. Heredity 
 $$~$$
 Hiddemann, W., and Bartram, C. (2010). Die Onkologie, 2 edn (Heidelberg: Springer Medizin Verlag).
 $$~$$
-Horn, F., Moc, I., Schneider, N., Grillhösl, C., Berghold, S., and Lindenmeier, G. (2009). Biochemie des Menschen. In Biochemie des Menschen (Georg Thieme Verlag).
+Horn, F., Moc, I., Schneider, N., Grillh?sl, C., Berghold, S., and Lindenmeier, G. (2009). Biochemie des Menschen. In Biochemie des Menschen (Georg Thieme Verlag).
 $$~$$
 Huang, Y., Pastor, W.A., Shen, Y., Tahiliani, M., Liu, D.R., and Rao, A. (2010). The Behaviour of 5-Hydroxymethylcytosine in Bisulfite Sequencing. PLOS ONE 5, e8888.
 $$~$$
@@ -1639,11 +1823,11 @@ Moen, E.L., Mariani, C.J., Zullow, H., Jeff-Eke, M., Litwin, E., Nikitas, J.N., 
 $$~$$
 Mohanty, A., Sandoval, N., Phan, A., Nguyen, T.V., Chen, R.W., Budde, E., Mei, M., Popplewell, L., Pham, L.V., Kwak, L.W., et al. (2019). Regulation of SOX11 expression through CCND1 and STAT3 in mantle cell lymphoma. Blood 133, 306-318.
 $$~$$
-Rasch, B., Hofmann, W., Friese, M., and Naumann, E. (2010). Quantitative Methoden 2 - Einführung in die Statistik für Psychologen und Sozialwissenschaftler, 3. Edition edn (Berlin, Heidelberg: Springer).
+Rasch, B., Hofmann, W., Friese, M., and Naumann, E. (2010). Quantitative Methoden 2 - Einf?hrung in die Statistik f?r Psychologen und Sozialwissenschaftler, 3. Edition edn (Berlin, Heidelberg: Springer).
 $$~$$
 Rosa, A., and Brivanlou, A.H. (2011). A regulatory circuitry comprised of miR-302 and the transcription factors OCT4 and NR2F2 regulates human embryonic stem cell differentiation. The EMBO Journal 30, 237-248.
 $$~$$
-Walter, J., and Hümpel, A. (2017). Epigenetik - Implikationen für die Lebens- und Geisteswissenschaften, 1 edn (Nomos Verlagsgesellschaft mbH).
+Walter, J., and H?mpel, A. (2017). Epigenetik - Implikationen f?r die Lebens- und Geisteswissenschaften, 1 edn (Nomos Verlagsgesellschaft mbH).
 
 $$~$$
 Mohanty, A., Sandoval, N., Phan, A., Nguyen, T.V., Chen, R.W., Budde, E., Mei, M., Popplewell, L., Pham, L.V., Kwak, L.W., et al. (2019). Regulation of SOX11 expression through CCND1 and STAT3 in mantle cell lymphoma. Blood 133, 306-318.
