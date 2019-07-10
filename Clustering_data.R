@@ -117,6 +117,7 @@ p_value_each_gene <-
 
 p_value_each_gene <- as.data.frame(p_value_each_gene)
 
+
 #--------------------------t test for important genes according to literature-----------------------------
 #put clustering data of imortant genes into a new data frame to apply t test (unlist the list of important genes because with "c" we are expecting a vector)
 clust_data_important_genes <- cbind(transposed_clustering_data[,c(unlist(important_genes))])
@@ -129,6 +130,23 @@ p_value_important_genes <-
   })
 
 p_value_important_genes <- as.data.frame(cbind(important_genes, p_value_important_genes))
+
+#--------------------------volcano plot------------------------------------------------------
+#get beta values of top 14000 genes of every sample and put them into a new data frame
+top_genes_beta_values <- rbind(healthy_beta_values[c(as.list.data.frame(rownames(top_14000_genes))),])
+top_genes_beta_values <- cbind(top_genes_beta_values, cancer_beta_values[c(as.list.data.frame(rownames(top_14000_genes))),])
+
+#calculate the mean beta values of cancer and healthy samples for each gene
+top_genes_beta_values <- cbind(top_genes_beta_values, Mean_Healthy = log2(rowMeans(top_genes_beta_values[,1:5])), Mean_Cancer = log2(rowMeans(top_genes_beta_values[,6:10])))
+
+#add column with differences of cancer and healthy means
+top_genes_beta_values <- cbind(top_genes_beta_values, Mean_Difference = top_genes_beta_values[,11] - top_genes_beta_values[,12])
+
+plot(x = top_genes_beta_values[,13], y = -log10(p_value_each_gene[,1]), xlab="log2 fold change", ylab="-log10 p-value")
+#set threshold for p-values
+
+
+#maybe mark the p values of the literature important genes by a different color#
 
 # --------to do: adjust p values for multiple comparisons with p.adjust() Bonferroni-Holm ("BH") method
 
