@@ -2,8 +2,8 @@
 title: "Are differentially methylated regions within genes associated with mantle cell lymphoma?"
 author: "Pascal Lafrenz, Mari Hambardzumyan, Lea Herzel, Franziska Lam"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
   word_document: default
 ---
 
@@ -16,31 +16,27 @@ knitr::opts_chunk$set(echo = TRUE)
 library(kableExtra)
 ```
 The alterations in cancer cell DNA methylation pattern have long been detected (Vogelstein and Feinberg, 1983). In many cancer types methylation level has also been shown to have effects on gene deregulation,  (Melnick, 2013). But not much research has been done associated with methylation in *mantle cell lymphoma* (MCL) cells. Therefore in the following project we want to address the following question.
+$$~$$
 
 # Research question
-
+$$~$$
 Are differentially methylated regions within genes associated with mantle cell lymphoma?
 
 For that purpose we received a data set and an annotation file. Below is a short summary of important key points of the data set.
-
+$$~$$
 # Introduction
-
+$$~$$
 MCL is a B cell lymphoma which has its origin in the inner mantle zone of the lymph nodes (Hiddemann and Bartram, 2010). The most characteristic mutation in MCL is the translocation between the long arm of chromosome 11 and the long arm of chromosome 14 (t(11;14)(q13;q32)) (Hiddemann and Bartram, 2010). This mutation affects the heavy chains of immunoglobuline and leads to a cycline D1 (CCD1) overexpression (Hiddemann and Bartram, 2010). Cyclin D1 is a transcription factor which controlls the cell cycle (Hiddemann and Bartram, 2010). Through the overexpression of CCD1 the cell is able to proliferate but it can also influence the gene expression of other genes (Hiddemann and Bartram, 2010). It is observed, that a CCD1 overexpression leads to a deregulation of transcription factors and repair genes (Hiddemann and Bartram, 2010). 
 
 Our data from MCL patients and the healty control group originate from a project called BLUEPRINT (Blueprint Project). It was a research association from 2011 to 2016 with the goal to understand the geneactivation and generexpression better (Blueprint Project). To do so they generated referecne epigenomes (Blueprint Project). They focused on certain haematopoietic cells from healthy and leukeamic people, but also on some auto immune diseases (Blueprint Project). 
 
 Epigenetic modifications have an impact on DNA expression (Gibney and Nolan, 2010) and are important in some tumor genesis (Horn et al., 2009). These modifications are for example DNA methylation, histone modification and RNA mediated processes (Gibney and Nolan, 2010). In our project we want to focus on DNA methylation. In humans only cytosine can be methylated to 5-mehtylcytosine (5mC) (Walter and H√ºmpel, 2017). If the methylation should be inherited it needs to be in a CpG dimer, because in such a dimer there is a cytosine in the mother and the doughter strand (Horn et al., 2009). After the DNA replication the enzyme DNA-methyltransferase 1 is able to methylate the doughter stand if there is a methypation in the CpG of the mother strand (Horn et al., 2009). During the lifetime of a cell different genes need to be expressed and therefore methylated. DNA methyltransferase 3a and 3b is able to methylate cytosine even though the there is no mehtylation in the complementary strand (Horn et al., 2009).
-Methylation in promoters lead normally to an inactivation of the the following gene (Horn et al., 2009). But there is also the possibility of activating a gene by methylation. For this the methylation needs to be in the gene.
-
-Quelle??
+Methylation in promoters lead normally to an inactivation of the the following gene (Horn et al., 2009). But there is also the possibility of activating a gene by methylation (Yang et al., 2014). For this the methylation needs to be in the gene.
 
 For an analysis of DNA methylation a few more steps than in a normal DNA-sequencing are required, because it needs to be distinguished between "normal" cytosine and 5-mC. The methylation pattern of the samples in our data set was analyzed by the bisulfite sequencing method (bisulfite seq). The chemical sodium bisulfite converts unmethylated cytosine into uracil (Bock, 2012). The DNA with the converted bases can be amplified by PCR and after that it can be analysed by a next generation sequencing mehtod (Bock, 2012). In our case they used Ilumina. After the analysis of the converted and unconverted DNA both sequences can be compared (Bock, 2012).  If there is a thymine which pairs with a cytosin there was an unmethylated cytosine in this position in the original DNA (Bock, 2012). Thymine which pairs with adenine were originally thymine and every cytosine in the bisulfite treated DNA stands for a 5-mC (Bock, 2012). One problem in the bisulife seq is that bisulfite can not distinguish between 5-mC and 5-hydroxymethylcytosine (5-hmC) (Huang et al., 2010). So we do not really know if every methylated cytosine in our data set is really a 5-mC (Huang et al., 2010). The problem of this fact is that it has been observed that 5-hmC has not the same effect on gene expression as 5-mC has (Moen et al., 2015). Advantages of bisulfite seq are very good reproducibility, a high accuracy and acomprehensive genomic coverage (Bock, 2012).
-
- 
-
-
+$$~$$
 # Data summary
-
+$$~$$
 * Bisulfite-Seq data for 10 patients/samples (5 male, 5 female)
 * 5 healthy patients, 5 with MCL
 * Extracted DNA is from B-cells
@@ -49,13 +45,10 @@ For an analysis of DNA methylation a few more steps than in a normal DNA-sequenc
 * Length of each gene
 
 Researching on MCL we found a range of genes which have been linked with this specific cancer, some of which include SOX11, p53, CCND1 etc (Queir√≥s et al., 2016).
-
 To address the research question we broke down the project into 5 parts.
-
+$$~$$
 # Project steps
-
-
-
+$$~$$
 |1. Data processing  | 2. Data normalization and visualization | 3. Data reduction  | 4. Regression and interpretation    | 5. Annotate and interpret results
 ------------- | ------------- | ------------- | ------------- | -------------
 Remove x and y chromosome genes  | Transform beta-values into homoscedastic M-values $$~$$ | Dimensionality reduction, e.g PCA  | Apply t-test        |  
@@ -63,11 +56,9 @@ Split data in 4 data frames (cancer vs. control, beta-values and coverage) $$~$$
 Set a threshold and examine variance for reliable coverage, replace unreliable beta-values with NA $$~$$ | Visualization through plots | 
 Separately inspect genes of interest for MCL $$~$$ | Identify batch effect magnitude in the data set
 Set a threshold and remove genes under/above threshold, imputate remaining NA's | 
-
 $$~$$
-
 ## Part 1: Data processing
-
+$$~$$
 For now, we want to single out the gene data frame of the patients to inspect it separately. We will examine only the gene data frame and neglect the data from tiling, promoters and cpg-islands because they are irrelevant to answer our research question.
 
 ```{r}
@@ -396,7 +387,6 @@ sum(is.na(transposed_cancer_beta_values))
 sum(is.na(transposed_healthy_beta_values))
 ```
 $$~$$
-
 There are some important genes for MCL which have ofen a different methylation pattern in comparison to heatlhy b-cells. These genes are:
 
 Gene   |Ensembl         |Function
@@ -466,13 +456,9 @@ dim(cancer_beta_values)/dim(Gene_data_frame_x_y)
 
 It so happens that we kept slightly over 90 % of the information (91.1 %). That is more than we expected and therefore our quality control was successful. 
 We can continue to our next step: data normalization and visualization.
-
-
 $$~$$
-
-
 ## Part 2: Data normalization and vizualisation
-
+$$~$$
 In this part we want to normalise the beta values in order to make them more homoscedastic for further statistical tests and downstream analysis. For that purpose we apply logit transformation and turn them into m values. For the conversion to m values we used the following formula: 
 $$ M_i~ = log_2(\frac{beta_i}{1-beta_i}) $$
 
@@ -899,26 +885,9 @@ ggplot() +
 In general, our important genes for MCL have a low standard deviation which enhance the explanatory power of previous assumptions. A few genes tend to be more differently methylated in cancer samples than in healthy samples. For example one of this gene is SOX11.
 SOX11 tends to be differently methylated in cancer samples. This observation can be made because MCL can be devided into 2 groups: SOX11 positive and SOX11 negative patients. Depending on this status, different clinical outcome can be observed.
 Broadly, methylation of cancer patients have stronger discrepancies among each other because cancer in each patient differs.
-
-
-
-
-
-
-
-
-
-
-
-
-
 $$~$$
-
-
 ## Part 3: Data reduction
-
 $$~$$
-
 The aim of this part of the project is to narrow down our data to the significant genes which account for the majority of the variation between methylation values of healthy and cancer samples. Therefore, we need to reduce high dimensional data into low dimensional data with few information loss. 
 A common way to identify the direction of highest variability in the data is by conducting a principal component analysis (PCA) which we also applied to our data (Ma and Dai, 2011). Hence the covariance matrix is used to calculate the eigenvector which correspond to the largest eigenvalues (the principal components). These eigenvectors are used to reconstruct a significant fraction of the variance of the original data.
 These new principal components (features) can now be used for predictive analysis and model building. A crucial benefit is, that each principal component is independent of one another.
@@ -989,6 +958,7 @@ pcs_of_m_values <-
 
 install.packages("plotly")
 library(plotly)
+
 p <-
   ggplot(pcs_of_m_values, aes(x = PC1, y = PC2, group = Samples)) +
   geom_point (aes(shape = Samples, color = Samples), size = 4) +
@@ -997,10 +967,10 @@ p <-
     axis.text.x = element_blank(),
     axis.text.y = element_blank(),
     axis.ticks = element_blank()
-  )
-p <- p + scale_colour_manual(values = c("indianred2", "seagreen2"))
-p <- ggplotly(p)
-p
+  ) + 
+  scale_colour_manual(values = c("indianred2", "seagreen2"))
+ggplotly(p)
+
 ```
 
 Now we can perform kmeans clustering. We know that there should be two clusters (healthy/cancer) but we still wanted to prove that, so we plotted the number of clusteres against the total within-clusters sum of squares.
@@ -1022,18 +992,25 @@ plot(
 ```
 
 The knick in the elbow is as expected at 2 clusters.
-The following code performs kmeans clustering with 2 centroids based on the first 10 PCs. 
+The following code performs kmeans clustering with 2 centroids based on the first 10 PCs. It saves the data from the centers in a matrix and the information which point belongs to which cluster as well.
 
 ```{r}
 centers <-
   kmeans(
-    x = t(pcs_of_m_values[1:10]),
+    x = pcs_of_m_values[1:10],
     centers = 2,
     iter.max = 100
   )$centers
+
+cluster <-
+  kmeans(
+    x = pcs_of_m_values[1:10],
+    centers = 2,
+    iter.max = 100
+  )$cluster
 ```
 
-In order to visualise our kmeans clutering data we also added an extra column with the indication healthy or cancer to `centers` data-set so that we can later color code the healthy and cancer patinets. 
+In order to visualize our kmeans clutering data we also added an extra column with the indication healthy or cancer to `centers` data-set so that we can later color code the healthy and cancer patinets. 
 
 ```{r}
 centers <-
@@ -1067,10 +1044,10 @@ p_cluster <-
     axis.text.x = element_blank(),
     axis.text.y = element_blank(),
     axis.ticks = element_blank()
-  )
-p_cluster <- p_cluster + scale_colour_manual(values = c("indianred2", "seagreen2"))
-p_cluster <- ggplotly(p_cluster)
-p_cluster
+  ) + 
+  scale_colour_manual(values = c("indianred2", "seagreen2")) +
+  scale_shape_manual(values = c(16, 17))
+ggplotly(p_cluster)
 ```
 
 We can see that healthy and cancer samples are clustered into two different groups, although the individual samples group are not as tightly clustered. Healthy samples are more tightly clustered than that of cancer, because as we have seen different mutations have been associated with MCL. Another reason for long distances between samples of each cluster can be batch effects which are an unwanted source of variation in our data (Leek, 2012). Thus we need to identify which PC has the most batch effects so that we can neglcets it further down the line of our analysis. We can do that using the elbow method. For that we need to calculate the proportion of variance "by hand" and plot that against the number of PC's.
@@ -1101,7 +1078,7 @@ Batch effects are technical/non-biological sources of variation (Goh et al., 201
 * submission date
 * cell type
 
-For each of those we needed to obtain a p-value in order to assess it's sigificance, thus we created a matrix for those p-values in order to later visualise our results with a heatmap. The following code shows the backbone of that matrix.
+For each of those we needed to obtain a p-value in order to assess it's sigificance, thus we created a matrix for those p-values in order to later visualize our results with a heatmap. The following code shows the backbone of that matrix.
 
 ```{r}
 p_values_matrix <- matrix(nrow = 8, ncol = 3)
@@ -1122,9 +1099,8 @@ rownames(p_values_matrix) <-
 As the criteria which we are testing for possible batch effects have differnt formats, we need to apply appropriate statistical test for each of them. The statistical test which we chose are: Wilcoxon Rank Sum Test, Kruskal-Wallis Rank Sum Test and Monte Carlo permutation test.
 
 Wilcoxon Rank Sum Test is used to find out if there is a significant difference between two independent groups (Rasch et al., 2010). This is the case in the data from biomaterial provider, biomaterial type, disease, sex and cell type.
-We used Kruskal-Wallis Rank Sum Test for to test the significane of submission date, because we have more than two possible and independent conditions (Rasch et al., 2010).
-Monte Carlo permutation test /calculation of the correlation coefficient with a following permitation test
-donor age and sequence run counts
+We used Kruskal-Wallis Rank Sum Test for to test the significane of submission date, because we have more than two possible independent conditions (Rasch et al., 2010).
+Monte Carlo permutation test is a randomization test which can be used if the data is not normal distributedor not known (MA, Jianqiang, 2009). An advantage is the possibility to use the test on very big data sets (MA, Jianqiang, 2009). We decided to use this test on donor age and sequence run counts.
 
 
 For the Monte Carlo permutation test we defined a function wich we applied to the corresponding criteria.
@@ -1258,10 +1234,9 @@ heatmap.2(
 
 As expected the criteria of "DISEASE" came out significant which is a biological effect rather a batch one. The only two batch effects turned out to be the biomaterial provider and cell type which are both in PC1. Although the criteria of "DISEASE" in only significant in PC1 we still decided to continue working with PC2 as it is completely batch-effect-free.
 
-Additionally, we decided to visualise our biological/batch effects on the kmeans clustering graph in order to see how they are clustered.  
+Additionally, we decided to visualize our biological/batch effects on the kmeans clustering graph in order to see how they are clustered. 
 
 ```{r}
-#biomaterial provider
 p_cluster_bio_prov <-
   ggplot(
     centers,
@@ -1279,13 +1254,13 @@ p_cluster_bio_prov <-
     axis.text.x = element_blank(),
     axis.text.y = element_blank(),
     axis.ticks = element_blank()
-  )
-p_cluster_bio_prov <- p_cluster_bio_prov + scale_fill_manual(values = c("indianred2", "seagreen2"))
-p_cluster_bio_prov <- p_cluster_bio_prov + scale_colour_manual(values = c("indianred2", "seagreen2"))
-p_cluster_bio_prov <- ggplotly(p_cluster_bio_prov)
-p_cluster_bio_prov
+  ) + 
+  scale_fill_manual(values = c("indianred2", "seagreen2")) + 
+  scale_colour_manual(values = c("indianred2", "seagreen2")) +
+  scale_shape_manual(values = c(16, 17))
+ggplotly(p_cluster_bio_prov)
 
-#cell type
+
 p_cluster_cell_type <-
   ggplot(centers,
          aes(
@@ -1301,13 +1276,13 @@ p_cluster_cell_type <-
     axis.text.x = element_blank(),
     axis.text.y = element_blank(),
     axis.ticks = element_blank()
-  )
-p_cluster_cell_type <- p_cluster_cell_type + scale_fill_manual(values = c("seagreen2", "indianred2"))
-p_cluster_cell_type <- p_cluster_cell_type + scale_colour_manual(values = c("indianred2", "seagreen2"))
-p_cluster_cell_type <- ggplotly(p_cluster_cell_type)
-p_cluster_cell_type
+  ) + 
+  scale_fill_manual(values = c("seagreen2", "indianred2")) + 
+  scale_colour_manual(values = c("indianred2", "seagreen2")) + 
+  scale_shape_manual(values = c(16, 17))
+ggplotly(p_cluster_cell_type)
 
-#disease
+
 p_cluster_disease <-
   ggplot(centers,
          aes(
@@ -1327,20 +1302,22 @@ p_cluster_disease <-
 p_cluster_disease <- p_cluster_disease + scale_fill_manual (values = c("indianred2", "seagreen2"))
 p_cluster_disease <- p_cluster_disease + scale_colour_manual (values= c("indianred2", "seagreen2"))
 p_cluster_disease <- ggplotly(p_cluster_disease)
-p_cluster_disease
+ggplotly(p_cluster_disease)
 ```
-It is clearly visible that the clustering did not work out very well because of the bach effects. As indicated by the plots in the cell type plot is only one healty cell type in its own cluster and the other 4 Bcells are together with the cancer cells in a cluster. 
-The same 
+
+Interpretation
+
+
+
+
+
+
+
+
+
 $$~$$
-
-
-
-
-
-
-
 ## Part 5: Logistic Regression
-
+$$~$$
 To obtain a "good" prediction system, we first had to check on correlation between our final genes. A high correlation would result in a bad regression model because of insufficient information. Correlation ranges from 0 to 1. The value 0 means no correlation, therefore, maximum information. In the contrast, the value 1 means high correlation, therefore, no information in our case. 
 
 ```{r, include = FALSE}
@@ -1377,6 +1354,7 @@ Last but not least, a complementary histogram is shown to quantify the frequency
 To conclude, there is high positive correlation between our samples within a group. But between our cancer and control/healthy group we have pretty much no correlation. Hopefully, this is sufficient for our prediction model.
 
 In the process of testing different models, we faced several problems. Firstly, we had way too many genes which were high correlated. Thus we tried to reduce the amount of genes with regard to their correlation amount. For this, we had to calculate their correlation index and set a threshold reasonably enough for further analysis.
+
 ```{r}
 correlation_top_genes <- 
   cor(t(clustering_data)
@@ -1403,6 +1381,7 @@ regression_data <-
 ```
 
 Our chosen threshold was 0.65. Thus, each column (gene) which contained more than one value above this threshold was removed. Through this threshold, we obtained a reasonably mediocre regression model which was better than nothing. Our correlation relationship significantly improved  to our favour.
+
 ```{r}
 correlation_top_genes <- 
   cor(
@@ -1412,6 +1391,7 @@ corrplot(
   correlation_top_genes
   )
 ```
+
 We even have now negative correlation which maximizes our information content.
 On the base of this new data frame, we try to fit a logistic regression model. We used a logistic regression model, because it manages to model a binomial outcome (0,1) with one or more explanatory variables. In our case the variables are the selected genes. It measures the relationship between the categorical dependent variable (cancer/healthy) and one or more independent variables by estimating probabilities using a logistic function, which is the cumulative logistic distribution. 
 Logistic function: 
@@ -1448,6 +1428,7 @@ regression_model <-
 summary(regression_model)
 summ(regression_model, confint = TRUE, digits = 3, ci.width = .9)
 ```
+
 The error "did not converge" gave a first impression of our model. It is pretty bad. Non of our remaining genes are significant as further predictors. Moreover, we obtained high standard errors which underline unperfect model creation. We had to reduce iterations to 4 to prevent error message "fitted probabilities numerically 0 or 1 occurred". This indicated that both data are seperated in two sides. On the one side (cancer(1)) and on the other side (healthy(0)). Without cross validation, we tried to test this model on the same data again. 
 Moreover, we calculated the value of œá-squared of our model and its p-value. Because of insufficient data it seemed that our model is even worse (p = 0.008) and did not fit our needs (if we set Œ±-level to e.g. Œ± = 0.01 and therfore rejecting our H0-hypothesis). 
 Furthermore, when analyzing data with a logistic regression, an equivalent statistic to R-squared does not exist. However, to evaluate the goodness-of-fit of logistic models, several pseudo R-squareds have been developed. These are ‚Äúpseudo‚Äù R-squareds because they look like R-squared in the sense that they are on a similar scale, ranging from 0 to 1 (though some pseudo R-squareds never achieve 0 or 1) with higher values indicating better model fit, but they cannot be interpreted as one would interpret an OLS R-squared and different pseudo R-squareds can arrive at very different values. Our logistic regression model had pretty good pseudo R-squared values (0.996 and 0.992) with two different methods. Thus, we estimated that our model has a good goodness-of-fit.
@@ -1459,6 +1440,7 @@ predict(regression_model, newdata = regression_data, type = "response")
 We were able to predict samples of patients which we used to model the regression model. Thankfully, predictions were correct and we were able to go on with cross validation.
 
 Here can be seen the cross validation:
+
 ```{r}
 control <-  
   which(regression_data$Health_status == "0")
@@ -1480,7 +1462,7 @@ predict(regression_model2, newdata = regression_data, type = "response")
 summ(regression_model2)
 ```
 
-After splitting up the data into test and train set, we modelled a regression system based on the train set. Then we used this regression model to finally see if this model was good enough to predict the test set. In most cases it seemed like it predicted the samples correctly but there were also a few constellations in which it predicted samples wrong.
+After splitting up the data into test and train set, we modelled a regression system based on the train set. Then we used this regression model to finally see if this model was good enough to predict the whole data ("regression_data") because using this on the test set had mutiple false predictions. In most cases it seemed like it predicted the samples correctly but there were also a few constellations in which it predicted samples wrong.
 Overall œá-squared (p=0.08) and pseudo R-squared values improved slightly. This indicated an improved logistic regression model.
 
 We now wanted to find out what the tasks of our determined genes are.
@@ -1507,7 +1489,7 @@ After all those analyse steps, we can conclude that the data, on which our analy
 For the sake of completeness, the following logistic regression model included all of the genes after evaluating through t-test and p-adjustment.
 
 ```{r}
-regression_data2 <- cbind(
+regression_data3 <- cbind(
   Health_status = as.numeric(
     c(
   0,
@@ -1530,13 +1512,46 @@ regression_model3 <-
 
 summary(regression_model3)
 ```
+
 As previous mentioned, this model is as bad as it possibly can be. We faced with alot of NA values based on highly correlated data on the one and on the other hand we had to deal with values of 1. We rejected this model and did some extra work to create a better model shown above.
 
+Last but not least, we tried to use our previous researched, relevant genes for MCL to create a logistic regression model.
 
+```{r}
+rownames(important_genes) <- important_genes[,1]
+m_values_pp <-  m_values[c(rownames(important_genes)),]
 
+regression_data4 <- cbind(Health_status = as.numeric(c(0,
+                                                      0,
+                                                      0,
+                                                      0,
+                                                      0,
+                                                      1,
+                                                      1,
+                                                      1,
+                                                      1,
+                                                      1)
+                                                     ), 
+                          as.data.frame(t(m_values_pp)
+                                        )
+                          )
 
+regression_model4 <-
+  glm(
+    formula = Health_status ~ .,
+    family = binomial(link = "logit"),
+    data = regression_data3,
+    maxit = 4
+  )
 
+summary(regression_model4)
+predict(regression_model4, newdata = regression_data4, type = "response")
+```
 
+This summary showed us, that we could not generate a regression model through this data. Again we faced a lot of NA's and a model which seems to predict correctly but this was not true as can be seen in the summary.
+
+As a final conclusion, we faced different problems through this downstream analysis and at the end we were not fully able to create a full functional and good regression model to predict MCL in given samples.
+$$~$$
 # References
 $$~$$
 Sharp, A.J., Stathaki, E., Migliavacca, E., Brahmachary, M., Montgomery, S.B., Dupre, Y., and Antonarakis, S.E. (2011). DNA methylation profiles of human active and inactive X chromosomes. Genome Res 21, 1592-1600.
@@ -1589,6 +1604,8 @@ Vogel, C.F., Li, W., Sciullo, E., Newman, J., Hammock, B., Reader, J.R., Tuscano
 $$~$$
 Wang, Q., He, Y., Shen, Y., Zhang, Q., Chen, D., Zuo, C., Qin, J., Wang, H., Wang, J., and Yu, Y. (2014). Vitamin D inhibits COX-2 expression and inflammatory response by targeting thioesterase superfamily member 4. J Biol Chem 289, 11681-11694.
 $$~$$
+Permutation Test and Monte Carlo Sampling, http://www.let.rug.nl/nerbonne/teach/rema-stats-meth-seminar/presentations/Permutation-Monte-Carlo-Jianqiang-2009.pdf, MA, Jianqiang, Stand 10.07.2019
+$$~$$
 Wang, Y., Hou, Y., Zhang, W., Alvarez, A.A., Bai, Y., Hu, B., Cheng, S.Y., Yang, K., Li, Y., and Feng, H. (2019). Lipolytic inhibitor G0S2 modulates glioma stem-like cell radiation response. J Exp Clin Cancer Res 38, 147.
 $$~$$
 Wasik, A.M., Lord, M., Wang, X., Zong, F., Andersson, P., Kimby, E., Christensson, B., Karimi, M., and Sander, B. (2013). SOXC transcription factors in mantle cell lymphoma: the role of promoter methylation in SOX11 expression. Sci Rep 3, 1400.
@@ -1600,4 +1617,33 @@ $$~$$
 Ma, S., and Dai, Y. (2011). Principal component analysis based methods in bioinformatics studies
 Special Issue: Collaborative Bioinformatics and RNA Analysis. Briefings in Bioinformatics 12, 9 S.
 $$~$$
+Blueprint Project, http://www.blueprint-epigenome.eu/index.cfm?p=31AD6D30-9B3C-BB97-E7F81875121FEC41, Stand 04.07.2019
+$$~$$
 Goh, W.W.B., Wang, W., and Wong, L. (2017). Why Batch Effects Matter in Omics Data, and How to Avoid Them. Trends in Biotechnology 35, 10 S.
+$$~$$
+Amann-Vesti, B., Arnold, C., Panzer, U., Stahl, R.A.K., Thaiss, F., and Wenzel, U., eds. (2018). Klinische Pathophysiologie, 10., vollst‰ndig ¸berarbeitete und erweiterte Auflage edn (Stuttgart ; New York: Georg Thieme Verlag).
+$$~$$
+Bock, C. (2012). Analysing and interpreting DNA methylation data. Nature Reviews Genetics 13, 705.
+$$~$$
+Fu, M., Wang, C., Li, Z., Sakamaki, T., and Pestell, R.G. (2004). Minireview: Cyclin D1: Normal and Abnormal Functions. Endocrinology 145, 5439-5447.
+$$~$$
+Gibney, E.R., and Nolan, C.M. (2010). Epigenetics and gene expression. Heredity 105, 4.
+$$~$$
+Hiddemann, W., and Bartram, C. (2010). Die Onkologie, 2 edn (Heidelberg: Springer Medizin Verlag).
+$$~$$
+Horn, F., Moc, I., Schneider, N., Grillhˆsl, C., Berghold, S., and Lindenmeier, G. (2009). Biochemie des Menschen. In Biochemie des Menschen (Georg Thieme Verlag).
+$$~$$
+Huang, Y., Pastor, W.A., Shen, Y., Tahiliani, M., Liu, D.R., and Rao, A. (2010). The Behaviour of 5-Hydroxymethylcytosine in Bisulfite Sequencing. PLOS ONE 5, e8888.
+$$~$$
+Moen, E.L., Mariani, C.J., Zullow, H., Jeff-Eke, M., Litwin, E., Nikitas, J.N., and Godley, L.A. (2015). New themes in the biological functions of 5-methylcytosine and 5-hydroxymethylcytosine. Immunological Reviews 263, 36-49.
+$$~$$
+Mohanty, A., Sandoval, N., Phan, A., Nguyen, T.V., Chen, R.W., Budde, E., Mei, M., Popplewell, L., Pham, L.V., Kwak, L.W., et al. (2019). Regulation of SOX11 expression through CCND1 and STAT3 in mantle cell lymphoma. Blood 133, 306-318.
+$$~$$
+Rasch, B., Hofmann, W., Friese, M., and Naumann, E. (2010). Quantitative Methoden 2 - Einf¸hrung in die Statistik f¸r Psychologen und Sozialwissenschaftler, 3. Edition edn (Berlin, Heidelberg: Springer).
+$$~$$
+Rosa, A., and Brivanlou, A.H. (2011). A regulatory circuitry comprised of miR-302 and the transcription factors OCT4 and NR2F2 regulates human embryonic stem cell differentiation. The EMBO Journal 30, 237-248.
+$$~$$
+Walter, J., and H¸mpel, A. (2017). Epigenetik - Implikationen f¸r die Lebens- und Geisteswissenschaften, 1 edn (Nomos Verlagsgesellschaft mbH).
+
+$$~$$
+Mohanty, A., Sandoval, N., Phan, A., Nguyen, T.V., Chen, R.W., Budde, E., Mei, M., Popplewell, L., Pham, L.V., Kwak, L.W., et al. (2019). Regulation of SOX11 expression through CCND1 and STAT3 in mantle cell lymphoma. Blood 133, 306-318.
