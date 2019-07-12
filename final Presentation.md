@@ -13,6 +13,7 @@ For more details on authoring R presentations please visit <https://support.rstu
 - Bullet 2
 - Bullet 3
 
+
 Slide With Code
 ========================================================
 
@@ -35,3 +36,64 @@ Slide With Plot
 ========================================================
 
 ![plot of chunk unnamed-chunk-2](final Presentation-figure/unnamed-chunk-2-1.png)
+
+Reducing Data
+========================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```
+processing file: final Presentation.Rpres
+Quitting from lines 34-43 (final Presentation.Rpres) 
+Fehler in cancer_beta_values[cancer_beta_values == 0] <- 1e-05 : 
+  Objekt 'cancer_beta_values' nicht gefunden
+Ruft auf: knit ... handle -> withCallingHandlers -> withVisible -> eval -> eval
+Zusätzlich: Warnmeldung:
+In knit("final Presentation.Rpres", output = "final Presentation.md",  :
+  The file "final Presentation.Rpres" should be encoded in UTF-8. Now I will try to read it with the system native encoding (which may not be correct). We will only support UTF-8 in the near future. Please see https://yihui.name/en/2018/11/biggest-regret-knitr/ for more info.
+Ausführung angehalten
+```
