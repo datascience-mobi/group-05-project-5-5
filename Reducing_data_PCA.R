@@ -138,6 +138,8 @@ centers <-
     iter.max = 100
   )$centers
 
+
+
 #Angabe welcher Punkt zu welchem cluster gehört
 cluster <-
   kmeans(
@@ -163,6 +165,9 @@ centers <-
       "Cancer"
     )
   ))
+
+PC1 <- centers$X1
+PC2 <- centers$X2
 
 
 
