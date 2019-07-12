@@ -164,24 +164,6 @@ centers <-
     )
   ))
 
-#visualize cluster x1 and x2 and how samples are seperated
-#testLea die punkte der beiden cluster unterschiedliche Formen
-PC1 <- centers$X1
-PC2 <- centers$X2
-p_cluster <-
-  ggplot(centers, aes(x = PC1, y = PC2, group = Samples)) +
-  geom_point (aes(shape = as.factor(cluster), color = Samples), size = 4) +
-  theme_bw() +
-  theme(
-    axis.text.x = element_blank(),
-    axis.text.y = element_blank(),
-    axis.ticks = element_blank() 
-  ) +
-  scale_colour_manual(values = c("indianred2", "seagreen2")) + 
-  scale_shape_manual(values = c(16, 17))
-ggplotly(p_cluster)
-
-
 
 
 ##############################################################################################################
@@ -251,9 +233,6 @@ cor.perm <- function (x, y, nperm = 1000)
         cor (x = x, y = sample (y))
     )
   r.per <- c(r.per, r.obs)
-  hist (r.per, xlim = c(-1, 1))
-  abline (v = r.obs, col = 'red')
-  P.per <- sum (abs (r.per) >= abs (r.obs)) / (nperm + 1)
   return (list (
     r.obs = r.obs,
     p_value = p_value,
