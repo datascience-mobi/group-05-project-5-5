@@ -262,6 +262,7 @@ library(ggrepel)
 library(plotly)
 
 ```
+
 ```{r error=FALSE, warning=FALSE}
 
 p1 <- ggplot() +
@@ -294,6 +295,11 @@ p2 <- ggplot() +
     face = "bold",
     hjust = 0.5
   )) 
+grid.arrange(p1, p2, ncol = 2)
+```
+
+
+```{r error=FALSE, warning=FALSE}
 
 p3 <- ggplot() +
   geom_bar(
@@ -325,7 +331,6 @@ p4 <- ggplot() +
     face = "bold",
     hjust = 0.5
   )) 
-grid.arrange(p1, p2, ncol = 2)
 grid.arrange(p3, p4, ncol = 2)
 ```
 
@@ -582,7 +587,9 @@ abline(v = log10(quantile(
 col = "black",
 lty = 5,
 lwd = 1)
+```
 
+```{r warning=FALSE}
 hist(
   log10(sd_cancer_m_values),
   breaks = "fd",
@@ -692,7 +699,7 @@ The following overview plot includes:
 * general trend of points to solve overplotting problem (blue smoothed curve),
 * straight line through origin (y=x) for better interpreting (blue line)
 
-``` {r}
+```{r warning=FALSE}
 ggplot() +
   geom_point(
     mapping = aes(
@@ -724,7 +731,6 @@ ggplot() +
   ) + 
   xlim(-12,9) + 
   ylim(-12,9)
-
 ```
 
 We compared mean healthy and cancer m-values. Infinite values are presented at the edges. The general trend indicates that a lot of high methylated genes in healthy samples are not methylated/less methylated in cancer samples. This trend is solidified by the yellow line, shown in the plot, which would indicate a linear trend between cancer and healthy sample methylation. Nevertheless, some genes have gain a higher methylation grade. Overall, it seems that a lot of genes have pretty much the same methylation grade because they are in a huge data cloud around 0 to 5. It would be interesting to see which genes have lost  most of their methylation or gain most of it because it can be an indication of function gain (no methylation) or function loss (methylation increase).
@@ -971,7 +977,6 @@ p <-
   ) + 
   scale_colour_manual(values = c("indianred2", "seagreen2"))
 ggplotly(p)
-
 ```
 
 Now we can perform kmeans clustering. We know that there should be two clusters (healthy/cancer) but we still wanted to prove that, so we plotted the number of clusteres against the total within-clusters sum of squares.
@@ -994,6 +999,8 @@ plot(
 
 The knick in the elbow is as expected at 2 clusters.
 The following code performs kmeans clustering with 2 centroids based on the first 10 PCs. It saves the data from the centers in a matrix and the information which point belongs to which cluster as well.
+
+###### brauchen wir das noch ???
 
 ```{r}
 centers <-
@@ -1032,26 +1039,10 @@ centers <-
   ))
 ```
 
-Here we plot the results of kmeans clustering. 
+We can see that healthy and cancer samples are clustered into two different groups, although the individual samples group are not as tightly clustered. Healthy samples are more tightly clustered than that of cancer, because as we have seen different mutations have been associated with MCL. Another reason for long distances between samples of each cluster can be batch effects which are an unwanted source of variation in our data (Leek, 2012). 
+###### bis hier L�schen ???
 
-```{r}
-PC1 <- centers$X1
-PC2 <- centers$X2
-p_cluster <-
-  ggplot(centers, aes(x = PC1, y = PC2, group = Samples)) +
-  geom_point (aes(shape = Samples, color = Samples), size = 4) +
-  theme_bw() +
-  theme(
-    axis.text.x = element_blank(),
-    axis.text.y = element_blank(),
-    axis.ticks = element_blank()
-  ) + 
-  scale_colour_manual(values = c("indianred2", "seagreen2")) +
-  scale_shape_manual(values = c(16, 17))
-ggplotly(p_cluster)
-```
-
-We can see that healthy and cancer samples are clustered into two different groups, although the individual samples group are not as tightly clustered. Healthy samples are more tightly clustered than that of cancer, because as we have seen different mutations have been associated with MCL. Another reason for long distances between samples of each cluster can be batch effects which are an unwanted source of variation in our data (Leek, 2012). Thus we need to identify which PC has the most batch effects so that we can neglcets it further down the line of our analysis. We can do that using the elbow method. For that we need to calculate the proportion of variance "by hand" and plot that against the number of PC's.
+We need to identify which PC has the most batch effects so that we can neglcets it further down the line of our analysis. We can do that using the elbow method. For that we need to calculate the proportion of variance "by hand" and plot that against the number of PC's.
 
 ```{r}
 std_dev <- pca_m_values$sdev
@@ -1097,12 +1088,43 @@ rownames(p_values_matrix) <-
   )
 ```
 
+To check if there are significant differences in our data we created a new data frame with the data from the first three PCs. After that we added the specific columns from `input_data_csv` which we wanted to test on batch effects.
+
+```{r}
+batch_pcs <-
+  cbind(pcs_of_m_values[, 1:3], c(input_data_csv[, c(
+    "BIOMATERIAL_PROVIDER",
+    "BIOMATERIAL_TYPE",
+    "cellTypeShort",
+    "DONOR_SEX",
+    "DISEASE",
+    "FIRST_SUBMISSION_DATE",
+    "SEQ_RUNS_COUNT",
+    "DONOR_AGE"
+  )]))
+```
+
+To be able to perform tests to find the p-values out it is important to convert the data from PC 1-3 from the class factor to numeric.
+
+```{r}
+batch_pcs <- within(batch_pcs, {
+  PC1 <- as.numeric(as.character(PC1))
+})
+
+batch_pcs <- within(batch_pcs, {
+  PC2 <- as.numeric(as.character(PC2))
+})
+
+batch_pcs <- within(batch_pcs, {
+  PC3 <- as.numeric(as.character(PC3))
+})
+```
+
 As the criteria which we are testing for possible batch effects have differnt formats, we need to apply appropriate statistical test for each of them. The statistical test which we chose are: Wilcoxon Rank Sum Test, Kruskal-Wallis Rank Sum Test and Monte Carlo permutation test.
 
 Wilcoxon Rank Sum Test is used to find out if there is a significant difference between two independent groups (Rasch et al., 2010). This is the case in the data from biomaterial provider, biomaterial type, disease, sex and cell type.
 We used Kruskal-Wallis Rank Sum Test for to test the significane of submission date, because we have more than two possible independent conditions (Rasch et al., 2010).
 Monte Carlo permutation test is a randomization test which can be used if the data is not normal distributedor not known (MA, Jianqiang, 2009). An advantage is the possibility to use the test on very big data sets (MA, Jianqiang, 2009). We decided to use this test on donor age and sequence run counts.
-
 
 For the Monte Carlo permutation test we defined a function wich we applied to the corresponding criteria.
 
@@ -1119,8 +1141,6 @@ cor.perm <- function (x, y, nperm = 1000)
         cor (x = x, y = sample (y))
     )
   r.per <- c(r.per, r.obs)
-  hist (r.per, xlim = c(-1, 1))
-  abline (v = r.obs, col = 'red')
   P.per <- sum (abs (r.per) >= abs (r.obs)) / (nperm + 1)
   return (list (
     r.obs = r.obs,
@@ -1131,33 +1151,6 @@ cor.perm <- function (x, y, nperm = 1000)
 ```
 
 Here we filled the `p_values_matrix` with the corresponding test statistics p-values. "for-loop" was used in order to avoid redundantly performing the same test on PC1, PC2 and PC3. 
-```{r}
-batch_pcs <-
-  cbind(pcs_of_m_values[, 1:3], c(input_data_csv[, c(
-    "BIOMATERIAL_PROVIDER",
-    "BIOMATERIAL_TYPE",
-    "cellTypeShort",
-    "DONOR_SEX",
-    "DISEASE",
-    "FIRST_SUBMISSION_DATE",
-    "SEQ_RUNS_COUNT",
-    "DONOR_AGE"
-  )]))
-
-#making values of PC1-3 numeric for the tests
-
-batch_pcs <- within(batch_pcs, {
-  PC1 <- as.numeric(as.character(PC1))
-})
-
-batch_pcs <- within(batch_pcs, {
-  PC2 <- as.numeric(as.character(PC2))
-})
-
-batch_pcs <- within(batch_pcs, {
-  PC3 <- as.numeric(as.character(PC3))
-})
-```
 
 ```{r}
 for (i in 1:ncol(p_values_matrix)) {
@@ -1263,6 +1256,8 @@ As expected the criteria of "DISEASE" came out significant which is a biological
 
 Additionally, we decided to visualize our biological/batch effects on the kmeans clustering graph in order to see how they are clustered. 
 
+##### plots sind noch falsch
+
 ```{r}
 p_cluster_bio_prov <-
   ggplot(
@@ -1286,7 +1281,9 @@ p_cluster_bio_prov <-
   scale_colour_manual(values = c("indianred2", "seagreen2")) +
   scale_shape_manual(values = c(16, 17))
 ggplotly(p_cluster_bio_prov)
+```
 
+```{r}
 
 p_cluster_cell_type <-
   ggplot(centers,
@@ -1308,8 +1305,9 @@ p_cluster_cell_type <-
   scale_colour_manual(values = c("indianred2", "seagreen2")) + 
   scale_shape_manual(values = c(16, 17))
 ggplotly(p_cluster_cell_type)
+```
 
-
+```{r}
 p_cluster_disease <-
   ggplot(centers,
          aes(
@@ -1608,7 +1606,7 @@ On the base of this new data frame, we try to fit a logistic regression model. W
 Logistic function: 
 $$ p(X) = \frac{e^{β_0+β_1X}}{1+e^{β_0+β_1X}} $$
 
-```{r}
+```{r warning=FALSE}
 regression_data <- 
   cbind(
     Health_status = 
@@ -1644,7 +1642,7 @@ The error "did not converge" gave a first impression of our model. It is pretty 
 Moreover, we calculated the value of χ-squared of our model and its p-value. Because of insufficient data it seemed that our model is even worse (p = 0.008) and did not fit our needs (if we set α-level to e.g. α = 0.01 and therfore rejecting our H0-hypothesis). 
 Furthermore, when analyzing data with a logistic regression, an equivalent statistic to R-squared does not exist. However, to evaluate the goodness-of-fit of logistic models, several pseudo R-squareds have been developed. These are “pseudo” R-squareds because they look like R-squared in the sense that they are on a similar scale, ranging from 0 to 1 (though some pseudo R-squareds never achieve 0 or 1) with higher values indicating better model fit, but they cannot be interpreted as one would interpret an OLS R-squared and different pseudo R-squareds can arrive at very different values. Our logistic regression model had pretty good pseudo R-squared values (0.996 and 0.992) with two different methods. Thus, we estimated that our model has a good goodness-of-fit.
 
-```{r}
+```{r warning=FALSE}
 predict(regression_model, newdata = regression_data, type = "response")
 ```
 
@@ -1652,7 +1650,7 @@ We were able to predict samples of patients which we used to model the regressio
 
 Here can be seen the cross validation:
 
-```{r}
+```{r warning=FALSE}
 control <-  
   which(regression_data$Health_status == "0")
 control.train <- 
@@ -1728,7 +1726,7 @@ As previous mentioned, this model is as bad as it possibly can be. We faced with
 
 Last but not least, we tried to use our previous researched, relevant genes for MCL to create a logistic regression model.
 
-```{r}
+```{r warning=FALSE}
 rownames(important_genes) <- important_genes[,1]
 m_values_pp <-  m_values[c(rownames(important_genes)),]
 
