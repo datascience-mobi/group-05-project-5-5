@@ -98,14 +98,6 @@ How many genes across 10 samples in total?
 
 
 
-
-
-
-
-
-
-
-
 ```
 processing file: final Presentation.Rpres
 Registered S3 methods overwritten by 'ggplot2':
