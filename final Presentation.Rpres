@@ -4,29 +4,207 @@ author: Pascal Lafrenz, Mari Hambardzumyan, Lea Herzel, Franziska Lam
 date: July 24. 2019
 autosize: true
 
-First Slide
+Project milestones
 ========================================================
 
-For more details on authoring R presentations please visit <https://support.rstudio.com/hc/en-us/articles/200486468>.
+$$~$$
 
-- Bullet 1
-- Bullet 2
-- Bullet 3
+1. Data processing 
+2. Data normalization and visualization 
+3. Data reduction
+4. Regression and interpretation
 
-
-Slide With Code
+1. Data processing
 ========================================================
+Initial goal: retail 90% of the information after data processing.
+$$~$$
 
-```{r}
-summary(cars)
+How many genes across 10 samples in total?
+```{r, echo=FALSE}
+Samples <- readRDS(file = "Mantle-Bcell_list.RDS.gz")
+Gene_data_frame <- Samples$genes
+input_data_csv <-
+  read.csv(file = "sample_annotation.csv", sep = ",")
 ```
 
-Slide With Plot
+```{r}
+dim(Gene_data_frame)
+```
+$$~$$
+
+Problem: Methylation differences in sex chromosomes
+
+Solution:
+```{r}
+Gene_data_frame_x_y <- 
+  Gene_data_frame[-which(Gene_data_frame$Chromosome == "chrX"),]
+Gene_data_frame_x_y <- 
+  Gene_data_frame_x_y[-which(Gene_data_frame_x_y$Chromosome == "chrY"),]
+```
+
+How do the coverages look?
 ========================================================
 
 ```{r, echo=FALSE}
-plot(cars)
+healthy_coverage <- Gene_data_frame_x_y[, 21:25]
+cancer_coverage <- Gene_data_frame_x_y[, 26:30]
+healthy_beta_values <- Gene_data_frame_x_y[, 11:15]
+cancer_beta_values <- Gene_data_frame_x_y[, 16:20]
 ```
+
+```{r, echo = F, fig.height=7, fig.width=9}
+mean_cancer_coverage <- rowMeans(cancer_coverage)
+hist(
+  log10(mean_cancer_coverage),
+  breaks = "fd",
+  main = "Cancer coverage: Mean frequency",
+  xlab = "Common logarithm of coverages",
+  col = "indianred2",
+  border = "gray20"
+)
+abline(v = log10(quantile(
+  mean_cancer_coverage,
+  probs = seq(0, 1, 0.1),
+  na.rm = TRUE
+)),
+col = "black",
+lty = 5,
+lwd = 1)
+
+
+mean_healthy_coverage <- rowMeans(healthy_coverage)
+hist(
+  log10(mean_healthy_coverage),
+  breaks = "fd",
+  main = "Healthy coverage: Mean frequency",
+  xlab = "Common logarithm of coverages",
+    col = "seagreen2",
+    border = "gray20"
+)
+abline(v = log10(quantile(
+  mean_healthy_coverage,
+  probs = seq(0, 1, 0.1),
+  na.rm = TRUE
+)),
+col = "black",
+lty = 5,
+lwd = 1)
+``` 
+
+
+Problem: Unreliable coverages
+========================================================
+$$~$$
+
+Solution: Setting a threshold
+```{r}
+threshold_cancer_lower <-
+  quantile(mean_cancer_coverage,
+           probs = 0.05,
+           na.rm = TRUE)
+threshold_cancer_upper <-
+  quantile(mean_cancer_coverage,
+           probs = 0.999,
+           na.rm = TRUE)
+
+threshold_healthy_lower <-
+  quantile(mean_healthy_coverage,
+           probs = 0.05,
+           na.rm = TRUE)
+threshold_healthy_upper <-
+  quantile(mean_healthy_coverage,
+           probs = 0.999,
+           na.rm = TRUE)
+```
+
+Applying thresholds to the coverages
+========================================================
+$$~$$
+
+```{r}
+cancer_threshold_function <- function(cancer_coverage) {
+  if(cancer_coverage <= threshold_cancer_lower) {
+    return("NA")}
+  else {return(cancer_coverage)}
+  
+  if(cancer_coverage >= threshold_cancer_upper) {
+    return("NA")}
+  else{return(cancer_coverage)}
+}
+
+cancer_coverage <- apply(cancer_coverage, MARGIN = c(1,2), FUN = cancer_threshold_function)
+
+cancer_coverage[cancer_coverage == "NA"] <- NA 
+cancer_beta_values[cancer_coverage == "NA"] <- NA
+```
+
+Problem: NA's in beta-values
+========================================================
+$$~$$
+```{r, echo = F}
+cancer_beta_values$Number_of_NA_cancer <-
+  rowSums(is.na(cancer_beta_values))
+cancer_beta_values$Number_of_NA_healthy <-
+  rowSums(is.na(healthy_beta_values))
+
+healthy_beta_values$Number_of_NA_healthy <-
+  rowSums(is.na(healthy_beta_values))
+healthy_beta_values$Number_of_NA_cancer <-
+  rowSums(is.na(cancer_beta_values))
+```
+
+Solution: 
+```{r}
+cancer_beta_values <-
+  cancer_beta_values[-which(
+    cancer_beta_values$Number_of_NA_cancer >= 3 |
+      cancer_beta_values$Number_of_NA_healthy >= 3
+  ),]
+healthy_beta_values <-
+  healthy_beta_values[-which(
+    healthy_beta_values$Number_of_NA_cancer >= 3 |
+      healthy_beta_values$Number_of_NA_healthy >= 3
+  ),]
+sum(rownames(healthy_beta_values) != rownames(cancer_beta_values))
+```
+
+Faith of the remaining NA's
+========================================================
+
+```{r}
+transposed_cancer_beta_values <- t(cancer_beta_values)
+transposed_healthy_beta_values <- t(healthy_beta_values)
+
+for (i in 1:ncol(transposed_cancer_beta_values)) {
+  transposed_cancer_beta_values[is.na(transposed_cancer_beta_values[, i]), i] <-
+    mean(transposed_cancer_beta_values[, i], na.rm = TRUE)
+}
+for (i in 1:ncol(transposed_healthy_beta_values)) {
+  transposed_healthy_beta_values[is.na(transposed_healthy_beta_values[, i]), i] <-
+    mean(transposed_healthy_beta_values[, i], na.rm = TRUE)
+}
+
+cancer_beta_values <- data.frame(t(transposed_cancer_beta_values))
+healthy_beta_values <- data.frame(t(transposed_healthy_beta_values))
+```
+Checking if initial goal fulfilled:
+```{r}
+dim(cancer_beta_values)/dim(Gene_data_frame_x_y)
+```
+
+2. Data normalization and vizualisatio
+========================================================
+
+
+
+
+
+
+
+
+
+
+
 
 Reducing Data
 ========================================================

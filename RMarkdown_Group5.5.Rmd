@@ -74,6 +74,7 @@ install.packages(gplots)
 install.packages(sandwich)
 install.packages(corrplot)
 install.packages(jtools)
+install.packages(grid)
 ```
 
 ```{r}
@@ -85,7 +86,8 @@ library(plotly)
 library(gplots)   
 library(sandwich) 
 library(corrplot) 
-library(jtools)   
+library(jtools)
+library(grid)
 ```
 
 $$~$$
@@ -289,7 +291,6 @@ healthy_beta_values$Number_of_NA_cancer <-
 To visualize the number of NA's in the beta-values we plotted different histograms.
 
 ```{r error=FALSE, warning=FALSE}
-
 p1 <- ggplot() +
   geom_bar(
     data = cancer_beta_values,
@@ -418,7 +419,7 @@ sum(is.na(transposed_cancer_beta_values))
 sum(is.na(transposed_healthy_beta_values))
 ```
 $$~$$
-There are some important genes for MCL which have ofen a different methylation pattern in comparison to heatlhy b-cells. These genes are:
+There are some important genes for MCL which have often a different methylation pattern in comparison to heatlhy b-cells. These genes are:
 
 Gene   |Ensembl         |Function
 :---------:|:----------------------:|:-------------------------------------------------------------------:|
@@ -1072,7 +1073,7 @@ PC2 <- centers$X2
 ```
 
 We can see that healthy and cancer samples are clustered into two different groups, although the individual samples group are not as tightly clustered. Healthy samples are more tightly clustered than that of cancer, because as we have seen different mutations have been associated with MCL. Another reason for long distances between samples of each cluster can be batch effects which are an unwanted source of variation in our data (Leek, 2012). 
-###### bis hier Löschen ???
+###### bis hier L?schen ???
 
 We need to identify which PC has the most batch effects so that we can neglcets it further down the line of our analysis. We can do that using the elbow method. For that we need to calculate the proportion of variance "by hand" and plot that against the number of PC's.
 

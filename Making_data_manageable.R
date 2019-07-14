@@ -376,4 +376,3 @@ sum(is.na(important_genes_in_data_set))
 ##hurray no NAs
 
 remove(important_genes_in_data_set)
-
