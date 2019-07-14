@@ -9,6 +9,9 @@ Project milestones
 
 $$~$$
 
+
+
+
 1. Data processing 
 2. Data normalization and visualization 
 3. Data reduction
@@ -48,7 +51,7 @@ How do the coverages look?
 
 
 
-![plot of chunk unnamed-chunk-5](final Presentation-figure/unnamed-chunk-5-1.png)![plot of chunk unnamed-chunk-5](final Presentation-figure/unnamed-chunk-5-2.png)
+![plot of chunk unnamed-chunk-7](final Presentation-figure/unnamed-chunk-7-1.png)![plot of chunk unnamed-chunk-7](final Presentation-figure/unnamed-chunk-7-2.png)
 
 
 Problem: Unreliable coverages
@@ -154,16 +157,33 @@ dim(cancer_beta_values)/dim(Gene_data_frame_x_y)
 [1] 0.9837105 0.2333333
 ```
 
-2. Data normalization and vizualisatio
+2. Data normalization and visualization
 ========================================================
 
+Turning beta-values into m-values
+
+```r
+cancer_m_values <-
+  data.frame(log2(cancer_beta_values / (1 - cancer_beta_values)))
+healthy_m_values <-
+  data.frame(log2(healthy_beta_values / (1 - healthy_beta_values)))
+```
 
 
 
+Check if transformation successful
+========================================================
+![plot of chunk unnamed-chunk-16](final Presentation-figure/unnamed-chunk-16-1.png)
 
 
 
+Comparing mean m-values
+========================================================
+$$~$$
 
+
+
+![plot of chunk unnamed-chunk-19](final Presentation-figure/unnamed-chunk-19-1.png)
 
 
 
