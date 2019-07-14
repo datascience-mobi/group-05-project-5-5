@@ -36,7 +36,7 @@ correlation_top_genes <- cor(t(regression_data))
 corrplot(correlation_top_genes)
 
 #first creating data frame which has dichotomous outcome variable included, 0 -> healthy, 1 -> cancer
-regression_data <- cbind(Health_status = as.numeric(c(0,
+regression_data2 <- cbind(Health_status = as.numeric(c(0,
                                                       0,
                                                       0,
                                                       0,
@@ -57,7 +57,7 @@ regression_model <-
   glm(
     formula = Health_status ~ .,
     family = binomial(link = "logit"),
-    data = regression_data,
+    data = regression_data2,
     maxit = 4
   )
 

@@ -1746,10 +1746,10 @@ regression_model3 <-
     data = regression_data3
     )
 
-summary(regression_model3)
+summary(regression_model3)$coefficients
 ```
 
-As previous mentioned, this model is as bad as it possibly can be. We faced with alot of NA values based on highly correlated data on the one and on the other hand we had to deal with values of 1. We rejected this model and did some extra work to create a better model shown above.
+As previous mentioned, this model is as bad as it possibly can be. We faced with alot of NA values (only 10 variables with coefficients) based on highly correlated data on the one and on the other hand we had to deal with values of 1. We rejected this model and did some extra work to create a better model shown above.
 
 Last but not least, we tried to use our previous researched, relevant genes for MCL to create a logistic regression model.
 
