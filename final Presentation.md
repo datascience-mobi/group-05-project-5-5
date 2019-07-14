@@ -1,7 +1,7 @@
 Are differentially methylated regions within genes associated with mantle cell lymphoma?
 ========================================================
 author: Pascal Lafrenz, Mari Hambardzumyan, Lea Herzel, Franziska Lam
-date: July 24.2019
+date: July 24. 2019
 autosize: true
 
 First Slide
@@ -87,13 +87,6 @@ Reducing Data
 
 
 ```
-processing file: final Presentation.Rpres
-Quitting from lines 34-43 (final Presentation.Rpres) 
-Fehler in cancer_beta_values[cancer_beta_values == 0] <- 1e-05 : 
-  Objekt 'cancer_beta_values' nicht gefunden
-Ruft auf: knit ... handle -> withCallingHandlers -> withVisible -> eval -> eval
-Zusätzlich: Warnmeldung:
-In knit("final Presentation.Rpres", output = "final Presentation.md",  :
-  The file "final Presentation.Rpres" should be encoded in UTF-8. Now I will try to read it with the system native encoding (which may not be correct). We will only support UTF-8 in the near future. Please see https://yihui.name/en/2018/11/biggest-regret-knitr/ for more info.
-Ausführung angehalten
+Error in cancer_beta_values[cancer_beta_values == 0] <- 1e-05 : 
+  object 'cancer_beta_values' not found
 ```

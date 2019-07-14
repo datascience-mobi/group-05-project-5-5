@@ -41,7 +41,6 @@ colnames(cancer_m_values) <- c(
 
 #merging both m value dataframes (healthy and cancer) into one again for PCA
 m_values <- cbind(healthy_m_values, cancer_m_values)
-View(m_values)
 
 #Apply PCA on data frame "m_values" with all m values. For that, the matrix needs to be transposed first
 #(variables are scaled to have i) standard deviation one and ii) mean zero)
@@ -140,7 +139,7 @@ centers <-
 
 
 
-#Angabe welcher Punkt zu welchem cluster gehört
+#Angabe welcher Punkt zu welchem cluster geh?rt
 cluster <-
   kmeans(
     x = pcs_of_m_values[1:10],

@@ -1,7 +1,7 @@
 Are differentially methylated regions within genes associated with mantle cell lymphoma?
 ========================================================
 author: Pascal Lafrenz, Mari Hambardzumyan, Lea Herzel, Franziska Lam
-date: July 24.2019
+date: July 24. 2019
 autosize: true
 
 First Slide
@@ -42,7 +42,7 @@ healthy_m_values <-
   data.frame(log2(healthy_beta_values / (1 - healthy_beta_values)))
 ```
 
-unnötig? Da vorher schon mal berechnet
+unn?tig? Da vorher schon mal berechnet
 
 ======================================================
 ```{r}
@@ -129,14 +129,14 @@ plot(
 
 ```
 
-frei für Teil, bei dem ich nicht sicher bin, ob wir den brauchen
+frei f?r Teil, bei dem ich nicht sicher bin, ob wir den brauchen
 
 ======================================================
 ```{r}
 
 ```
 
-frei für Teil, bei dem ich nicht sicher bin, ob wir den brauchen
+frei f?r Teil, bei dem ich nicht sicher bin, ob wir den brauchen
 
 ======================================================
 ```{r}
