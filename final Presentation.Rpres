@@ -8,7 +8,7 @@ Project milestones
 ========================================================
 
 $$~$$
-```{r eval=FALSE, include=FALSE, echo=FALSE}
+```{r eval=FALSE, include=FALSE}
 install.packages(kableExtra)
 install.packages(tidyverse)
 install.packages(gridExtra)
@@ -21,7 +21,7 @@ install.packages(jtools)
 install.packages(grid)
 ```
 
-```{r, echo=FALSE}
+```{r include=FALSE}
 library(kableExtra)
 library(tidyverse)  
 library(gridExtra)
@@ -45,7 +45,7 @@ Initial goal: retail 90% of the information after data processing.
 $$~$$
 
 How many genes across 10 samples in total?
-```{r, echo=FALSE}
+```{r echo=FALSE, warning=TRUE}
 Samples <- readRDS(file = "Mantle-Bcell_list.RDS.gz")
 Gene_data_frame <- Samples$genes
 input_data_csv <-
@@ -424,7 +424,7 @@ ggplot() +
 
 Reducing Data
 ========================================================
-```{r}
+```{r include=FALSE}
 cancer_beta_values[cancer_beta_values == 0] <- 0.00001
 cancer_beta_values[cancer_beta_values == 1] <- 0.99999
 healthy_beta_values[healthy_beta_values == 0] <- 0.00001
@@ -439,7 +439,7 @@ healthy_m_values <-
 unn?tig? Da vorher schon mal berechnet
 
 ======================================================
-```{r}
+```{r include=FALSE}
 colnames(healthy_m_values) <-
   c(
     "Bcell_naive_VB_NBC_NC11_41.M",
@@ -460,7 +460,7 @@ colnames(cancer_m_values) <- c(
 
 
 ======================================================
-```{r}
+```{r include=FALSE}
 m_values <- cbind(healthy_m_values, cancer_m_values)
 pca_m_values <- prcomp(t(m_values))
 summary(pca_m_values)
@@ -468,7 +468,7 @@ summary(pca_m_values)
 
 
 ======================================================
-```{r}
+```{r include=FALSE}
 pcs_of_m_values <-
   data.frame(cbind(
     pca_m_values$x,
@@ -485,7 +485,9 @@ pcs_of_m_values <-
       "Cancer"
     )
   ))
+```
 
+```{r echo=TRUE}
 p <-
   ggplot(pcs_of_m_values, aes(x = PC1, y = PC2, group = Samples)) +
   geom_point (aes(shape = Samples, color = Samples), size = 4) +
@@ -714,6 +716,7 @@ Permutation Test: Monte Carlo
 
 wichtig
 
+significant differences
 =============================================
 ```{r}
 my_palette <- colorRampPalette(c("indianred2", "seagreen2")) (n = 3)
@@ -777,10 +780,6 @@ heatmap.2(
 ```{r}
 
 ```
-
-
-
-
 
 
 
