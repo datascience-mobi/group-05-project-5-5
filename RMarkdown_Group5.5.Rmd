@@ -53,13 +53,12 @@ $$~$$
 # Project steps
 
 $$~$$
-
 |1. Data processing  | 2. Data normalization and visualization | 3. Data reduction  | 4. Regression and interpretation    | 5. Annotate and interpret results
 ------------- | ------------- | ------------- | ------------- | -------------
 Remove x and y chromosome genes  | Transform beta-values into homoscedastic M-values $$~$$ | Dimensionality reduction, e.g PCA  | Apply t-test        |  
-Split data into 4 data frames (cancer vs. control, beta-values and coverage) $$~$$ | Add a column for mean, median and SD for better comparisons  | Apply clustering method and visualize, e.g k-means         | Apply logistic regression        | 
-Set a threshold and examine variance for reliable coverage, replace unreliable beta-values with NA $$~$$ | Visualization through plots | 
-Separately inspect genes of interest for MCL $$~$$ | Identify batch effect magnitude in the data set
+Split data into 4 data frames (cancer vs. control, beta-values and coverage) $$~$$ | Add a column for mean, median and SD for better comparisons | Identify batch effect magnitude in the data set | Apply logistic regression | 
+Set a threshold and examine variance for reliable coverage, replace unreliable beta-values with NA $$~$$ | Visualization through plots | Apply clustering method and visualize, e.g k-means |
+Separately inspect genes of interest for MCL $$~$$ | 
 Set a threshold and remove genes under/above threshold, imputate remaining NA's | 
 
 $$~$$
