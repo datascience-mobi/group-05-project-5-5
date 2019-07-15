@@ -53,6 +53,7 @@ $$~$$
 # Project steps
 
 $$~$$
+
 |1. Data processing  | 2. Data normalization and visualization | 3. Data reduction  | 4. Regression and interpretation    | 5. Annotate and interpret results
 ------------- | ------------- | ------------- | ------------- | -------------
 Remove x and y chromosome genes  | Transform beta-values into homoscedastic M-values $$~$$ | Dimensionality reduction, e.g PCA  | Apply t-test        |  
