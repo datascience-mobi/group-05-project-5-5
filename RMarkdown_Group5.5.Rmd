@@ -76,7 +76,7 @@ install.packages(jtools)
 install.packages(grid)
 ```
 
-```{r}
+```{r, message=FALSE}
 library(kableExtra)
 library(tidyverse)  
 library(gridExtra)
@@ -1627,13 +1627,13 @@ corrplot(
   )
 ```
 
-We even have now negative correlation which maximizes our information content.
+After that we even had negative correlation which was not optimal but we faced too much data loss if we would have tried to procede in reducing more.
 On the base of this new data frame, we try to fit a logistic regression model. We used a logistic regression model, because it manages to model a binomial outcome (0,1) with one or more explanatory variables. In our case the variables are the selected genes. It measures the relationship between the categorical dependent variable (cancer/healthy) and one or more independent variables by estimating probabilities using a logistic function, which is the cumulative logistic distribution. 
 Logistic function: 
 $$ p(X) = \frac{e^{β_0+β_1X}}{1+e^{β_0+β_1X}} $$
 
 ```{r warning=FALSE}
-regression_data <- 
+regression_data_uncorrelated_genes <- 
   cbind(
     Health_status = 
           as.numeric(
@@ -1652,16 +1652,16 @@ regression_data <-
             ), 
         as.data.frame(t(regression_data))
         )
-regression_model <- 
+regression_model_uncorrelated_genes <- 
   glm(
     formula = Health_status ~ ., 
     family = binomial(link = "logit"), 
-    data = regression_data, 
+    data = regression_data_uncorrelated_genes, 
     maxit = 4
     )
 
-summary(regression_model)
-summ(regression_model, confint = TRUE, digits = 3, ci.width = .9)
+summary(regression_model_uncorrelated_genes)
+summ(regression_model_uncorrelated_genes, confint = TRUE, digits = 3, ci.width = .9)
 ```
 
 The error "did not converge" gave a first impression of our model. It is pretty bad. Non of our remaining genes are significant as further predictors. Moreover, we obtained high standard errors which underline unperfect model creation. We had to reduce iterations to 4 to prevent error message "fitted probabilities numerically 0 or 1 occurred". This indicated that both data are seperated in two sides. On the one side (cancer(1)) and on the other side (healthy(0)). Without cross validation, we tried to test this model on the same data again. 
@@ -1669,7 +1669,7 @@ Moreover, we calculated the value of χ-squared of our model and its p-value. Be
 Furthermore, when analyzing data with a logistic regression, an equivalent statistic to R-squared does not exist. However, to evaluate the goodness-of-fit of logistic models, several pseudo R-squareds have been developed. These are “pseudo” R-squareds because they look like R-squared in the sense that they are on a similar scale, ranging from 0 to 1 (though some pseudo R-squareds never achieve 0 or 1) with higher values indicating better model fit, but they cannot be interpreted as one would interpret an OLS R-squared and different pseudo R-squareds can arrive at very different values. Our logistic regression model had pretty good pseudo R-squared values (0.996 and 0.992) with two different methods. Thus, we estimated that our model has a good goodness-of-fit.
 
 ```{r warning=FALSE}
-predict(regression_model, newdata = regression_data, type = "response")
+predict(regression_model_uncorrelated_genes, newdata = regression_data_uncorrelated_genes, type = "response")
 ```
 
 We were able to predict samples of patients which we used to model the regression model. Thankfully, predictions were correct and we were able to go on with cross validation.
@@ -1678,23 +1678,26 @@ Here can be seen the cross validation:
 
 ```{r warning=FALSE}
 control <-  
-  which(regression_data$Health_status == "0")
+  which(regression_data_uncorrelated_genes$Health_status == "0")
 control.train <- 
   sample(control, floor(0.75 * length(control)))
 cancer <- 
-  which(regression_data$Health_status == "1")
+  which(regression_data_uncorrelated_genes$Health_status == "1")
 cancer.train <- 
   sample(cancer, floor(0.75 * length(cancer)))
 train <- 
   c(control.train, cancer.train)
 train.set <- 
-  regression_data[train, ]
+  regression_data_uncorrelated_genes[train, ]
 test.set <- 
-  regression_data[-train, ]
-regression_model2 <- 
+  regression_data_uncorrelated_genes[-train, ]
+
+regression_model_cross_validation <- 
   glm(formula = Health_status ~ ., family = binomial(link = "logit"), data = train.set, maxit = 4)
-predict(regression_model2, newdata = regression_data, type = "response")
-summ(regression_model2)
+
+predict(regression_model_cross_validation, newdata = regression_data_uncorrelated_genes, type = "response")
+
+summ(regression_model_cross_validation)
 ```
 
 After splitting up the data into test and train set, we modelled a regression system based on the train set. Then we used this regression model to finally see if this model was good enough to predict the whole data ("regression_data") because using this on the test set had mutiple false predictions. In most cases it seemed like it predicted the samples correctly but there were also a few constellations in which it predicted samples wrong.
@@ -1724,7 +1727,7 @@ After all those analyse steps, we can conclude that the data, on which our analy
 For the sake of completeness, the following logistic regression model included all of the genes after evaluating through t-test and p-adjustment.
 
 ```{r}
-regression_data3 <- cbind(
+regression_data_all_genes_before_uncorrelation <- cbind(
   Health_status = as.numeric(
     c(
   0,
@@ -1738,14 +1741,14 @@ regression_data3 <- cbind(
   1,
   1
 )), as.data.frame(t(clustering_data)))
-regression_model3 <- 
+regression_model_all_genes_after_ttest <- 
   glm(
     formula = Health_status ~ ., 
     family = binomial(link = "logit"), 
-    data = regression_data3
+    data = regression_data_all_genes_before_uncorrelation
     )
 
-summary(regression_model3)$coefficients
+summary(regression_model_all_genes_after_ttest)$coefficients
 ```
 
 As previous mentioned, this model is as bad as it possibly can be. We faced with alot of NA values (only 10 variables with coefficients) based on highly correlated data on the one and on the other hand we had to deal with values of 1. We rejected this model and did some extra work to create a better model shown above.
@@ -1756,7 +1759,7 @@ Last but not least, we tried to use our previous researched, relevant genes for 
 rownames(important_genes) <- important_genes[,1]
 m_values_pp <-  m_values[c(rownames(important_genes)),]
 
-regression_data4 <- cbind(Health_status = as.numeric(c(0,
+regression_data_researched_important_genes <- cbind(Health_status = as.numeric(c(0,
                                                       0,
                                                       0,
                                                       0,
@@ -1771,22 +1774,22 @@ regression_data4 <- cbind(Health_status = as.numeric(c(0,
                                         )
                           )
 
-regression_model4 <-
+regression_model_researched_important_genes <-
   glm(
     formula = Health_status ~ .,
     family = binomial(link = "logit"),
-    data = regression_data4,
+    data = regression_data_researched_important_genes,
     maxit = 4
   )
 
-summary(regression_model4)
-predict(regression_model4, newdata = regression_data4, type = "response")
+summary(regression_model_researched_important_genes)
+predict(regression_model_researched_important_genes, newdata = regression_data_researched_important_genes, type = "response")
 ```
 
 This summary showed us, that we could not generate a regression model through this data. Again we faced a lot of NA's and a model which seems to predict correctly but this was not true as can be seen in the summary.
 
 ##Conclusion
-As a final conclusion, we faced different problems through this downstream analysis and at the end we were not fully able to create a full functional and good regression model to predict MCL in given samples.
+As a final conclusion, we faced different problems through this downstream analysis and at the end we were not fully able to create a full functional and good regression model to predict MCL in given samples. Our previous researched genes cannot be confirmed as different methylated in gene coding region. But we did not test for different methylated regions (DMRs) in other coding and non-coding regions of our samples. It could be possible that these genes are DMRs e.g. in promotor region.
 $$~$$
 
 # References
