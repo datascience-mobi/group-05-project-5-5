@@ -56,11 +56,11 @@ $$~$$
 
 |1. Data processing  | 2. Data normalization and visualization | 3. Data reduction  | 4. Regression and interpretation    | 5. Annotate and interpret results
 ------------- | ------------- | ------------- | ------------- | -------------
-Remove x and y chromosome genes  | Transform beta-values into homoscedastic M-values $$~$$ | Dimensionality reduction, e.g PCA  | Apply t-test        |  
-Split data into 4 data frames (cancer vs. control, beta-values and coverage) $$~$$ | Add a column for mean, median and SD for better comparisons | Identify batch effect magnitude in the data set | Apply logistic regression | 
-Set a threshold and examine variance for reliable coverage, replace unreliable beta-values with NA $$~$$ | Visualization through plots | Apply clustering method and visualize, e.g k-means |
-Separately inspect genes of interest for MCL $$~$$ | 
-Set a threshold and remove genes under/above threshold, imputate remaining NA's | 
+Remove x and y chromosome genes  | Transform beta-values into homoscedastic M-values $$~$$ | Dimensionality reduction, e.g PCA  | Apply t-test        |   |
+Split data into 4 data frames (cancer vs. control, beta-values and coverage) $$~$$ | Add a column for mean, median and SD for better comparisons | Identify batch effect magnitude in the data set | Apply logistic regression |   |
+Set a threshold and examine variance for reliable coverage, replace unreliable beta-values with NA $$~$$ | Visualization through plots | Apply clustering method and visualize, e.g k-means |  |  |
+Separately inspect genes of interest for MCL $$~$$ |   |    |    |   
+Set a threshold and remove genes under/above threshold, imputate remaining NA's |   |    |    |   
 
 $$~$$
 To be able to run our code the following packages are needed.
@@ -77,7 +77,7 @@ install.packages(jtools)
 install.packages(grid)
 ```
 
-```{r, message=FALSE}
+```{r message=FALSE, include=FALSE}
 library(kableExtra)
 library(tidyverse)  
 library(gridExtra)
@@ -145,7 +145,6 @@ abline(v = log10(quantile(
 col = "black",
 lty = 5,
 lwd = 1)
-
 
 mean_healthy_coverage <- rowMeans(healthy_coverage)
 hist(
@@ -1027,7 +1026,7 @@ plot(
 The knick in the elbow is as expected at 2 clusters.
 The following code performs kmeans clustering with 2 centroids based on the first 10 PCs. It saves the data from the centers in a matrix and the information which point belongs to which cluster as well.
 
-```{r}
+```{r warning=FALSE}
 centers <-
   kmeans(
     x = pcs_of_m_values[1:10],
@@ -1160,7 +1159,7 @@ Monte Carlo permutation test is a randomization test which can be used if the da
 
 For the Monte Carlo permutation test we defined a function wich we applied to the corresponding criteria.
 
-```{r}
+```{r warning=FALSE}
 cor.perm <- function (x, y, nperm = 1000)
 {
   r.obs <- cor (x = x, y = y)
@@ -1184,7 +1183,7 @@ cor.perm <- function (x, y, nperm = 1000)
 
 Here we filled the `p_values_matrix` with the corresponding test statistics p-values. "for-loop" was used in order to avoid redundantly performing the same test on PC1, PC2 and PC3. 
 
-```{r}
+```{r warning=FALSE}
 for (i in 1:ncol(p_values_matrix)) {
   bio_prov_test <- wilcox.test(
     batch_pcs [, i] ~ batch_pcs$BIOMATERIAL_PROVIDER,
@@ -1261,7 +1260,7 @@ for (i in 1:ncol(p_values_matrix)) {
 
 Thereafter a heatmap of `p_values_matrix` was created to see whether the batch/biological effects are significant in the PCs and to determine which PCs to use for the downstream analysis.
 
-```{r}
+```{r warning=FALSE}
 my_palette <- colorRampPalette(c("indianred2", "seagreen2")) (n = 3)
 color_breaks <- c(seq(0, 0.01, length = 2),
                   seq(0.011, 1, length = 2))
@@ -1289,9 +1288,9 @@ Additionally, we decided to visualize our biological/batch effects on the kmeans
 ##### plots sind noch falsch
 
 ```{r}
-p_cluster_bio_prov <-
+p_bio_prov <-
   ggplot(
-    centers,
+    pcs_of_m_values,
     aes(
       x = PC1,
       y = PC2,
@@ -1299,30 +1298,31 @@ p_cluster_bio_prov <-
       fill = input_data_csv$BIOMATERIAL_PROVIDER
     )
   ) +
-  geom_point (aes(shape = as.factor(cluster), color = Samples), size = 4) +
+  geom_point (aes(shape = Samples, color = Samples), size = 4) +
   theme_bw() +
   ggtitle("Biomaterial provider") +
   theme(
     axis.text.x = element_blank(),
     axis.text.y = element_blank(),
     axis.ticks = element_blank()
-  ) + 
-  scale_fill_manual(values = c("indianred2", "seagreen2")) + 
+  )  +
+  scale_fill_manual(values = c("indianred2", "seagreen2")) +
   scale_colour_manual(values = c("indianred2", "seagreen2")) +
   scale_shape_manual(values = c(16, 17))
-ggplotly(p_cluster_bio_prov)
+ggplotly(p_bio_prov)
 ```
 
 ```{r}
-
-p_cluster_cell_type <-
-  ggplot(centers,
-         aes(
-           x = PC1,
-           y = PC2,
-           group = Samples,
-           fill = input_data_csv$cellTypeShort
-         )) +
+p_cell_type <-
+  ggplot(
+    pcs_of_m_values,
+    aes(
+      x = PC1,
+      y = PC2,
+      group = Samples,
+      fill = input_data_csv$cellTypeShort
+    )
+  ) +
   geom_point (aes(shape = as.factor(cluster), color = Samples), size = 4) +
   theme_bw() +
   ggtitle("Cell type") +
@@ -1330,16 +1330,16 @@ p_cluster_cell_type <-
     axis.text.x = element_blank(),
     axis.text.y = element_blank(),
     axis.ticks = element_blank()
-  ) + 
-  scale_fill_manual(values = c("seagreen2", "indianred2")) + 
-  scale_colour_manual(values = c("indianred2", "seagreen2")) + 
+  ) +
+  scale_fill_manual(values = c("seagreen2", "indianred2")) +
+  scale_colour_manual(values = c("indianred2", "seagreen2")) +
   scale_shape_manual(values = c(16, 17))
-ggplotly(p_cluster_cell_type)
+ggplotly(p_cell_type)
 ```
 
 ```{r}
-p_cluster_disease <-
-  ggplot(centers,
+p_disease <-
+  ggplot(pcs_of_m_values,
          aes(
            x = PC1,
            y = PC2,
@@ -1353,11 +1353,11 @@ p_cluster_disease <-
     axis.text.x = element_blank(),
     axis.text.y = element_blank(),
     axis.ticks = element_blank()
-  )
-p_cluster_disease <- p_cluster_disease + scale_fill_manual (values = c("indianred2", "seagreen2"))
-p_cluster_disease <- p_cluster_disease + scale_colour_manual (values= c("indianred2", "seagreen2"))
-p_cluster_disease <- ggplotly(p_cluster_disease)
-ggplotly(p_cluster_disease)
+  ) +
+  scale_fill_manual (values = c("indianred2", "seagreen2")) +
+  scale_colour_manual (values = c("indianred2", "seagreen2")) +
+  scale_shape_manual(values = c(16, 17))
+ggplotly(p_disease)
 ```
 
 Interpretation

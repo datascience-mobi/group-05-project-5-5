@@ -367,7 +367,15 @@ heatmap.2(
 #---------biomaterial provider-------
 
 p_bio_prov <-
-  ggplot(pcs_of_m_values, aes(x = PC1, y = PC2, group = Samples, fill = input_data_csv$BIOMATERIAL_PROVIDER)) +
+  ggplot(
+    pcs_of_m_values,
+    aes(
+      x = PC1,
+      y = PC2,
+      group = Samples,
+      fill = input_data_csv$BIOMATERIAL_PROVIDER
+    )
+  ) +
   geom_point (aes(shape = Samples, color = Samples), size = 4) +
   theme_bw() +
   ggtitle("Biomaterial provider") +
@@ -375,20 +383,22 @@ p_bio_prov <-
     axis.text.x = element_blank(),
     axis.text.y = element_blank(),
     axis.ticks = element_blank()
-  )  + 
+  )  +
   scale_colour_manual(values = c("indianred2", "seagreen2"))
 ggplotly(p_bio_prov)
 
 #---------cell type------------
 
 p_cell_type <-
-  ggplot(pcs_of_m_values,
-         aes(
-           x = PC1,
-           y = PC2,
-           group = Samples,
-           fill = input_data_csv$cellTypeShort
-         )) +
+  ggplot(
+    pcs_of_m_values,
+    aes(
+      x = PC1,
+      y = PC2,
+      group = Samples,
+      fill = input_data_csv$cellTypeShort
+    )
+  ) +
   geom_point (aes(shape = as.factor(cluster), color = Samples), size = 4) +
   theme_bw() +
   ggtitle("Cell type") +
@@ -396,8 +406,8 @@ p_cell_type <-
     axis.text.x = element_blank(),
     axis.text.y = element_blank(),
     axis.ticks = element_blank()
-  ) + 
-  scale_fill_manual(values = c("seagreen2", "indianred2")) + 
+  ) +
+  scale_fill_manual(values = c("seagreen2", "indianred2")) +
   scale_colour_manual(values = c("indianred2", "seagreen2")) +
   scale_shape_manual(values = c(16, 17))
 ggplotly(p_cell_type)
@@ -423,7 +433,5 @@ p_disease <-
   ) +
   scale_fill_manual (values = c("indianred2", "seagreen2")) +
   scale_colour_manual (values = c("indianred2", "seagreen2")) +
-  scale_shape_manual(values = c(16,17))
+  scale_shape_manual(values = c(16, 17))
 ggplotly(p_disease)
-
-
