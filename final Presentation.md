@@ -26,37 +26,173 @@ How many genes across 10 samples in total?
 
 
 
+```r
+dim(Gene_data_frame)
+```
+
+```
+[1] 56175    30
+```
+$$~$$
+
+Problem: Methylation differences in sex chromosomes
+
+Solution:
+
+```r
+Gene_data_frame_x_y <- 
+  Gene_data_frame[-which(Gene_data_frame$Chromosome == "chrX"),]
+Gene_data_frame_x_y <- 
+  Gene_data_frame_x_y[-which(Gene_data_frame_x_y$Chromosome == "chrY"),]
+```
+
+How do the coverages look?
+========================================================
+
+
+
+![plot of chunk unnamed-chunk-7](final Presentation-figure/unnamed-chunk-7-1.png)![plot of chunk unnamed-chunk-7](final Presentation-figure/unnamed-chunk-7-2.png)
+
+
+Problem: Unreliable coverages
+========================================================
+$$~$$
+
+Solution: Setting a threshold
+
+```r
+threshold_cancer_lower <-
+  quantile(mean_cancer_coverage,
+           probs = 0.05,
+           na.rm = TRUE)
+threshold_cancer_upper <-
+  quantile(mean_cancer_coverage,
+           probs = 0.999,
+           na.rm = TRUE)
+
+threshold_healthy_lower <-
+  quantile(mean_healthy_coverage,
+           probs = 0.05,
+           na.rm = TRUE)
+threshold_healthy_upper <-
+  quantile(mean_healthy_coverage,
+           probs = 0.999,
+           na.rm = TRUE)
+```
+
+Applying thresholds to the coverages
+========================================================
+$$~$$
+
+
+```r
+cancer_threshold_function <- function(cancer_coverage) {
+  if(cancer_coverage <= threshold_cancer_lower) {
+    return("NA")}
+  else {return(cancer_coverage)}
+  
+  if(cancer_coverage >= threshold_cancer_upper) {
+    return("NA")}
+  else{return(cancer_coverage)}
+}
+
+cancer_coverage <- apply(cancer_coverage, MARGIN = c(1,2), FUN = cancer_threshold_function)
+
+cancer_coverage[cancer_coverage == "NA"] <- NA 
+cancer_beta_values[cancer_coverage == "NA"] <- NA
+```
+
+Problem: NA's in beta-values
+========================================================
+$$~$$
+
+
+Solution: 
+
+```r
+cancer_beta_values <-
+  cancer_beta_values[-which(
+    cancer_beta_values$Number_of_NA_cancer >= 3 |
+      cancer_beta_values$Number_of_NA_healthy >= 3
+  ),]
+healthy_beta_values <-
+  healthy_beta_values[-which(
+    healthy_beta_values$Number_of_NA_cancer >= 3 |
+      healthy_beta_values$Number_of_NA_healthy >= 3
+  ),]
+sum(rownames(healthy_beta_values) != rownames(cancer_beta_values))
+```
+
+```
+[1] 0
+```
+
+Faith of the remaining NA's
+========================================================
+
+
+```r
+transposed_cancer_beta_values <- t(cancer_beta_values)
+transposed_healthy_beta_values <- t(healthy_beta_values)
+
+for (i in 1:ncol(transposed_cancer_beta_values)) {
+  transposed_cancer_beta_values[is.na(transposed_cancer_beta_values[, i]), i] <-
+    mean(transposed_cancer_beta_values[, i], na.rm = TRUE)
+}
+for (i in 1:ncol(transposed_healthy_beta_values)) {
+  transposed_healthy_beta_values[is.na(transposed_healthy_beta_values[, i]), i] <-
+    mean(transposed_healthy_beta_values[, i], na.rm = TRUE)
+}
+
+cancer_beta_values <- data.frame(t(transposed_cancer_beta_values))
+healthy_beta_values <- data.frame(t(transposed_healthy_beta_values))
+```
+Checking if initial goal fulfilled:
+
+```r
+dim(cancer_beta_values)/dim(Gene_data_frame_x_y)
+```
+
+```
+[1] 0.9837105 0.2333333
+```
+
+2. Data normalization and visualization
+========================================================
+
+Turning beta-values into m-values
+
+```r
+cancer_m_values <-
+  data.frame(log2(cancer_beta_values / (1 - cancer_beta_values)))
+healthy_m_values <-
+  data.frame(log2(healthy_beta_values / (1 - healthy_beta_values)))
+```
+
+
+
+Check if transformation successful
+========================================================
+![plot of chunk unnamed-chunk-16](final Presentation-figure/unnamed-chunk-16-1.png)
+
+
+
+Comparing mean m-values
+========================================================
+$$~$$
+
+
+
+![plot of chunk unnamed-chunk-19](final Presentation-figure/unnamed-chunk-19-1.png)
 
 
 
 
+Reducing Data
+========================================================
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+unn?tig? Da vorher schon mal berechnet
 
 
 
@@ -99,60 +235,5 @@ How many genes across 10 samples in total?
 
 
 ```
-processing file: final Presentation.Rpres
-Registered S3 methods overwritten by 'ggplot2':
-  method         from 
-  [.quosures     rlang
-  c.quosures     rlang
-  print.quosures rlang
--- Attaching packages --------------------------------------------------------------------------------- tidyverse 1.2.1 --
-v ggplot2 3.1.1     v purrr   0.3.2
-v tibble  2.1.3     v dplyr   0.8.1
-v tidyr   0.8.3     v stringr 1.4.0
-v readr   1.3.1     v forcats 0.4.0
--- Conflicts ------------------------------------------------------------------------------------ tidyverse_conflicts() --
-x dplyr::filter()     masks stats::filter()
-x dplyr::group_rows() masks kableExtra::group_rows()
-x dplyr::lag()        masks stats::lag()
-
-Attaching package: 'gridExtra'
-
-The following object is masked from 'package:dplyr':
-
-    combine
-
-
-Attaching package: 'plotly'
-
-The following object is masked from 'package:ggplot2':
-
-    last_plot
-
-The following object is masked from 'package:stats':
-
-    filter
-
-The following object is masked from 'package:graphics':
-
-    layout
-
-
-Attaching package: 'gplots'
-
-The following object is masked from 'package:stats':
-
-    lowess
-
-corrplot 0.84 loaded
-Quitting from lines 49-53 (final Presentation.Rpres) 
-Fehler in gzfile(file, "rb") : kann Verbindung nicht öffnen
-Ruft auf: knit ... withCallingHandlers -> withVisible -> eval -> eval -> readRDS -> gzfile
-Zusätzlich: Warnmeldungen:
-1: package 'tidyverse' was built under R version 3.6.1 
-2: package 'ggrepel' was built under R version 3.6.1 
-3: package 'gplots' was built under R version 3.6.1 
-4: package 'sandwich' was built under R version 3.6.1 
-5: package 'corrplot' was built under R version 3.6.1 
-6: package 'jtools' was built under R version 3.6.1 
-Ausführung angehalten
+Error in svd(x, nu = 0, nv = k) : infinite or missing values in 'x'
 ```

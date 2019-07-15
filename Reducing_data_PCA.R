@@ -237,6 +237,7 @@ cor.perm <- function (x, y, nperm = 1000)
         cor (x = x, y = sample (y))
     )
   r.per <- c(r.per, r.obs)
+  P.per <- sum (abs (r.per) >= abs (r.obs)) / (nperm + 1)
   return (list (
     r.obs = r.obs,
     p_value = p_value,
@@ -365,35 +366,23 @@ heatmap.2(
 
 #---------biomaterial provider-------
 
-p_cluster_bio_prov <-
-  ggplot(
-    centers,
-    aes(
-      x = PC1,
-      y = PC2,
-      group = Samples,
-      fill = input_data_csv$BIOMATERIAL_PROVIDER
-    )
-  ) +
-  geom_point (aes(shape = as.factor(cluster), color = Samples), size = 4) +
+p_bio_prov <-
+  ggplot(pcs_of_m_values, aes(x = PC1, y = PC2, group = Samples, fill = input_data_csv$BIOMATERIAL_PROVIDER)) +
+  geom_point (aes(shape = Samples, color = Samples), size = 4) +
   theme_bw() +
   ggtitle("Biomaterial provider") +
   theme(
     axis.text.x = element_blank(),
     axis.text.y = element_blank(),
     axis.ticks = element_blank()
-  ) + 
-  scale_fill_manual(values = c("indianred2", "seagreen2")) + 
-  scale_colour_manual(values = c("indianred2", "seagreen2")) + 
-  scale_shape_manual(values = c(16, 17))
-ggplotly(p_cluster_bio_prov)
-
-
+  )  + 
+  scale_colour_manual(values = c("indianred2", "seagreen2"))
+ggplotly(p_bio_prov)
 
 #---------cell type------------
 
-p_cluster_cell_type <-
-  ggplot(centers,
+p_cell_type <-
+  ggplot(pcs_of_m_values,
          aes(
            x = PC1,
            y = PC2,
@@ -411,13 +400,13 @@ p_cluster_cell_type <-
   scale_fill_manual(values = c("seagreen2", "indianred2")) + 
   scale_colour_manual(values = c("indianred2", "seagreen2")) +
   scale_shape_manual(values = c(16, 17))
-ggplotly(p_cluster_cell_type)
+ggplotly(p_cell_type)
 
 
 #---------disease---------------
 
-p_cluster_disease <-
-  ggplot(centers,
+p_disease <-
+  ggplot(pcs_of_m_values,
          aes(
            x = PC1,
            y = PC2,
@@ -435,6 +424,6 @@ p_cluster_disease <-
   scale_fill_manual (values = c("indianred2", "seagreen2")) +
   scale_colour_manual (values = c("indianred2", "seagreen2")) +
   scale_shape_manual(values = c(16,17))
-ggplotly(p_cluster_disease)
+ggplotly(p_disease)
 
 
