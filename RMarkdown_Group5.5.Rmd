@@ -245,8 +245,8 @@ cancer_threshold_function <- function(cancer_coverage) {
 
 cancer_coverage <- apply(cancer_coverage, MARGIN = c(1,2), FUN = cancer_threshold_function)
 
-cancer_coverage[cancer_coverage == "NA"] <- NA 
 cancer_beta_values[cancer_coverage == "NA"] <- NA
+cancer_coverage[cancer_coverage == "NA"] <- NA
 
 
 healthy_threshold_function <- function(healthy_coverage) {
@@ -261,9 +261,8 @@ healthy_threshold_function <- function(healthy_coverage) {
 
 healthy_coverage <- apply(healthy_coverage, MARGIN = c(1,2), FUN = healthy_threshold_function)
 
-
-healthy_coverage[healthy_coverage == "NA"] <- NA
 healthy_beta_values[healthy_coverage == "NA"] <- NA
+healthy_coverage[healthy_coverage == "NA"] <- NA
 ```
 
 Now we needed to deal with NA's in the beta-values, because they represent no information and they could cause errors in our further analysis. We had many NA's but we cannot remove every gene with a NA because this would lead to a loss of too much information.
