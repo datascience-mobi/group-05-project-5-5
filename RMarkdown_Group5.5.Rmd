@@ -39,6 +39,7 @@ $$~$$
 # Data summary
 
 $$~$$
+
 * Bisulfite-Seq data for 10 patients/samples (5 male, 5 female)
 * 5 healthy patients, 5 with MCL
 * Extracted DNA is from B-cells
@@ -95,7 +96,7 @@ $$~$$
 ## Part 1: Data processing
 
 $$~$$
-For now, we want to single out the gene data frame of the patients to inspect it separately. We will examine only the gene data frame and neglect the data from tiling, promoters and cpg-islands because they are irrelevant to answer our research question.
+For now, we want to single out the gene data frame of the patients to inspect it separately. We will examine only the gene data frame and neglect the data from tiling, promoters and cpg-islands because we want to focus on the genes in our project even though the oter genome parts are important too for a comprehensive analysis.
 
 ```{r}
 Samples <- readRDS(file = "Mantle-Bcell_list.RDS.gz")
@@ -116,7 +117,7 @@ Gene_data_frame_x_y <-
   Gene_data_frame_x_y[-which(Gene_data_frame_x_y$Chromosome == "chrY"),]
 ```
 
-Now we want to go through the coverage values separately to remove any unreliable values, outliers and possible systematic errors. First we separated the coverage values of healthy and cancer patients into 2 data frames. We did the same separation into 2 data frames with the beta-values because we will need these later. All the other information will be neglected until the interpretation. 
+Now we want to go through the coverage values separately to remove any unreliable values, outliers and possible systematic errors. First we separated the coverage values of healthy and cancer patients into 2 data frames. We did the same separation into 2 data frames with the beta-values because we will need these later. All the other information will be neglected until the analysis of batch effects and interpretation. 
 
 ```{r}
 healthy_coverage <- Gene_data_frame_x_y[, 21:25]
@@ -229,7 +230,7 @@ threshold_healthy_upper <-
            na.rm = TRUE)
 ```
 
-Beta-values with very low or extreme high coverages are not reliable. Therefore with the help of the predefined coverage threshold for each patient we will set the beta values of the genes which didn't fulfill the coverage requirement to NA. We wrote a function which checked every table cell and set unreliable coverage value to zero. After that the associated table cells in bata values were set to NA.
+Beta-values with very low or extreme high coverages are not reliable. Therefore with the help of the predefined coverage threshold for each patient we will set the beta values of the genes which did not fulfill the coverage requirement to NA. We wrote a function which checked every table cell and set unreliable coverage value to zero. After that the associated table cells in bata values were set to NA.
 
 ```{r}
 cancer_threshold_function <- function(cancer_coverage) {
@@ -272,7 +273,7 @@ sum(is.na(cancer_beta_values))
 sum(is.na(healthy_beta_values))
 ```
 
-We decided that we want to remove each gene with 3 or more NA's in 'healthy_beta_values' or 'cancer_beta_values', because if there are not enough values our results will be not meaningful. To do so we added two new columns to each data frame. One column is for the number of NA's per gene in healthy samples and one for the number of NA's per gene in cancer samples. We need both columns in both data frames because it makes it easier to remove the rows with too much NA's later.
+We decided that we want to remove each gene with 3 or more NA's in `healthy_beta_values` or 'cancer_beta_values', because if there are not enough values our results will be not meaningful. To do so we added two new columns to each data frame. One column is for the number of NA's per gene in healthy samples and one for the number of NA's per gene in cancer samples. We need both columns in both data frames because it makes it easier to remove the rows with too much NA's later.
 
 ```{r}
 cancer_beta_values$Number_of_NA_cancer <-
@@ -357,10 +358,10 @@ p4 <- ggplot() +
 grid.arrange(p3, p4, ncol = 2)
 ```
 
-The first histogram of cancer/healthy is to get an overview over all numbers of missing values per gene. Most genes in 'cancer_beta_values' and 'healthy_beta_values' have no NA's. That is good, because it means we have much information in our analysis and our results will be more meaningful.
-We wanted to see the differences between 2, 3, 4 and 5 NA's per gene better. To do so we reduced the range of the axis. Now it is visible that in 'healty_beta_values' a little amount of genes have 5 NA's. In comparison to that 'cancer_beta_values' have more genes with 5 NA's but less genes with 2, 3 or 4 NA's.
+The first histogram of cancer/healthy is to get an overview over all numbers of missing values per gene. Most genes in `cancer_beta_values` and `healthy_beta_values` have no NA's. That is good, because it means we have much information in our analysis and our results will be more meaningful.
+We wanted to see the differences between 2, 3, 4 and 5 NA's per gene better. To do so we reduced the range of the axis. Now it is visible that in `healty_beta_values` around 800 genes have 5 NA's. With 3 or 4 NA's there are respectively a bit less than 1500 genes. In comparison to that `cancer_beta_values` has around 1200 genes with 5 NA's but less genes with 2, 3 or 4 NA's. 
 
-Then we removed the genes with 3 or more missing values. Here it was important to remove the genes in both data frames, because a gene in only one data frame without values to compare is meaningless. After the deletion we checked if the rownames are the same in both data frames and it was the case. This is important because otherwise the wrong rows would be compared later and the results would be completely wrong. 
+Then we removed the genes with 3 or more missing values. Here it was important to remove the genes in both data frames, because a gene in only one sample group without values to compare is meaningless. After the deletion we checked if the rownames are the same in both data frames and it was the case. This is important because otherwise the wrong rows would be compared later and the results would be completely wrong. 
 
 ```{r}
 cancer_beta_values <-
@@ -376,7 +377,7 @@ healthy_beta_values <-
 sum(rownames(healthy_beta_values) != rownames(cancer_beta_values))
 ```
 
-We removed the columns with the NA's-values because we did not need them anymore. 
+We removed the columns with the NA-values because we did not need them anymore. 
 
 ```{r}
 cancer_beta_values <-
@@ -391,7 +392,7 @@ healthy_beta_values <-
 ```
 
 We can not keep the remaining NA's in the beta-values because this will cause errors in our downstream analysis. But we also did not want to delete the genes, so we decided to replace the NA's with the mean value of the respective gene.
-To cut things short and to make it a little easier for our next analysis, we transposed both beta value data frames (cancer and healthy). Afterwards we transposed both data frames back for further analysis.
+To cut things short and to make it a little easier for our next analysis, we transposed both beta value data frames (cancer and healthy) for the replacement. Afterwards we transposed both data frames back for further analysis.
 
 ```{r}
 transposed_cancer_beta_values <- t(cancer_beta_values)
@@ -993,7 +994,14 @@ pcs_of_m_values <-
 
 
 p <-
-  ggplot(pcs_of_m_values, aes(x = PC1, y = PC2, group = Samples)) +
+  ggplot(
+    pcs_of_m_values, 
+    aes(
+      x = PC1, 
+      y = PC2, 
+      group = Samples
+      )
+  ) +
   geom_point (aes(shape = Samples, color = Samples), size = 4) +
   theme_bw() +
   theme(
@@ -1104,8 +1112,8 @@ Batch effects are technical/non-biological sources of variation (Goh et al., 201
 For each of those we needed to obtain a p-value in order to assess it's sigificance, thus we created a matrix for those p-values in order to later visualize our results with a heatmap. The following code shows the backbone of that matrix.
 
 ```{r}
-p_values_matrix <- matrix(nrow = 8, ncol = 3)
-colnames(p_values_matrix) <- c("PC1", "PC2", "PC3")
+p_values_matrix <- matrix(nrow = 8, ncol = 2)
+colnames(p_values_matrix) <- c("PC1", "PC2")
 rownames(p_values_matrix) <-
   c(
     "BIOMATERIAL_PROVIDER",
@@ -1123,7 +1131,7 @@ To check if there are significant differences in our data we created a new data 
 
 ```{r}
 batch_pcs <-
-  cbind(pcs_of_m_values[, 1:3], c(input_data_csv[, c(
+  cbind(pcs_of_m_values[, 1:2], c(input_data_csv[, c(
     "BIOMATERIAL_PROVIDER",
     "BIOMATERIAL_TYPE",
     "cellTypeShort",
@@ -1144,10 +1152,6 @@ batch_pcs <- within(batch_pcs, {
 
 batch_pcs <- within(batch_pcs, {
   PC2 <- as.numeric(as.character(PC2))
-})
-
-batch_pcs <- within(batch_pcs, {
-  PC3 <- as.numeric(as.character(PC3))
 })
 ```
 
@@ -1285,8 +1289,6 @@ As expected the criteria of "DISEASE" came out significant which is a biological
 
 Additionally, we decided to visualize our biological/batch effects on the kmeans clustering graph in order to see how they are clustered. 
 
-##### plots sind noch falsch
-
 ```{r}
 p_bio_prov <-
   ggplot(
@@ -1339,13 +1341,15 @@ ggplotly(p_cell_type)
 
 ```{r}
 p_disease <-
-  ggplot(pcs_of_m_values,
-         aes(
-           x = PC1,
-           y = PC2,
-           group = Samples,
-           fill = input_data_csv$DISEASE
-         )) +
+  ggplot(
+    pcs_of_m_values,
+    aes(
+       x = PC1,
+       y = PC2,
+       group = Samples,
+       fill = input_data_csv$DISEASE
+       )
+  ) +
   geom_point (aes(shape = as.factor(cluster), color = Samples), size = 4) +
   theme_bw() +
   ggtitle("Disease") +
