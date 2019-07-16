@@ -66,7 +66,6 @@ Set a threshold and remove genes under/above threshold, imputate remaining NA's 
 $$~$$
 To be able to run our code the following packages are needed.
 ```{r eval=FALSE, include=FALSE}
-install.packages(kableExtra)
 install.packages(tidyverse)
 install.packages(gridExtra)
 install.packages(ggrepel)
@@ -79,7 +78,6 @@ install.packages(grid)
 ```
 
 ```{r message=FALSE}
-library(kableExtra)
 library(tidyverse)  
 library(gridExtra)
 library(ggrepel)  
@@ -1455,7 +1453,7 @@ for (i in 1:10) {
   
   clustering_matrix[, i] <- as.matrix(k$cluster)
 }
-View(clustering_matrix)
+clustering_matrix
 
 ```
 
@@ -1630,12 +1628,11 @@ correlation_top_genes <-
     clustering_data
     )
 corrplot(
-  correlation_top_genes, 
-  title = "Correlation between all samples"
+  correlation_top_genes
   )
 heatmap(
-  as.matrix(t(clustering_data)), 
-  main = "Heat map of samples and genes"
+  as.matrix(cor(t(clustering_data))), 
+  main = "Heat map of genes"
   )
 hist(
   cor(t(clustering_data)), 
@@ -1664,7 +1661,7 @@ correlation_top_genes <-
     !apply(
       correlation_top_genes,
       2,function(x) {
-        any(x > 0.65)
+        any(x > 0.9 | x < -0.9)
         }
       )
     ]
@@ -1678,7 +1675,7 @@ regression_data <-
     ]
 ```
 
-Our chosen threshold was 0.65. Thus, each column (gene) which contained more than one value above this threshold was removed. Through this threshold, we obtained a reasonably mediocre regression model which was better than nothing. Our correlation relationship significantly improved  to our favour.
+Our chosen threshold was 0.9 because we did not want to be too conservative. Thus, each column (gene) which contained more than one value above this threshold was removed. Through this threshold, we obtained a reasonably mediocre regression model which was better than nothing. Our correlation relationship significantly improved  to our favour.
 
 ```{r}
 correlation_top_genes <- 
@@ -1690,7 +1687,7 @@ corrplot(
   )
 ```
 
-After that we even had negative correlation which was not optimal but we faced too much data loss if we would have tried to procede in reducing more.
+After that we still had correlation which was not optimal but we faced too much data loss if we would have tried to procede in reducing more.
 On the base of this new data frame, we try to fit a logistic regression model. We used a logistic regression model, because it manages to model a binomial outcome (0,1) with one or more explanatory variables. In our case the variables are the selected genes. It measures the relationship between the categorical dependent variable (cancer/healthy) and one or more independent variables by estimating probabilities using a logistic function, which is the cumulative logistic distribution. 
 Logistic function: 
 $$ p(X) = \frac{e^{β_0+β_1X}}{1+e^{β_0+β_1X}} $$
@@ -1728,8 +1725,8 @@ summ(regression_model_uncorrelated_genes, confint = TRUE, digits = 3, ci.width =
 ```
 
 The error "did not converge" gave a first impression of our model. It is pretty bad. Non of our remaining genes are significant as further predictors. Moreover, we obtained high standard errors which underline unperfect model creation. We had to reduce iterations to 4 to prevent error message "fitted probabilities numerically 0 or 1 occurred". This indicated that both data are seperated in two sides. On the one side (cancer(1)) and on the other side (healthy(0)). Without cross validation, we tried to test this model on the same data again. 
-Moreover, we calculated the value of χ-squared of our model and its p-value. Because of insufficient data it seemed that our model is even worse (p = 0.008) and did not fit our needs (if we set α-level to e.g. α = 0.01 and therfore rejecting our H0-hypothesis). 
-Furthermore, when analyzing data with a logistic regression, an equivalent statistic to R-squared does not exist. However, to evaluate the goodness-of-fit of logistic models, several pseudo R-squareds have been developed. These are “pseudo” R-squareds because they look like R-squared in the sense that they are on a similar scale, ranging from 0 to 1 (though some pseudo R-squareds never achieve 0 or 1) with higher values indicating better model fit, but they cannot be interpreted as one would interpret an OLS R-squared and different pseudo R-squareds can arrive at very different values. Our logistic regression model had pretty good pseudo R-squared values (0.996 and 0.992) with two different methods. Thus, we estimated that our model has a good goodness-of-fit.
+Moreover, we calculated the value of χ-squared of our model and its p-value. Because of sufficient data it seemed that our model is good enough (p = 0.055) and fitted our needs (if we set α-level to e.g. α = 0.05 and therfore not rejecting our H0-hypothesis). 
+Furthermore, when analyzing data with a logistic regression, an equivalent statistic to R-squared does not exist. However, to evaluate the goodness-of-fit of logistic models, several pseudo R-squareds have been developed. These are “pseudo” R-squareds because they look like R-squared in the sense that they are on a similar scale, ranging from 0 to 1 (though some pseudo R-squareds never achieve 0 or 1) with higher values indicating better model fit, but they cannot be interpreted as one would interpret an OLS R-squared and different pseudo R-squareds can arrive at very different values. Our logistic regression model had pretty good pseudo R-squared values (0.997 and 0.994) with two different methods. Thus, we estimated that our model has a good goodness-of-fit.
 
 ```{r warning=FALSE}
 predict(regression_model_uncorrelated_genes, newdata = regression_data_uncorrelated_genes, type = "response")
@@ -1758,32 +1755,49 @@ test.set <-
 regression_model_cross_validation <- 
   glm(formula = Health_status ~ ., family = binomial(link = "logit"), data = train.set, maxit = 4)
 
-predict(regression_model_cross_validation, newdata = regression_data_uncorrelated_genes, type = "response")
+predict(regression_model_cross_validation, newdata = test.set, type = "response")
 
 summ(regression_model_cross_validation)
 ```
 
-After splitting up the data into test and train set, we modelled a regression system based on the train set. Then we used this regression model to finally see if this model was good enough to predict the whole data ("regression_data") because using this on the test set had mutiple false predictions. In most cases it seemed like it predicted the samples correctly but there were also a few constellations in which it predicted samples wrong.
-Overall χ-squared (p=0.08) and pseudo R-squared values improved slightly. This indicated an improved logistic regression model.
+After splitting up the data into test and train set, we modelled a regression system based on the train set. Then we used this regression model to finally see if this model was good enough to predict the test set. Using this on the test set had mutiple false predictions thus samples were not predicted correctly. 
+Overall χ-squared (p=0.14) and pseudo R-squared values improved slightly. This indicated an improved logistic regression model but we could not validate this because of the failed predictions.
 
 We now wanted to find out what the tasks of our determined genes are.
 Our significant genes have following tasks:
 
-ENSG00000262554:
-Number represents Zinc finger and SCAN domain-containing protein 10.
-Embryonic stem (ES) cell-specific transcription factor required to maintain ES cell pluripotency. In our case high methylation maybe activates gene expression and therefore necessary cell pluripotency is enabled (Cunningham et al., 2019).
+ENSG00000243702:
+RNA, 7SL, Cytoplasmic 638, Pseudogene
+(Safran et al., 2010)
 
-ENSG00000273750:
-Number represents HOXB13 antisense RNA 1 (non-protein coding).
-A long non-coding RNA which is highly expressed in prostate, rectum, colon, and testis. No further function known (McEntyre and Birney, 2016; Cunningham et al., 2019). Methylation can not be interpreted.
+ENSG00000253822:
+Immunoglobulin Lambda Variable 3-24
+(Lefranc, 2014)(Safran et al., 2010)
+Lefranc, M.P. (2014). Immunoglobulin and T Cell Receptor Genes: IMGT((R)) and the Birth and Rise of Immunoinformatics. Front Immunol 5, 22.
 
-ENSG00000252026:
-Number represents U6 Small Nuclear 1262 (a pseudogene).
-It is a part of a complex that combines with other snRNPs, unmodified pre-mRNA, and various other proteins to assemble a spliceosome, a large RNA-protein molecular complex that catalyzes the excision of introns from pre-mRNA (McEntyre and Birney, 2016; Cunningham et al., 2019). Methylation effect on this gene segment is not predictable.
+ENSG00000238622:
+Small Nucleolar RNA, C/D Box 97
+(Vitali et al., 2003)(Safran et al., 2010)
+Vitali, P., Royo, H., Seitz, H., Bachellerie, J.P., Huttenhofer, A., and Cavaille, J. (2003). Identification of 13 novel human modification guide RNAs. Nucleic Acids Res 31, 6543-6551.
 
-ENSG00000241288:
-Number represents Long Intergenic Non-Protein Coding RNA 2614.
-The group of long noncoding RNAs (lncRNAs) are known to be important in cancer as they directly interact with the cell cycle, proliferation pathways and microbiome balance. Moreover, lncRNAs regulate the immune system: they do not directly encode proteins of innate or adaptive immunity, but regulate immune cell differentiation and function, such as dendritic cell activity, T cell ratio and metabolism. The result of this complex interaction is that lncRNAs regulate cancer processes through a complex multimodal system involving immunity, metabolism and infection (Denaro et al., 2019). Thus, it would be optimal for our cancer to activate this gene.
+ENSG00000207504:
+RNA, U6 Small Nuclear 1031, Pseudogene
+(Hu et al., 2004)(Safran et al., 2010)
+Hu, P., Samudre, K., Wu, S., Sun, Y., and Hernandez, N. (2004). CK2 phosphorylation of Bdp1 executes cell cycle-specific RNA polymerase III transcription repression. Mol Cell 16, 81-92.
+
+ENSG00000244433:
+piggyBac transposable element derived 4 pseudogene 7
+(Sarkar et al., 2003)(Safran et al., 2010)
+Sarkar, A., Sim, C., Hong, Y.S., Hogan, J.R., Fraser, M.J., Robertson, H.M., and Collins, F.H. (2003). Molecular evolutionary analysis of the widespread piggyBac transposon family and related "domesticated" sequences. Mol Genet Genomics 270, 173-180.
+
+ENSG00000279415:
+Uncategorized gene, and is affiliated with the lncRNA class.
+(Safran et al., 2010)
+
+ENSG00000270336:
+Protein Phosphatase 2, Catalytic Subunit, Beta Isozyme (PPP2CB) Pseudogene
+This gene encodes the phosphatase 2A catalytic subunit. Protein phosphatase 2A is one of the four major Ser/Thr phosphatases, and it is implicated in the negative control of cell growth and division. It consists of a common heteromeric core enzyme, which is composed of a catalytic subunit and a constant regulatory subunit, that associates with a variety of regulatory subunits. This gene encodes a beta isoform of the catalytic subunit. [provided by RefSeq, Mar 2010]
+(Safran et al., 2010)
 
 After all those analyse steps, we can conclude that the data, on which our analysis is based, is not proficient enough for our downstream analysis. We can in no way guarantee that this genes are relevant for mantle cell lymphoma.
 
@@ -1814,7 +1828,7 @@ regression_model_all_genes_after_ttest <-
 summary(regression_model_all_genes_after_ttest)$coefficients
 ```
 
-As previous mentioned, this model is as bad as it possibly can be. We faced with alot of NA values (only 10 variables with coefficients) based on highly correlated data on the one and on the other hand we had to deal with values of 1. We rejected this model and did some extra work to create a better model shown above.
+As previous mentioned, this model is as bad as it possibly can be. We faced with alot of NA values (only 10 variables with coefficients) based on highly correlated data on the one and on the other hand we had to deal with values of approx. 1. We rejected this model and did some extra work to create a better model shown above.
 
 Last but not least, we tried to use our previous researched, relevant genes for MCL to create a logistic regression model.
 
@@ -1851,7 +1865,7 @@ predict(regression_model_researched_important_genes, newdata = regression_data_r
 
 This summary showed us, that we could not generate a regression model through this data. Again we faced a lot of NA's and a model which seems to predict correctly but this was not true as can be seen in the summary.
 
-##Conclusion
+## Conclusion
 As a final conclusion, we faced different problems through this downstream analysis and at the end we were not fully able to create a full functional and good regression model to predict MCL in given samples. Our previous researched genes cannot be confirmed as different methylated in gene coding region. But we did not test for different methylated regions (DMRs) in other coding and non-coding regions of our samples. It could be possible that these genes are DMRs e.g. in promotor region.
 $$~$$
 
@@ -1865,8 +1879,6 @@ $$~$$
 Brumatti, G., Salmanidis, M., Kok, C.H., Bilardi, R.A., Sandow, J.J., Silke, N., Mason, K., Visser, J., Jabbour, A.M., Glaser, S.P., et al. (2013). HoxA9 regulated Bcl-2 expression mediates survival of myeloid progenitors and the severity of HoxA9-dependent leukemia. Oncotarget 4, 1933-1947.
 $$~$$
 Cunningham, F., Achuthan, P., Akanni, W., Allen, J., Amode, M.R., Armean, I.M., Bennett, R., Bhai, J., Billis, K., Boddu, S., et al. (2019). Ensembl 2019. Nucleic Acids Res 47, D745-D751.
-$$~$$
-Denaro, N., Merlano, M.C., and Lo Nigro, C. (2019). Long noncoding RNAs as regulators of cancer immunity. Mol Oncol 13, 61-73.
 $$~$$
 Dong, Y., Tan, Q., Tao, L., Pan, X., Pang, L., Liang, W., Liu, W., Zhang, W., Li, F., and Jia, W. (2015). Hypermethylation of TFPI2 correlates with cervical cancer incidence in the Uygur and Han populations of Xinjiang, China. Int J Clin Exp Pathol 8, 1844-1854.
 $$~$$
@@ -1947,7 +1959,8 @@ Rasch, B., Hofmann, W., Friese, M., and Naumann, E. (2010). Quantitative Methode
 $$~$$
 Rosa, A., and Brivanlou, A.H. (2011). A regulatory circuitry comprised of miR-302 and the transcription factors OCT4 and NR2F2 regulates human embryonic stem cell differentiation. The EMBO Journal 30, 237-248.
 $$~$$
+Safran, M., Dalah, I., Alexander, J., Rosen, N., Iny Stein, T., Shmoish, M., Nativ, N., Bahir, I., Doniger, T., Krug, H., et al. (2010). GeneCards Version 3: the human gene integrator. Database (Oxford) 2010, baq020.
+$$~$$ 
 Walter, J., and H?mpel, A. (2017). Epigenetik - Implikationen f?r die Lebens- und Geisteswissenschaften, 1 edn (Nomos Verlagsgesellschaft mbH).
-
 $$~$$
 Mohanty, A., Sandoval, N., Phan, A., Nguyen, T.V., Chen, R.W., Budde, E., Mei, M., Popplewell, L., Pham, L.V., Kwak, L.W., et al. (2019). Regulation of SOX11 expression through CCND1 and STAT3 in mantle cell lymphoma. Blood 133, 306-318.
