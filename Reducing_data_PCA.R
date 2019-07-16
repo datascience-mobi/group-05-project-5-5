@@ -95,14 +95,21 @@ pcs_of_m_values <-
 install.packages("plotly")
 library(plotly)
 p <-
-  ggplot(pcs_of_m_values, aes(x = PC1, y = PC2, group = Samples)) +
+  ggplot(
+    pcs_of_m_values, 
+    aes(
+      x = PC1, 
+      y = PC2, 
+      group = Samples
+      )
+    ) +
   geom_point (aes(shape = Samples, color = Samples), size = 4) +
   theme_bw() +
   theme(
     axis.text.x = element_blank(),
     axis.text.y = element_blank(),
     axis.ticks = element_blank()
-  )  + 
+  )  +
   scale_colour_manual(values = c("indianred2", "seagreen2"))
 ggplotly(p)
 
@@ -182,7 +189,7 @@ PC2 <- centers$X2
 
 #New matrix with the PC values from 1 to 3 of the samples + categories of interest from the sample annotation
 batch_pcs <-
-  cbind(pcs_of_m_values[, 1:3], c(input_data_csv[, c(
+  cbind(pcs_of_m_values[, 1:2], c(input_data_csv[, c(
     "BIOMATERIAL_PROVIDER",
     "BIOMATERIAL_TYPE",
     "cellTypeShort",
@@ -203,15 +210,11 @@ batch_pcs <- within(batch_pcs, {
   PC2 <- as.numeric(as.character(PC2))
 })
 
-batch_pcs <- within(batch_pcs, {
-  PC3 <- as.numeric(as.character(PC3))
-})
-
 
 
 #------p-values---------------------------------------------------------
-p_values_matrix <- matrix(nrow = 8, ncol = 3)
-colnames(p_values_matrix) <- c("PC1", "PC2", "PC3")
+p_values_matrix <- matrix(nrow = 8, ncol = 2)
+colnames(p_values_matrix) <- c("PC1", "PC2")
 rownames(p_values_matrix) <-
   c(
     "BIOMATERIAL_PROVIDER",
@@ -416,13 +419,15 @@ ggplotly(p_cell_type)
 #---------disease---------------
 
 p_disease <-
-  ggplot(pcs_of_m_values,
-         aes(
-           x = PC1,
-           y = PC2,
-           group = Samples,
-           fill = input_data_csv$DISEASE
-         )) +
+  ggplot(
+    pcs_of_m_values,
+    aes(
+      x = PC1,
+      y = PC2,
+      group = Samples,
+      fill = input_data_csv$DISEASE
+      )
+    ) +
   geom_point (aes(shape = as.factor(cluster), color = Samples), size = 4) +
   theme_bw() +
   ggtitle("Disease") +
