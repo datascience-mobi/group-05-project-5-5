@@ -22,24 +22,59 @@ plot(
 #The kink is somewhere between 0 and 20000 genes, so lets zoom in
 
 plot(
-  ranked_gene_loading[0 : 20000],
+  ranked_gene_loading[0 : 5000],
   main = "Loading scores of genes",
   xlab = "Genes",
   ylab = "loading scores",
   type = "b"
 )
-abline(v = 14000,
+abline(v = 2000,
 col = "red",
 lty = 5,
 lwd = 2)
 
+
 #We will work with the top 14000 genes 
 
+clustering_matrix <- matrix(nrow = 10, ncol = 5)
+rownames(clustering_matrix) <- c(
+  "Bcell_naive_VB_NBC_NC11_41.M",
+  "Bcell_naive_VB_NBC_NC11_83.M",
+  "Bcell_naive_VB_S001JP51.M",
+  "Bcell_naive_VB_S00DM851.M",
+  "Bcell_naive_VB_S01ECGA1.M",
+  "cancer_VB_S01FE8A1.M",
+  "cancer_VB_S01FF6A1.M",
+  "cancer_VB_S01FH2A1.M",
+  "cancer_VB_S01FJZA1.M",
+  "cancer_VB_S01FKXA1.M"
+)
+
+colnames(clustering_matrix) <- c(
+  "1000 genes",
+  "2000 genes",
+  "3000 genes",
+  "4000 genes",
+  "5000 genes"
+)
+
+#for (i in 1 : 5) {
+ # clustering_data <- rbind(m_values[c(as.list.data.frame(rownames(data.frame(ranked_gene_loading[1 : i*1000])))),])
+  #k <-
+   # kmeans(
+    #  x = t(clustering_data),
+     #       centers = 2,
+      #      iter.max = 100
+       #     )
+
+  #clustering_matrix[, i] <- as.matrix(k$cluster)
+#}
+
 #pick out the names of the top 14000 genes
-top_14000_genes <- data.frame(ranked_gene_loading[1 : 14000])
+top_4000_genes <- data.frame(ranked_gene_loading[1 : 4000])
 
 #get m values of top 14000 genes of every sample and put them into a new data frame
-clustering_data <- rbind(m_values[c(as.list.data.frame(rownames(top_14000_genes))),])
+clustering_data <- rbind(m_values[c(as.list.data.frame(rownames(top_4000_genes))),])
 
 #How many clusters do we need?
 wss2 <-  sapply(1:5, function(k) {
@@ -56,19 +91,23 @@ plot(
   ylab = "Total within-clusters sum of squares"
 )
 
-##it seems like we need 2 clusters (kink in the curve)
-##therefore we will go with 2 because our samples should only be put into 2 clusters (healthy/cancer)
-
-##---------------maybe we should delete this following part or look up again how to plot k means clustering--------------------------------------
-
-#find out if healthy and cancer samples are seperated
-#variable with two center positions of value of rotated data
 k <-
   kmeans(
     x = t(clustering_data),
     centers = 2,
     iter.max = 100
   )#$centers
+
+View(k)  
+
+#it seems like we need 2 clusters (kink in the curve)
+##therefore we will go with 2 because our samples should only be put into 2 clusters (healthy/cancer)
+
+##---------------maybe we should delete this following part or look up again how to plot k means clustering--------------------------------------
+
+#find out if healthy and cancer samples are seperated
+#variable with two center positions of value of rotated data
+
 
 centers2 <- kmeans(
   x = clustering_data,
@@ -132,9 +171,9 @@ p_value_important_genes <-
 p_value_important_genes <- as.data.frame(cbind(important_genes, p_value_important_genes))
 
 #--------------------------volcano plot------------------------------------------------------
-#get beta values of top 14000 genes of every sample and put them into a new data frame
-top_genes_beta_values <- rbind(healthy_beta_values[c(as.list.data.frame(rownames(top_14000_genes))),])
-top_genes_beta_values <- cbind(top_genes_beta_values, cancer_beta_values[c(as.list.data.frame(rownames(top_14000_genes))),])
+#get beta values of top 4000 genes of every sample and put them into a new data frame
+top_genes_beta_values <- rbind(healthy_beta_values[c(as.list.data.frame(rownames(top_4000_genes))),])
+top_genes_beta_values <- cbind(top_genes_beta_values, cancer_beta_values[c(as.list.data.frame(rownames(top_4000_genes))),])
 
 #calculate the mean beta values of cancer and healthy samples for each gene
 top_genes_beta_values <- cbind(top_genes_beta_values, Mean_Healthy = log2(rowMeans(top_genes_beta_values[,1:5])), Mean_Cancer = log2(rowMeans(top_genes_beta_values[,6:10])))
@@ -196,6 +235,7 @@ sapply(1:nrow(clustering_data), function(k) {
 cancer_mean_m_values_diff_methylated <- as.matrix(
   sapply(1:nrow(clustering_data), function(k) {
     rowMeans(clustering_data[k, 6:10])}))
+
 mean_values_together <- as.matrix(cbind(cancer_mean_m_values_diff_methylated, healthy_mean_m_values_diff_methylated))
 
 #calculating abs difference
@@ -209,4 +249,5 @@ p_value_each_gene <- as.data.frame( cbind(p_value_each_gene, absolute_diff_m_val
 
 #finding diff methyalated genes based on 2 criteria: p_value < 1.5e-03 and mean m-value diff > 1.5
 
-p_value_each_gene <- p_value_each_gene[(p_value_each_gene$BH < 0.05) & (p_value_each_gene$absolute_diff_m_values > 5),]
+diff_methylated_genes <- p_value_each_gene[(p_value_each_gene$BH < 0.05) & (p_value_each_gene$absolute_diff_m_values > 5),]
+dim(diff_methylated_genes)
