@@ -77,7 +77,7 @@ install.packages(jtools)
 install.packages(grid)
 ```
 
-```{r message=FALSE, include=FALSE}
+```{r message=FALSE}
 library(kableExtra)
 library(tidyverse)  
 library(gridExtra)
