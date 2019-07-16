@@ -1394,32 +1394,76 @@ plot(
   ylab = "loading scores",
   type = "b"
 )
-```
-The kink is somewhere between 0 and 20000 genes so we adjusted the x-axis to have a better look at the kink.
-=======
 
-Interpretation
->>>>>>> 32f224d3e282f65c11411ef72e6a21d1c5b2eade
+```
+The kink is somewhere between 0 and 10000 genes so we adjusted the x-axis to have a better look at the kink.
+
 
 ```{r}
 plot(
-  ranked_gene_loading[0 : 20000],
+  ranked_gene_loading[0 : 10000],
   main = "Loading scores of genes",
   xlab = "Genes",
   ylab = "loading scores",
   type = "b"
 )
-abline(v = 14000,
-col = "red",
-lty = 5,
-lwd = 2)
 ```
 
 Determing where the kink is is a subjective task. To assure that we wouldn't use too few genes we set our threshold for genes on 14000 genes where clearly the kink already occured. For clustering purposes we needed the m values of these genes from every sample, so we put these into a new data frame.
 
 ```{r}
-top_14000_genes <- data.frame(ranked_gene_loading[1 : 14000])
-clustering_data <- rbind(m_values[c(as.list.data.frame(rownames(top_14000_genes))),])
+clustering_matrix <- matrix(nrow = 10, ncol = 10)
+rownames(clustering_matrix) <- c(
+  "Bcell_naive_VB_NBC_NC11_41.M",
+  "Bcell_naive_VB_NBC_NC11_83.M",
+  "Bcell_naive_VB_S001JP51.M",
+  "Bcell_naive_VB_S00DM851.M",
+  "Bcell_naive_VB_S01ECGA1.M",
+  "cancer_VB_S01FE8A1.M",
+  "cancer_VB_S01FF6A1.M",
+  "cancer_VB_S01FH2A1.M",
+  "cancer_VB_S01FJZA1.M",
+  "cancer_VB_S01FKXA1.M"
+)
+
+colnames(clustering_matrix) <- c(
+  "1000 genes",
+  "2000 genes",
+  "3000 genes",
+  "4000 genes",
+  "5000 genes",
+  "6000 genes",
+  "7000 genes",
+  "8000 genes",
+  "9000 genes",
+  "10000 genes"
+)
+```
+
+
+```{r}
+for (i in 1:10) {
+  top_genes <- data.frame(ranked_gene_loading[1:(i * 1000)])
+  clustering_data <-
+    rbind(m_values[c(as.list.data.frame(rownames(top_genes))), ])
+  k <-
+    kmeans(
+      x = t(clustering_data),
+      centers = 2,
+      iter.max = 500
+    )
+  
+  clustering_matrix[, i] <- as.matrix(k$cluster)
+}
+View(clustering_matrix)
+
+```
+
+```{r}
+top_5000_genes <- data.frame(ranked_gene_loading[1:5000])
+clustering_data <-
+  rbind(m_values[c(as.list.data.frame(rownames(top_5000_genes))),])
+
 ```
 Before we could cluster our data we had to find the right amount of clusters we needed. Because the purpose of our clustering was to see whether our samples coincide with their labels (healthy/cancer) or not it would make sense to use two. We wanted to check if our chosen amount of data suggest this too.
 Therefore we ran k-means for 1 - 5 clusters and looked at the total within-clusters sum of squares (that is the distance of every point inside the cluster to the center) and plotted the values. 
@@ -1448,18 +1492,20 @@ transposed_clustering_data <- as.data.frame(t(clustering_data))
 
 p_value_each_gene <-
   sapply(1:ncol(transposed_clustering_data), function(k) {
-   t.test(transposed_clustering_data[1:5, k],
+    t.test(transposed_clustering_data[1:5, k],
            transposed_clustering_data[6:10, k],
            var.equal = T)$p.value
   })
 
 p_value_each_gene <- as.data.frame(p_value_each_gene)
+
 ```
 
 Out of interest we looked at the p-values of the important genes for MCL we found in literature and whether the difference of these genes is significant in our data, too.
 
 ```{r}
-clust_data_important_genes <- cbind(transposed_clustering_data[,c(unlist(important_genes))])
+clust_data_important_genes <-
+  cbind(transposed_clustering_data[, c(unlist(important_genes))])
 
 p_value_important_genes <-
   sapply(1:ncol(clust_data_important_genes), function(k) {
@@ -1468,21 +1514,34 @@ p_value_important_genes <-
            var.equal = T)$p.value
   })
 
-p_value_important_genes <- as.data.frame(cbind(important_genes, p_value_important_genes))
+p_value_important_genes <-
+  as.data.frame(cbind(important_genes, p_value_important_genes))
 ```
 
 To visualise our p-values and thus easier setting of a threshold for our p-values we made a volcano plot. The volcano plot .....
 The x-axis is log2 of the fold change (which is the beta value mean difference between healthy and cancer samples), while the y-axis is -log10 of the p values. 
 
 ```{r}
-top_genes_beta_values <- rbind(healthy_beta_values[c(as.list.data.frame(rownames(top_14000_genes))),])
-top_genes_beta_values <- cbind(top_genes_beta_values, cancer_beta_values[c(as.list.data.frame(rownames(top_14000_genes))),])
+top_genes_beta_values <-
+  rbind(healthy_beta_values[c(as.list.data.frame(rownames(top_5000_genes))), ])
+top_genes_beta_values <-
+  cbind(top_genes_beta_values, cancer_beta_values[c(as.list.data.frame(rownames(top_5000_genes))), ])
+top_genes_beta_values <-
+  cbind(
+    top_genes_beta_values,
+    Mean_Healthy = log2(rowMeans(top_genes_beta_values[, 1:5])),
+    Mean_Cancer = log2(rowMeans(top_genes_beta_values[, 6:10]))
+  )
+top_genes_beta_values <-
+  cbind(top_genes_beta_values,
+        Mean_Difference = top_genes_beta_values[, 11] - top_genes_beta_values[, 12])
 
-top_genes_beta_values <- cbind(top_genes_beta_values, Mean_Healthy = log2(rowMeans(top_genes_beta_values[,1:5])), Mean_Cancer = log2(rowMeans(top_genes_beta_values[,6:10])))
-
-top_genes_beta_values <- cbind(top_genes_beta_values, Mean_Difference = top_genes_beta_values[,11] - top_genes_beta_values[,12])
-
-plot(x = top_genes_beta_values[,13], y = -log10(p_value_each_gene[,1]), xlab="log2 fold change", ylab="-log10 p-value")
+plot(
+  x = top_genes_beta_values[, 13],
+  y = -log10(p_value_each_gene[, 1]),
+  xlab = "log2 fold change",
+  ylab = "-log10 p-value"
+)
 
 ```
 
@@ -1491,18 +1550,24 @@ Next we had to adjust the p values to avoid type I errors (false negatives).
 To find the best method for this we apllied different methods and compared them.
 
 ```{r}
-p_value_each_gene$BH <-  p.adjust(p_value_each_gene$p_value_each_gene, 
-                                  method = "BH")
-p_value_each_gene$bonferroni <-  p.adjust(p_value_each_gene$p_value_each_gene, 
-                                  method = "bonferroni")
-p_value_each_gene$holm <-  p.adjust(p_value_each_gene$p_value_each_gene, 
-                                  method = "holm")
-p_value_each_gene$hochberg <-  p.adjust(p_value_each_gene$p_value_each_gene, 
-                                  method = "hochberg")
-p_value_each_gene$hommel <-  p.adjust(p_value_each_gene$p_value_each_gene, 
-                                  method = "hommel")
-p_value_each_gene$BY <-  p.adjust(p_value_each_gene$p_value_each_gene, 
-                                  method = "BY")
+p_value_each_gene$BH <-
+  p.adjust(p_value_each_gene$p_value_each_gene,
+           method = "BH")
+p_value_each_gene$bonferroni <-
+  p.adjust(p_value_each_gene$p_value_each_gene,
+           method = "bonferroni")
+p_value_each_gene$holm <-
+  p.adjust(p_value_each_gene$p_value_each_gene,
+           method = "holm")
+p_value_each_gene$hochberg <-
+  p.adjust(p_value_each_gene$p_value_each_gene,
+           method = "hochberg")
+p_value_each_gene$hommel <-
+  p.adjust(p_value_each_gene$p_value_each_gene,
+           method = "hommel")
+p_value_each_gene$BY <-
+  p.adjust(p_value_each_gene$p_value_each_gene,
+           method = "BY")
 
 plot(p_value_each_gene)
 ```
@@ -1510,51 +1575,45 @@ plot(p_value_each_gene)
 There are big differences in the adjustment of the p values.
 
 ```{r}
-#adding the rownames (gene names) to the matrix
-
 p_value_each_gene$Names <- rownames(clustering_data)
 
-# setting threshold for p-values to 0.05, and keeping the genes which fulfill this condition
-
-p_value_each_gene <- p_value_each_gene[which(p_value_each_gene$BH < 0.05), ]
+p_value_each_gene <-
+  p_value_each_gene[which(p_value_each_gene$BH < 0.05),]
 
 rownames(p_value_each_gene) <- p_value_each_gene$Names
 
-#leaving only the genes which fulfill the threshhold condition in the clustering_data dataset, which their corresponding m-values
 
-clustering_data <- clustering_data[c(rownames(p_value_each_gene)), ]
+clustering_data <- clustering_data[c(rownames(p_value_each_gene)),]
+```
 
+```{r}
+healthy_mean_m_values_diff_methylated <- as.matrix(sapply(1:nrow(clustering_data), function(k) {
+  rowMeans(clustering_data[k, 1:5])
+}))
+cancer_mean_m_values_diff_methylated <- as.matrix(sapply(1:nrow(clustering_data), function(k) {
+  rowMeans(clustering_data[k, 6:10])
+}))
 
-#findin top differentially methylated genes based on p-values and differences in mean m-values
+mean_values_together <-
+  as.matrix(
+    cbind(
+      cancer_mean_m_values_diff_methylated,
+      healthy_mean_m_values_diff_methylated
+    )
+  )
+absolute_diff_m_values <- as.matrix(sapply(1:nrow(mean_values_together), function(k) {
+  abs(diff(mean_values_together[k, ]))
+}))
+```
 
-# in an additional columns calculating mean m-value of healthy and cancer samples in clustering_data
+```{r}
+p_value_each_gene <-
+  as.data.frame(cbind(p_value_each_gene, absolute_diff_m_values))
+diff_methylated_genes <-
+  p_value_each_gene[(p_value_each_gene$BH < 0.01) &
+                      (p_value_each_gene$absolute_diff_m_values > 5), ]
+dim(diff_methylated_genes)
 
-#healthy
-
-healthy_mean_m_values_diff_methylated <- as.matrix(
-sapply(1:nrow(clustering_data), function(k) {
-  rowMeans(clustering_data[k, 1:5])}))
-
-#cancer
-
-cancer_mean_m_values_diff_methylated <- as.matrix(
-  sapply(1:nrow(clustering_data), function(k) {
-    rowMeans(clustering_data[k, 6:10])}))
-mean_values_together <- as.matrix(cbind(cancer_mean_m_values_diff_methylated, healthy_mean_m_values_diff_methylated))
-
-#calculating abs difference
-
-absolute_diff_m_values <- as.matrix(
-  sapply(1:nrow(mean_values_together), function(k) {
-    abs(diff(mean_values_together[k,]))}))
-# p_values and mean m-value differences in one data frame
-
-p_value_each_gene <- as.data.frame( cbind(p_value_each_gene, absolute_diff_m_values))
-
-#finding diff methyalated genes based on 2 criteria: p_value < 1.5e-03 and mean m-value diff > 1.5
-
-p_value_each_gene <- p_value_each_gene[(p_value_each_gene$BH < 0.05) & (p_value_each_gene$absolute_diff_m_values > 5),]
-view(p_value_each_gene)
 
 ```
 
