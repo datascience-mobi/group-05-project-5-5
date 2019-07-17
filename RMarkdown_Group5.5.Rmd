@@ -942,7 +942,7 @@ healthy_m_values <-
 
 After that we changed the endings of the column names in our new m-values dataframe from .bed to .M for better distinctiveness between the two data frames of beta and m-values. 
 
-```{r, echo=FALSE}
+```{r echo=TRUE}
 colnames(healthy_m_values) <-
   c(
     "Bcell_naive_VB_NBC_NC11_41.M",
@@ -1030,18 +1030,6 @@ plot(
 ```
 
 The knick in the elbow is as expected at 2 clusters.
-The following code performs kmeans clustering with 2 centroids based on the first 10 PCs. It saves the data from the centers in a matrix and the information which point belongs to which cluster as well.
-
-```{r warning=FALSE}
-centers <-
-  kmeans(
-    x = pcs_of_m_values[1:10],
-    centers = 2,
-    iter.max = 100
-  )$centers
-```
-
-###### brauchen wir das noch ???
 
 ```{r}
 cluster <-
@@ -1052,34 +1040,11 @@ cluster <-
   )$cluster
 ```
 
-In order to visualize our kmeans clutering data we also added an extra column with the indication healthy or cancer to `centers` data-set so that we can later color code the healthy and cancer patinets. 
-
-```{r}
-centers <-
-  data.frame(cbind(
-    t(centers),
-    Samples = c(
-      "Healthy",
-      "Healthy",
-      "Healthy",
-      "Healthy",
-      "Healthy",
-      "Cancer",
-      "Cancer",
-      "Cancer",
-      "Cancer",
-      "Cancer"
-    )
-  ))
-
-PC1 <- centers$X1
-PC2 <- centers$X2
-```
-
 We can see that healthy and cancer samples are clustered into two different groups, although the individual samples group are not as tightly clustered. Healthy samples are more tightly clustered than that of cancer, because as we have seen different mutations have been associated with MCL. Another reason for long distances between samples of each cluster can be batch effects which are an unwanted source of variation in our data (Leek, 2012). 
+
 ###### bis hier L?schen ???
 
-We need to identify which PC has the most batch effects so that we can neglcets it further down the line of our analysis. We can do that using the elbow method. For that we need to calculate the proportion of variance "by hand" and plot that against the number of PC's.
+We need to identify which PC has many batch effects so that we can neglcets it further down the line of our analysis. We can do that using the elbow method. For that we need to calculate the proportion of variance "by hand" and plot that against the number of PC's.
 
 ```{r}
 std_dev <- pca_m_values$sdev
@@ -1095,7 +1060,7 @@ plot(
 )
 ```
 
-The knick in the graph is not that apparent but by eyeballing we deciding to go with the first 3 PC's. Therefore we will be testing each batch effect in the first three principal components because they account for the majority of the variation in the data. 
+The knick in the graph is clearly at the 2nd PC. Therefore we will be testing each batch effect in the first two principal components because they account for the majority of the variation in the data. 
 Batch effects are technical/non-biological sources of variation (Goh et al., 2017). But there is also the possibility of biological causes for significant divergence. Variation which is caused by batch effects is always bad in comparison to that biological variations can be a good sign. So looking through our annotation file `input_data_scv` we found the following 8 possible sources for significant variation:
 
 * biomaterial provider
@@ -1107,7 +1072,7 @@ Batch effects are technical/non-biological sources of variation (Goh et al., 201
 * submission date
 * cell type
 
-For each of those we needed to obtain a p-value in order to assess it's sigificance, thus we created a matrix for those p-values in order to later visualize our results with a heatmap. The following code shows the backbone of that matrix.
+For each of those we needed to obtain a p-value in order to assess its sigificance, thus we created a matrix for those p-values in order to later visualize our results with a heatmap. The following code shows the backbone of that matrix.
 
 ```{r}
 p_values_matrix <- matrix(nrow = 8, ncol = 2)
@@ -1125,7 +1090,7 @@ rownames(p_values_matrix) <-
   )
 ```
 
-To check if there are significant differences in our data we created a new data frame with the data from the first three PCs. After that we added the specific columns from `input_data_csv` which we wanted to test on batch effects.
+To check if there are significant differences in our data we created a new data frame with the data from the first two PCs. After that we added the specific columns from `input_data_csv` which we wanted to test on significant differences in the mehtylation pattern.
 
 ```{r}
 batch_pcs <-
@@ -1141,7 +1106,7 @@ batch_pcs <-
   )]))
 ```
 
-To be able to perform tests to find the p-values out it is important to convert the data from PC 1-3 from the class factor to numeric.
+To be able to perform tests to find the p-values out it is important to convert the data from PC 1 and 2 from the class factor to numeric.
 
 ```{r}
 batch_pcs <- within(batch_pcs, {
@@ -1153,11 +1118,11 @@ batch_pcs <- within(batch_pcs, {
 })
 ```
 
-As the criteria which we are testing for possible batch effects have differnt formats, we need to apply appropriate statistical test for each of them. The statistical test which we chose are: Wilcoxon Rank Sum Test, Kruskal-Wallis Rank Sum Test and Monte Carlo permutation test.
+As the criteria which we are testing for possible significant differences have differnt formats, we need to apply appropriate statistical test for each of them. The statistical test which we chose are: Wilcoxon Rank Sum Test, Kruskal-Wallis Rank Sum Test and Monte Carlo permutation test.
 
 Wilcoxon Rank Sum Test is used to find out if there is a significant difference between two independent groups (Rasch et al., 2010). This is the case in the data from biomaterial provider, biomaterial type, disease, sex and cell type.
 We used Kruskal-Wallis Rank Sum Test for to test the significane of submission date, because we have more than two possible independent conditions (Rasch et al., 2010).
-Monte Carlo permutation test is a randomization test which can be used if the data is not normal distributedor not known (MA, Jianqiang, 2009). An advantage is the possibility to use the test on very big data sets (MA, Jianqiang, 2009). We decided to use this test on donor age and sequence run counts.
+Monte Carlo permutation test is a randomization test which can be used if the data is not normal distributed or if the distribution is not known (MA, Jianqiang, 2009). An advantage is the possibility to use the test on very big data sets (MA, Jianqiang, 2009). We decided to use this test on donor age and sequence run counts.
 
 For the Monte Carlo permutation test we defined a function wich we applied to the corresponding criteria.
 
@@ -1166,7 +1131,6 @@ cor.perm <- function (x, y, nperm = 1000)
 {
   r.obs <- cor (x = x, y = y)
   p_value <- cor.test (x = x, y = y)$p.value
-  #  r.per <- replicate (nperm, expr = cor (x = x, y = sample (y)))
   r.per <-
     sapply (
       1:nperm,
@@ -1183,7 +1147,7 @@ cor.perm <- function (x, y, nperm = 1000)
 }
 ```
 
-Here we filled the `p_values_matrix` with the corresponding test statistics p-values. "for-loop" was used in order to avoid redundantly performing the same test on PC1, PC2 and PC3. 
+Here we filled the `p_values_matrix` with the corresponding test statistics p-values. "for-loop" was used in order to avoid redundantly performing the same test on PC1 and PC2.
 
 ```{r warning=FALSE}
 for (i in 1:ncol(p_values_matrix)) {
@@ -1283,9 +1247,11 @@ heatmap.2(
 )
 ```
 
-As expected the criteria of "DISEASE" came out significant which is a biological effect rather a batch one. The only two batch effects turned out to be the biomaterial provider and cell type which are both in PC1. Although the criteria of "DISEASE" in only significant in PC1 we still decided to continue working with PC2 as it is completely batch-effect-free.
+As expected the criteria of "disease" and "cell type" came out as significant which is a biological effect rather a batch one. The only batch effect turned out to be the biomaterial provider which is in PC1. Although the criteria of disease and cell type is only significant in PC1 we still decided to continue working with PC2 as it is completely batch-effect-free even though it is not ideal.
 
-Additionally, we decided to visualize our biological/batch effects on the kmeans clustering graph in order to see how they are clustered. 
+Additionally, we decided to visualize our biological/batch effects on scatter plot in order to see how they are distributed.
+
+???????
 
 ```{r}
 p_bio_prov <-
@@ -1363,6 +1329,7 @@ ggplotly(p_disease)
 ```
 
 Interpretation
+
 
 
 
