@@ -137,12 +137,12 @@ plot(
 
 #find out if healthy and cancer samples are seperated
 #variable with two center positions of value of rotated data
-centers <-
+'centers <-
   kmeans(
     x = pcs_of_m_values[1:10],
     centers = 2,
     iter.max = 100
-  )$centers
+  )$centers'
 
 
 
@@ -155,7 +155,7 @@ cluster <-
   )$cluster
 
 ##adding an extra column with the category of sample with which we can color the pc dots in a ggplot according to their sample group
-centers <-
+'centers <-
   data.frame(cbind(
     t(centers),
     Samples = c(
@@ -173,7 +173,7 @@ centers <-
   ))
 
 PC1 <- centers$X1
-PC2 <- centers$X2
+PC2 <- centers$X2'
 
 
 
@@ -379,7 +379,7 @@ p_bio_prov <-
       fill = input_data_csv$BIOMATERIAL_PROVIDER
     )
   ) +
-  geom_point (aes(shape = Samples, color = Samples), size = 4) +
+  geom_point (aes(shape = as.factor(cluster), color = Samples), size = 4) +
   theme_bw() +
   ggtitle("Biomaterial provider") +
   theme(
@@ -387,7 +387,9 @@ p_bio_prov <-
     axis.text.y = element_blank(),
     axis.ticks = element_blank()
   )  +
-  scale_colour_manual(values = c("indianred2", "seagreen2"))
+  scale_colour_manual(values = c("indianred2", "seagreen2")) +
+  scale_fill_manual(values = c("indianred2", "seagreen2")) +
+  scale_shape_manual(values = c(16, 17))
 ggplotly(p_bio_prov)
 
 #---------cell type------------
