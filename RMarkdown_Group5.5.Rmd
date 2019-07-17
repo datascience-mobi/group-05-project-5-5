@@ -942,7 +942,7 @@ healthy_m_values <-
 
 After that we changed the endings of the column names in our new m-values dataframe from .bed to .M for better distinctiveness between the two data frames of beta and m-values. 
 
-```{r echo=TRUE}
+```{r, echo=FALSE}
 colnames(healthy_m_values) <-
   c(
     "Bcell_naive_VB_NBC_NC11_41.M",
@@ -1030,6 +1030,18 @@ plot(
 ```
 
 The knick in the elbow is as expected at 2 clusters.
+The following code performs kmeans clustering with 2 centroids based on the first 10 PCs. It saves the data from the centers in a matrix and the information which point belongs to which cluster as well.
+
+```{r warning=FALSE}
+centers <-
+  kmeans(
+    x = pcs_of_m_values[1:10],
+    centers = 2,
+    iter.max = 100
+  )$centers
+```
+
+###### brauchen wir das noch ???
 
 ```{r}
 cluster <-
@@ -1040,11 +1052,34 @@ cluster <-
   )$cluster
 ```
 
-We can see that healthy and cancer samples are clustered into two different groups, although the individual samples group are not as tightly clustered. Healthy samples are more tightly clustered than that of cancer, because as we have seen different mutations have been associated with MCL. Another reason for long distances between samples of each cluster can be batch effects which are an unwanted source of variation in our data (Leek, 2012). 
+In order to visualize our kmeans clutering data we also added an extra column with the indication healthy or cancer to `centers` data-set so that we can later color code the healthy and cancer patinets. 
 
+```{r}
+centers <-
+  data.frame(cbind(
+    t(centers),
+    Samples = c(
+      "Healthy",
+      "Healthy",
+      "Healthy",
+      "Healthy",
+      "Healthy",
+      "Cancer",
+      "Cancer",
+      "Cancer",
+      "Cancer",
+      "Cancer"
+    )
+  ))
+
+PC1 <- centers$X1
+PC2 <- centers$X2
+```
+
+We can see that healthy and cancer samples are clustered into two different groups, although the individual samples group are not as tightly clustered. Healthy samples are more tightly clustered than that of cancer, because as we have seen different mutations have been associated with MCL. Another reason for long distances between samples of each cluster can be batch effects which are an unwanted source of variation in our data (Leek, 2012). 
 ###### bis hier L?schen ???
 
-We need to identify which PC has many batch effects so that we can neglcets it further down the line of our analysis. We can do that using the elbow method. For that we need to calculate the proportion of variance "by hand" and plot that against the number of PC's.
+We need to identify which PC has the most batch effects so that we can neglcets it further down the line of our analysis. We can do that using the elbow method. For that we need to calculate the proportion of variance "by hand" and plot that against the number of PC's.
 
 ```{r}
 std_dev <- pca_m_values$sdev
@@ -1060,7 +1095,7 @@ plot(
 )
 ```
 
-The knick in the graph is clearly at the 2nd PC. Therefore we will be testing each batch effect in the first two principal components because they account for the majority of the variation in the data. 
+The knick in the graph is not that apparent but by eyeballing we deciding to go with the first 3 PC's. Therefore we will be testing each batch effect in the first three principal components because they account for the majority of the variation in the data. 
 Batch effects are technical/non-biological sources of variation (Goh et al., 2017). But there is also the possibility of biological causes for significant divergence. Variation which is caused by batch effects is always bad in comparison to that biological variations can be a good sign. So looking through our annotation file `input_data_scv` we found the following 8 possible sources for significant variation:
 
 * biomaterial provider
@@ -1072,7 +1107,7 @@ Batch effects are technical/non-biological sources of variation (Goh et al., 201
 * submission date
 * cell type
 
-For each of those we needed to obtain a p-value in order to assess its sigificance, thus we created a matrix for those p-values in order to later visualize our results with a heatmap. The following code shows the backbone of that matrix.
+For each of those we needed to obtain a p-value in order to assess it's sigificance, thus we created a matrix for those p-values in order to later visualize our results with a heatmap. The following code shows the backbone of that matrix.
 
 ```{r}
 p_values_matrix <- matrix(nrow = 8, ncol = 2)
@@ -1090,7 +1125,7 @@ rownames(p_values_matrix) <-
   )
 ```
 
-To check if there are significant differences in our data we created a new data frame with the data from the first two PCs. After that we added the specific columns from `input_data_csv` which we wanted to test on significant differences in the mehtylation pattern.
+To check if there are significant differences in our data we created a new data frame with the data from the first three PCs. After that we added the specific columns from `input_data_csv` which we wanted to test on batch effects.
 
 ```{r}
 batch_pcs <-
@@ -1106,7 +1141,7 @@ batch_pcs <-
   )]))
 ```
 
-To be able to perform tests to find the p-values out it is important to convert the data from PC 1 and 2 from the class factor to numeric.
+To be able to perform tests to find the p-values out it is important to convert the data from PC 1-3 from the class factor to numeric.
 
 ```{r}
 batch_pcs <- within(batch_pcs, {
@@ -1118,11 +1153,11 @@ batch_pcs <- within(batch_pcs, {
 })
 ```
 
-As the criteria which we are testing for possible significant differences have differnt formats, we need to apply appropriate statistical test for each of them. The statistical test which we chose are: Wilcoxon Rank Sum Test, Kruskal-Wallis Rank Sum Test and Monte Carlo permutation test.
+As the criteria which we are testing for possible batch effects have differnt formats, we need to apply appropriate statistical test for each of them. The statistical test which we chose are: Wilcoxon Rank Sum Test, Kruskal-Wallis Rank Sum Test and Monte Carlo permutation test.
 
 Wilcoxon Rank Sum Test is used to find out if there is a significant difference between two independent groups (Rasch et al., 2010). This is the case in the data from biomaterial provider, biomaterial type, disease, sex and cell type.
 We used Kruskal-Wallis Rank Sum Test for to test the significane of submission date, because we have more than two possible independent conditions (Rasch et al., 2010).
-Monte Carlo permutation test is a randomization test which can be used if the data is not normal distributed or if the distribution is not known (MA, Jianqiang, 2009). An advantage is the possibility to use the test on very big data sets (MA, Jianqiang, 2009). We decided to use this test on donor age and sequence run counts.
+Monte Carlo permutation test is a randomization test which can be used if the data is not normal distributedor not known (MA, Jianqiang, 2009). An advantage is the possibility to use the test on very big data sets (MA, Jianqiang, 2009). We decided to use this test on donor age and sequence run counts.
 
 For the Monte Carlo permutation test we defined a function wich we applied to the corresponding criteria.
 
@@ -1131,6 +1166,7 @@ cor.perm <- function (x, y, nperm = 1000)
 {
   r.obs <- cor (x = x, y = y)
   p_value <- cor.test (x = x, y = y)$p.value
+  #  r.per <- replicate (nperm, expr = cor (x = x, y = sample (y)))
   r.per <-
     sapply (
       1:nperm,
@@ -1147,7 +1183,7 @@ cor.perm <- function (x, y, nperm = 1000)
 }
 ```
 
-Here we filled the `p_values_matrix` with the corresponding test statistics p-values. "for-loop" was used in order to avoid redundantly performing the same test on PC1 and PC2.
+Here we filled the `p_values_matrix` with the corresponding test statistics p-values. "for-loop" was used in order to avoid redundantly performing the same test on PC1, PC2 and PC3. 
 
 ```{r warning=FALSE}
 for (i in 1:ncol(p_values_matrix)) {
@@ -1247,11 +1283,9 @@ heatmap.2(
 )
 ```
 
-As expected the criteria of "disease" and "cell type" came out as significant which is a biological effect rather a batch one. The only batch effect turned out to be the biomaterial provider which is in PC1. Although the criteria of disease and cell type is only significant in PC1 we still decided to continue working with PC2 as it is completely batch-effect-free even though it is not ideal.
+As expected the criteria of "DISEASE" came out significant which is a biological effect rather a batch one. The only two batch effects turned out to be the biomaterial provider and cell type which are both in PC1. Although the criteria of "DISEASE" in only significant in PC1 we still decided to continue working with PC2 as it is completely batch-effect-free.
 
-Additionally, we decided to visualize our biological/batch effects on scatter plot in order to see how they are distributed.
-
-???????
+Additionally, we decided to visualize our biological/batch effects on the kmeans clustering graph in order to see how they are clustered. 
 
 ```{r}
 p_bio_prov <-
@@ -1358,25 +1392,19 @@ plot(
   ylab = "loading scores",
   type = "b"
 )
-```
-The kink is somewhere between 0 and 20000 genes so we adjusted the x-axis to have a better look at the kink.
-=======
 
-Interpretation
->>>>>>> 32f224d3e282f65c11411ef72e6a21d1c5b2eade
+```
+The kink is somewhere between 0 and 10000 genes so we adjusted the x-axis to have a better look at the kink.
+
 
 ```{r}
 plot(
-  ranked_gene_loading[0 : 20000],
+  ranked_gene_loading[0 : 10000],
   main = "Loading scores of genes",
   xlab = "Genes",
   ylab = "loading scores",
   type = "b"
 )
-abline(v = 14000,
-col = "red",
-lty = 5,
-lwd = 2)
 ```
 
 Determing where the kink is is a subjective task. To assure that we wouldn't use too few genes we set our threshold for genes on 14000 genes where clearly the kink already occured. For clustering purposes we needed the m values of these genes from every sample, so we put these into a new data frame.
@@ -1425,7 +1453,11 @@ for (i in 1:10) {
   
   clustering_matrix[, i] <- as.matrix(k$cluster)
 }
+<<<<<<< HEAD
 clustering_matrix
+=======
+View(clustering_matrix)
+>>>>>>> parent of 0f883ce... updated pca part
 
 ```
 
@@ -1462,18 +1494,20 @@ transposed_clustering_data <- as.data.frame(t(clustering_data))
 
 p_value_each_gene <-
   sapply(1:ncol(transposed_clustering_data), function(k) {
-   t.test(transposed_clustering_data[1:5, k],
+    t.test(transposed_clustering_data[1:5, k],
            transposed_clustering_data[6:10, k],
            var.equal = T)$p.value
   })
 
 p_value_each_gene <- as.data.frame(p_value_each_gene)
+
 ```
 
 Out of interest we looked at the p-values of the important genes for MCL we found in literature and whether the difference of these genes is significant in our data, too.
 
 ```{r}
-clust_data_important_genes <- cbind(transposed_clustering_data[,c(unlist(important_genes))])
+clust_data_important_genes <-
+  cbind(transposed_clustering_data[, c(unlist(important_genes))])
 
 p_value_important_genes <-
   sapply(1:ncol(clust_data_important_genes), function(k) {
@@ -1482,21 +1516,34 @@ p_value_important_genes <-
            var.equal = T)$p.value
   })
 
-p_value_important_genes <- as.data.frame(cbind(important_genes, p_value_important_genes))
+p_value_important_genes <-
+  as.data.frame(cbind(important_genes, p_value_important_genes))
 ```
 
 To visualise our p-values and thus easier setting of a threshold for our p-values we made a volcano plot. The volcano plot .....
 The x-axis is log2 of the fold change (which is the beta value mean difference between healthy and cancer samples), while the y-axis is -log10 of the p values. 
 
 ```{r}
-top_genes_beta_values <- rbind(healthy_beta_values[c(as.list.data.frame(rownames(top_14000_genes))),])
-top_genes_beta_values <- cbind(top_genes_beta_values, cancer_beta_values[c(as.list.data.frame(rownames(top_14000_genes))),])
+top_genes_beta_values <-
+  rbind(healthy_beta_values[c(as.list.data.frame(rownames(top_5000_genes))), ])
+top_genes_beta_values <-
+  cbind(top_genes_beta_values, cancer_beta_values[c(as.list.data.frame(rownames(top_5000_genes))), ])
+top_genes_beta_values <-
+  cbind(
+    top_genes_beta_values,
+    Mean_Healthy = log2(rowMeans(top_genes_beta_values[, 1:5])),
+    Mean_Cancer = log2(rowMeans(top_genes_beta_values[, 6:10]))
+  )
+top_genes_beta_values <-
+  cbind(top_genes_beta_values,
+        Mean_Difference = top_genes_beta_values[, 11] - top_genes_beta_values[, 12])
 
-top_genes_beta_values <- cbind(top_genes_beta_values, Mean_Healthy = log2(rowMeans(top_genes_beta_values[,1:5])), Mean_Cancer = log2(rowMeans(top_genes_beta_values[,6:10])))
-
-top_genes_beta_values <- cbind(top_genes_beta_values, Mean_Difference = top_genes_beta_values[,11] - top_genes_beta_values[,12])
-
-plot(x = top_genes_beta_values[,13], y = -log10(p_value_each_gene[,1]), xlab="log2 fold change", ylab="-log10 p-value")
+plot(
+  x = top_genes_beta_values[, 13],
+  y = -log10(p_value_each_gene[, 1]),
+  xlab = "log2 fold change",
+  ylab = "-log10 p-value"
+)
 
 ```
 
@@ -1505,18 +1552,24 @@ Next we had to adjust the p values to avoid type I errors (false negatives).
 To find the best method for this we apllied different methods and compared them.
 
 ```{r}
-p_value_each_gene$BH <-  p.adjust(p_value_each_gene$p_value_each_gene, 
-                                  method = "BH")
-p_value_each_gene$bonferroni <-  p.adjust(p_value_each_gene$p_value_each_gene, 
-                                  method = "bonferroni")
-p_value_each_gene$holm <-  p.adjust(p_value_each_gene$p_value_each_gene, 
-                                  method = "holm")
-p_value_each_gene$hochberg <-  p.adjust(p_value_each_gene$p_value_each_gene, 
-                                  method = "hochberg")
-p_value_each_gene$hommel <-  p.adjust(p_value_each_gene$p_value_each_gene, 
-                                  method = "hommel")
-p_value_each_gene$BY <-  p.adjust(p_value_each_gene$p_value_each_gene, 
-                                  method = "BY")
+p_value_each_gene$BH <-
+  p.adjust(p_value_each_gene$p_value_each_gene,
+           method = "BH")
+p_value_each_gene$bonferroni <-
+  p.adjust(p_value_each_gene$p_value_each_gene,
+           method = "bonferroni")
+p_value_each_gene$holm <-
+  p.adjust(p_value_each_gene$p_value_each_gene,
+           method = "holm")
+p_value_each_gene$hochberg <-
+  p.adjust(p_value_each_gene$p_value_each_gene,
+           method = "hochberg")
+p_value_each_gene$hommel <-
+  p.adjust(p_value_each_gene$p_value_each_gene,
+           method = "hommel")
+p_value_each_gene$BY <-
+  p.adjust(p_value_each_gene$p_value_each_gene,
+           method = "BY")
 
 plot(p_value_each_gene)
 ```
@@ -1524,51 +1577,45 @@ plot(p_value_each_gene)
 There are big differences in the adjustment of the p values.
 
 ```{r}
-#adding the rownames (gene names) to the matrix
-
 p_value_each_gene$Names <- rownames(clustering_data)
 
-# setting threshold for p-values to 0.05, and keeping the genes which fulfill this condition
-
-p_value_each_gene <- p_value_each_gene[which(p_value_each_gene$BH < 0.05), ]
+p_value_each_gene <-
+  p_value_each_gene[which(p_value_each_gene$BH < 0.05),]
 
 rownames(p_value_each_gene) <- p_value_each_gene$Names
 
-#leaving only the genes which fulfill the threshhold condition in the clustering_data dataset, which their corresponding m-values
 
-clustering_data <- clustering_data[c(rownames(p_value_each_gene)), ]
+clustering_data <- clustering_data[c(rownames(p_value_each_gene)),]
+```
 
+```{r}
+healthy_mean_m_values_diff_methylated <- as.matrix(sapply(1:nrow(clustering_data), function(k) {
+  rowMeans(clustering_data[k, 1:5])
+}))
+cancer_mean_m_values_diff_methylated <- as.matrix(sapply(1:nrow(clustering_data), function(k) {
+  rowMeans(clustering_data[k, 6:10])
+}))
 
-#findin top differentially methylated genes based on p-values and differences in mean m-values
+mean_values_together <-
+  as.matrix(
+    cbind(
+      cancer_mean_m_values_diff_methylated,
+      healthy_mean_m_values_diff_methylated
+    )
+  )
+absolute_diff_m_values <- as.matrix(sapply(1:nrow(mean_values_together), function(k) {
+  abs(diff(mean_values_together[k, ]))
+}))
+```
 
-# in an additional columns calculating mean m-value of healthy and cancer samples in clustering_data
+```{r}
+p_value_each_gene <-
+  as.data.frame(cbind(p_value_each_gene, absolute_diff_m_values))
+diff_methylated_genes <-
+  p_value_each_gene[(p_value_each_gene$BH < 0.01) &
+                      (p_value_each_gene$absolute_diff_m_values > 5), ]
+dim(diff_methylated_genes)
 
-#healthy
-
-healthy_mean_m_values_diff_methylated <- as.matrix(
-sapply(1:nrow(clustering_data), function(k) {
-  rowMeans(clustering_data[k, 1:5])}))
-
-#cancer
-
-cancer_mean_m_values_diff_methylated <- as.matrix(
-  sapply(1:nrow(clustering_data), function(k) {
-    rowMeans(clustering_data[k, 6:10])}))
-mean_values_together <- as.matrix(cbind(cancer_mean_m_values_diff_methylated, healthy_mean_m_values_diff_methylated))
-
-#calculating abs difference
-
-absolute_diff_m_values <- as.matrix(
-  sapply(1:nrow(mean_values_together), function(k) {
-    abs(diff(mean_values_together[k,]))}))
-# p_values and mean m-value differences in one data frame
-
-p_value_each_gene <- as.data.frame( cbind(p_value_each_gene, absolute_diff_m_values))
-
-#finding diff methyalated genes based on 2 criteria: p_value < 1.5e-03 and mean m-value diff > 1.5
-
-p_value_each_gene <- p_value_each_gene[(p_value_each_gene$BH < 0.05) & (p_value_each_gene$absolute_diff_m_values > 5),]
-view(p_value_each_gene)
 
 ```
 
