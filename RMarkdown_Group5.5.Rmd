@@ -969,7 +969,7 @@ pca_m_values <- prcomp(t(m_values))
 summary(pca_m_values)
 ```
 
-From the summary of the PCA we can conclude that PC1 and PC2 together account for nearly 50% of the varaince in the data. To get a feel of how the samples were spread across PC1 and PC2 we plottet a scatterplot. Additionally we used the function `plotly()` to define each point on the plot by pointing on it.
+From the summary of the PCA we can conclude that PC1 and PC2 together account for more than 50% of the varaince in the data. To get a feel of how the samples were spread across PC1 and PC2 we plottet a scatterplot. Additionally we used the function `plotly()` to define each point on the plot by pointing on it.
 We also added an extra column with information about the patients' health status so that cancer patients would be shown as red and healthy patients as green points.
 
 ```{r}
@@ -1011,7 +1011,9 @@ p <-
 ggplotly(p)
 ```
 
-Now we can perform kmeans clustering. We know that there should be two clusters (healthy/cancer) but we still wanted to prove that, so we plotted the number of clusteres against the total within-clusters sum of squares.
+The scatterplot visualzies that the methylation differences in healthy an cancer samples are well represented in PC1. But PC2 shows no separation of the two groups. This might be caused by batch effects which are an unwanted source of variation in data (Leek, 2012). To see if the batch effects are really the cause of the bad separation we went on with statistical test.
+
+But before doing so we need to verify a few assumptions we made. First we can perform kmeans clustering. We know that there should be two clusters (healthy/cancer) but to prove that, we plotted the number of clusteres against the total within-clusters sum of squares.
 
 ```{r}
 wss <-  sapply(1:5, function(k) {
@@ -1027,11 +1029,7 @@ plot(
   xlab = "Number of clusters K",
   ylab = "Total within-clusters sum of squares"
 )
-```
 
-The knick in the elbow is as expected at 2 clusters.
-
-```{r}
 cluster <-
   kmeans(
     x = pcs_of_m_values[1:10],
@@ -1040,11 +1038,11 @@ cluster <-
   )$cluster
 ```
 
-We can see that healthy and cancer samples are clustered into two different groups, although the individual samples group are not as tightly clustered. Healthy samples are more tightly clustered than that of cancer, because as we have seen different mutations have been associated with MCL. Another reason for long distances between samples of each cluster can be batch effects which are an unwanted source of variation in our data (Leek, 2012). 
+The knick in the elbow is as expected at 2 clusters. This means we have really only the two groups cancer and healthy.
 
-###### bis hier L?schen ???
+Wiht the following plot we wanted to visualize what was said before. The first two PCs contain most information about the methylation differences.
 
-We need to identify which PC has many batch effects so that we can neglcets it further down the line of our analysis. We can do that using the elbow method. For that we need to calculate the proportion of variance "by hand" and plot that against the number of PC's.
+###### Löschen?      We need to identify which PC has many batch effects so that we can neglcets it further down the line of our analysis. We can do that using the elbow method. For that we need to calculate the proportion of variance "by hand" and plot that against the number of PC's.
 
 ```{r}
 std_dev <- pca_m_values$sdev
@@ -1232,7 +1230,7 @@ color_breaks <- c(seq(0, 0.01, length = 2),
                   seq(0.011, 1, length = 2))
 heatmap.2(
   p_values_matrix,
-  main = "Batch and biological effects",
+  main = "       Batch and biological effects",
   trace = "none",
   margins = c(10, 12),
   cexRow = 0.8,
@@ -1250,8 +1248,6 @@ heatmap.2(
 As expected the criteria of "disease" and "cell type" came out as significant which is a biological effect rather a batch one. The only batch effect turned out to be the biomaterial provider which is in PC1. Although the criteria of disease and cell type is only significant in PC1 we still decided to continue working with PC2 as it is completely batch-effect-free even though it is not ideal.
 
 Additionally, we decided to visualize our biological/batch effects on scatter plot in order to see how they are distributed.
-
-???????
 
 ```{r}
 p_bio_prov <-
@@ -1277,6 +1273,8 @@ p_bio_prov <-
   scale_shape_manual(values = c(16, 17))
 ggplotly(p_bio_prov)
 ```
+
+Theoretically we there should be only the two groups cancer and healthy. But we obtained 3 groups. This is because of batch effects. One group are the cancer samples. The second group are healthy samples from Jose I. Martin-Subero who is one of the biomaterial providers. The third group are also healthy samples but they are from NIIHR Cambridge BioResource. The probleme here is that we have distinct values in the cancer samples. But we do not know how the batch effects influence the healthy samples in detail. The only thing we know is that they are influenced. So we can not delete the batch effects.
 
 ```{r}
 p_cell_type <-
@@ -1328,16 +1326,7 @@ p_disease <-
 ggplotly(p_disease)
 ```
 
-Interpretation
-
-
-
-
-
-
-
-
-
+The two plots from disease and cell type look alike because the data are the same. B-cells are always healthy in our dataset and cause no cancer. In comparison to that cancer cells are always from the cancer type mantle cell lymphoma in our dataset.
 
 $$~$$
 
@@ -1420,11 +1409,11 @@ for (i in 1:10) {
   
   clustering_matrix[, i] <- as.matrix(k$cluster)
 }
-<<<<<<< HEAD
+'<<<<<<< HEAD
 clustering_matrix
 =======
 View(clustering_matrix)
->>>>>>> parent of 0f883ce... updated pca part
+>>>>>>> parent of 0f883ce... updated pca part'
 
 ```
 
