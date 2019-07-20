@@ -1328,13 +1328,13 @@ The two plots from disease and cell type look alike because the data are the sam
 
 $$~$$
 
+
 ## Part 4: Clustering
 
 $$~$$
-With this part we intended to find the genes that are the most differentially methylated between the healthy and cancer samples and therefore influenced our PCA the most. ...... We chose k-means clustering as a method to select the important features.
-Additionally, because we detected batch effects in PC1 that influenced the reliability of it we chose PC2 for further analysis.
+With this part we intended to see if our samples coincide with their labels (healthy/cancer) and find the genes that are the most differentially methylated between our healthy and cancer samples (differentially methylated regions (DMRs)). DMRs can help distinguish cancer from healthy patients and are therefore the basis of our logistic regression that will be used for predictions. We wanted to obtain the DMRs through a process with multiple steps. 
 
-To find the number of the most influencing genes on our PC we look at the loading scores of each gene and rank these by their absolute value. Then we plot the loadings to find a kink in the curve that indicates up until what gene the influence is significant. 
+To begin with, we looked at the loading scores of the genes from PC2. These values can be used to find the genes that influenced our PCA the most by ranking the scores by their absolute value. Then we plotted the loadings to find a kink in the curve which indicates up until what gene the influence is significant. 
 
 ```{r}
 loading_scores <- pca_m_values$rotation[, 2]
@@ -1348,8 +1348,8 @@ plot(
 )
 
 ```
-The kink is somewhere between 0 and 10000 genes so we adjusted the x-axis to have a better look at the kink.
 
+The kink is somewhere between 0 and 10000 genes so we adjusted the x-axis to have a better look at the kink.
 
 ```{r}
 plot(
@@ -1359,9 +1359,29 @@ plot(
   ylab = "loading scores",
   type = "b"
 )
+abline(
+  v = 
+)
 ```
 
-Determing where the kink is is a subjective task. To assure that we wouldn't use too few genes we set our threshold for genes on 14000 genes where clearly the kink already occured. For clustering purposes we needed the m values of these genes from every sample, so we put these into a new data frame.
+Although the kink seems to be around 2000 genes when we tried to apply k means clustering with these 2000 genes the healthy and cancer samples weren't assigned to their respective clusters.
+
+```{r}
+top_2000_genes <- data.frame(ranked_gene_loading[1:2000])
+  top_2000_kmeans <-
+    rbind(m_values[c(as.list.data.frame(rownames(top_2000_genes))), ])
+  km <-
+    kmeans(
+      x = t(top_2000_kmeans),
+      centers = 2,
+      iter.max = 500
+    )
+ km$cluster
+
+```
+
+If we used only 2000 genes for our downstream analysis no reliable results would come out of it. To set the right initial conditions we tested how high the number of genes needs to be for the samples to be classified correctly. For this we applied k-means clustering for 1000 - 10000 genes and observed when the clusters were reliably right. 
+First, we generated an empty matrix with the right dimension to put the cluster assignments of the samples in.
 
 ```{r}
 clustering_matrix <- matrix(nrow = 10, ncol = 10)
@@ -1392,8 +1412,10 @@ colnames(clustering_matrix) <- c(
 )
 ```
 
+To test the right number of genes a loop goes through the first thousands of genes with the highest loading scores and puts the clusters into the prepared matrix.
 
 ```{r}
+set.seed(200)
 for (i in 1:10) {
   top_genes <- data.frame(ranked_gene_loading[1:(i * 1000)])
   clustering_data <-
@@ -1407,13 +1429,11 @@ for (i in 1:10) {
   
   clustering_matrix[, i] <- as.matrix(k$cluster)
 }
-'<<<<<<< HEAD
 clustering_matrix
-=======
-View(clustering_matrix)
->>>>>>> parent of 0f883ce... updated pca part'
 
 ```
+
+After generating this multiple times it became clear that from 5000 genes on the samples are assigned correctly. So, the top 5000 genes are used for further analysis.
 
 ```{r}
 top_5000_genes <- data.frame(ranked_gene_loading[1:5000])
@@ -1421,10 +1441,13 @@ clustering_data <-
   rbind(m_values[c(as.list.data.frame(rownames(top_5000_genes))),])
 
 ```
-Before we could cluster our data we had to find the right amount of clusters we needed. Because the purpose of our clustering was to see whether our samples coincide with their labels (healthy/cancer) or not it would make sense to use two. We wanted to check if our chosen amount of data suggest this too.
+
+Also we wanted to check if we used the amount of clusters that is also recommended by k means for our clustering. Because the purpose of our clustering is to review the right assignment to the sample label it would make sense to use two. We wanted to check if our chosen amount of data suggest this too.
+We used the elbow method for this approach.
 Therefore we ran k-means for 1 - 5 clusters and looked at the total within-clusters sum of squares (that is the distance of every point inside the cluster to the center) and plotted the values. 
 
 ```{r}
+set.seed(20000)
 wss2 <-  sapply(1:5, function(k) {
   kmeans(x = clustering_data,
          centers = k,
@@ -1435,13 +1458,15 @@ plot(
   wss2,
   type = "b",
   pch = 19,
+  main = "Elbow method for different numbers of clusters",
   xlab = "Number of clusters K",
   ylab = "Total within-clusters sum of squares"
 )
 ```
 
-As expected 2 clusters is the most suitable number of clusters for our data (kink in the curve). 
-The significance of the difference between healthy and cancer samples for each gene was evaluated by measuring the p-value through a t test.
+By looking at the kink in the curve we found that as expected 2 clusters is the most suitable number of clusters for our data. 
+
+The significance of the difference between healthy and cancer samples for each gene was evaluated by measuring the p-value through the student t test.
 
 ```{r}
 transposed_clustering_data <- as.data.frame(t(clustering_data))
@@ -1457,7 +1482,7 @@ p_value_each_gene <- as.data.frame(p_value_each_gene)
 
 ```
 
-Out of interest we looked at the p-values of the important genes for MCL we found in literature and whether the difference of these genes is significant in our data, too.
+We also looked specifically at the p-values of the important genes for MCL we found in literature and whether the difference of these genes is significant in our data, too.
 
 ```{r}
 clust_data_important_genes <-
@@ -1472,10 +1497,13 @@ p_value_important_genes <-
 
 p_value_important_genes <-
   as.data.frame(cbind(important_genes, p_value_important_genes))
-```
 
-To visualise our p-values and thus easier setting of a threshold for our p-values we made a volcano plot. The volcano plot .....
-The x-axis is log2 of the fold change (which is the beta value mean difference between healthy and cancer samples), while the y-axis is -log10 of the p values. 
+```
+There is only one gene which p value is under 0.01 
+
+To visualise our p-values and the distribution of the significance of our genes we generated a volcano plot. For the volcano plot the "fold change" is plotted along the x-axis. The fold change is calculated by applying log2 on the mean beta value of healthy and cancer samples respectively and then subtracting the cancer value from the healthy one. It is important to use beta values because these range only from 0 to 1 while m values can be negative figures of which log2 is not defined.
+Along the y-axis the negative common logarithm of the p values is plotted. 
+As thresholds we decided on 0.01 for p-values and 1.0 for the fold change which we visualized through ablines on the graph.
 
 ```{r}
 top_genes_beta_values <-
@@ -1488,22 +1516,49 @@ top_genes_beta_values <-
     Mean_Healthy = log2(rowMeans(top_genes_beta_values[, 1:5])),
     Mean_Cancer = log2(rowMeans(top_genes_beta_values[, 6:10]))
   )
-top_genes_beta_values <-
-  cbind(top_genes_beta_values,
-        Mean_Difference = top_genes_beta_values[, 11] - top_genes_beta_values[, 12])
+
+fold <- top_genes_beta_values$Mean_Healthy - top_genes_beta_values$Mean_Cancer
+p_value <- p_value_each_gene[,1]
 
 plot(
-  x = top_genes_beta_values[, 13],
-  y = -log10(p_value_each_gene[, 1]),
+  x = fold,
+  y = -log10(p_value),
   xlab = "log2 fold change",
   ylab = "-log10 p-value"
 )
 
+fold_threshold = 2
+pvalue_threshold = 0.001
+
+abline(v = fold_threshold, col = "blue", lwd = 2)
+abline(v = -fold_threshold, col = "red", lwd = 2)
+abline(h = -log10(pvalue_threshold), col = "green", lwd = 2)
+
+fold_filtered = abs(fold) >= fold_threshold
+pvalue_filtered = abs(p_value) <= pvalue_threshold
+filter_combined = fold_filtered & pvalue_filtered
+
+plot(
+  x = fold,
+  y = -log10(p_value),
+  xlab = "log2 Fold Change",
+  ylab = "-log10 p_value")
+points (fold[filter_combined & fold < 0],
+        -log10(p_value[filter_combined & fold < 0]),
+        pch = 20, col = "red")
+points (fold[filter_combined & fold > 0],
+        -log10(p_value[filter_combined & fold > 0]),
+        pch = 20, col = "blue")
+
+#volcano_upper_right <- volcano_data[which(volcano_data["Fold_Change"] > 5 & volcano_data["p_value"] < 0.01)]
+
 ```
+The statistically significant (p-value <= 0.01) genes with a higher fold than 1 are hypermethylated (Higher methylated in cancer than in healthy samples) and highlighted in blue.
+The genes that have a p-value under 0.01 and have a lower fold than -1 are hypomethylated (less methylated in cancer than in healthy samples). These are accentuated in red.
+There are many genes with a fold change of around zero and many of the genes that seem to be biologically significant have a low statistical significance. This leads to only some genes with biological and statistical significance. Another interesting feature is that the genes in cancer samples tend to be more methylated than in healthy ones.
 
-
-Next we had to adjust the p values to avoid type I errors (false negatives).
-To find the best method for this we apllied different methods and compared them.
+After having a first look at our genes plotted by significance we wanted to adjust the p values for multiple comparisons to avoid type I errors.
+To find the best method for this we applied different correction methods and compared them.
 
 ```{r}
 p_value_each_gene$BH <-
@@ -1528,7 +1583,7 @@ p_value_each_gene$BY <-
 plot(p_value_each_gene)
 ```
 
-There are big differences in the adjustment of the p values.
+The adjustment of the p values with various methods are really diverse. The one that seems to be the most suitable for our data is the one of Bonferroni-Holm. After adjusting our p values we replaced the uncorrected ones in our data frame and decided on 0.05 as a threshold for them. 
 
 ```{r}
 p_value_each_gene$Names <- rownames(clustering_data)
@@ -1541,6 +1596,9 @@ rownames(p_value_each_gene) <- p_value_each_gene$Names
 
 clustering_data <- clustering_data[c(rownames(p_value_each_gene)),]
 ```
+
+To find the differentially methylated genes we used a similar approach to the one we used to make the volcano plot. 
+Firstly, we calculated the mean m values of healthy and cancer samples and then calculated the absolute difference.
 
 ```{r}
 healthy_mean_m_values_diff_methylated <- as.matrix(sapply(1:nrow(clustering_data), function(k) {
@@ -1562,6 +1620,8 @@ absolute_diff_m_values <- as.matrix(sapply(1:nrow(mean_values_together), functio
 }))
 ```
 
+Then, we set a threshold for the m value difference (>5) and the adjusted p values (<0.01) and searched for genes that meet the requirements as these are the ones that are the most significantly differentially methylated genes in our data set.
+
 ```{r}
 p_value_each_gene <-
   as.data.frame(cbind(p_value_each_gene, absolute_diff_m_values))
@@ -1570,8 +1630,9 @@ diff_methylated_genes <-
                       (p_value_each_gene$absolute_diff_m_values > 5), ]
 dim(diff_methylated_genes)
 
-
 ```
+With that, we obtained 75 DMRs.
+
 
 $$~$$
 
