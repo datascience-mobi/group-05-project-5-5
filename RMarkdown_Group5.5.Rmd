@@ -104,7 +104,7 @@ input_data_csv <-
   read.csv(file = "sample_annotation.csv", sep = ",")
 ```
 
-There is much information from 56175 genes across all 10 patients. Mostly we are interested in the coverage and beta values. After the entire data clean-up we still want to retain around 90% of our beta value information (~500000 genes).
+There is much information from 56175 genes across all 10 patients. We are mostly interested in the coverage and beta values. After the entire data clean-up we still want to retain around 90% of our beta value information (~500000 genes).
 
 We are starting the data clean-up with the sex chromosomes. In our case we have different numbers of female/male patients in healthy/cancer sample groups. In female X chromosomes inactivation leads to the silencing of the majority of genes on one X, this would lead to significant differences in the methylation profiles between female/male patients (Sharp et al., 2011). Therefore, we remove gene data of sex chromosomes. 
 
@@ -124,7 +124,7 @@ healthy_beta_values <- Gene_data_frame_x_y[, 11:15]
 cancer_beta_values <- Gene_data_frame_x_y[, 16:20]
 ```
 
-Then we created a histogram with mean coverage values for each gene on a common log scale and added 10 quantiles from 0 % to 100 %.
+Then we created a histogram with mean coverage values for each gene on a common log scale and added lines for the 10 quantiles from 0 % to 100 %.
 
 ```{r}
 mean_cancer_coverage <- rowMeans(cancer_coverage)
@@ -924,7 +924,7 @@ $$~$$
 $$~$$
 The aim of this part of the project is to narrow down our data to the significant genes which account for the majority of the variation between methylation values of healthy and cancer samples. Therefore, we need to reduce high dimensional data into low dimensional data with few information loss. 
 A common way to identify the direction of highest variability in the data is by conducting a principal component analysis (PCA) which we also applied to our data (Ma and Dai, 2011). Hence the covariance matrix is used to calculate the eigenvector which correspond to the largest eigenvalues (the principal components). These eigenvectors are used to reconstruct a significant fraction of the variance of the original data.
-These new principal components (features) can now be used for predictive analysis and model building. A crucial benefit is, that each principal component is independent of one another.
+These new principal components (features) can now be used for predictive analysis and model building. A crucial benefit is, that each principal component is independent of the other.
 
 But first we need to tweak our data. There are several +/- infinity values in our m-value dataset, with which PCA does not function. These were caused by beta values of 0 and 1. The most straightforward solution would be to approximate these values with 0.00001 and 0.99999 and calculate the m-values again.
 
@@ -1011,7 +1011,7 @@ p <-
 ggplotly(p)
 ```
 
-The scatterplot visualzies that the methylation differences in healthy an cancer samples are well represented in PC1. But PC2 shows no separation of the two groups. This might be caused by batch effects which are an unwanted source of variation in data (Leek, 2012). To see if the batch effects are really the cause of the bad separation we went on with statistical test.
+The scatterplot visualzies that the methylation differences in healthy an cancer samples are well represented in PC1. But PC2 shows no separation of the two groups. This might be caused by batch effects which are an unwanted source of variation in data (Leek, 2012). To see if the batch effects are really the cause of the bad separation we carried out several statistical test.
 
 But before doing so we need to verify a few assumptions we made. First we can perform kmeans clustering. We know that there should be two clusters (healthy/cancer) but to prove that, we plotted the number of clusteres against the total within-clusters sum of squares.
 
@@ -1038,11 +1038,9 @@ cluster <-
   )$cluster
 ```
 
-The knick in the elbow is as expected at 2 clusters. This means we have really only the two groups cancer and healthy.
+The knick in the elbow is as expected at 2 clusters. This means we only have the two groups: cancer and healthy.
 
-Wiht the following plot we wanted to visualize what was said before. The first two PCs contain most information about the methylation differences.
-
-###### Löschen?      We need to identify which PC has many batch effects so that we can neglcets it further down the line of our analysis. We can do that using the elbow method. For that we need to calculate the proportion of variance "by hand" and plot that against the number of PC's.
+With the help of the elbow method we wanted to visualize what was said before. The first two PCs contain most information about the methylation differences.
 
 ```{r}
 std_dev <- pca_m_values$sdev
@@ -1145,7 +1143,7 @@ cor.perm <- function (x, y, nperm = 1000)
 }
 ```
 
-Here we filled the `p_values_matrix` with the corresponding test statistics p-values. "for-loop" was used in order to avoid redundantly performing the same test on PC1 and PC2.
+Here we filled the `p_values_matrix` with the corresponding test statistics p-values. A "for-loop" was used in order to avoid redundantly performing the same test on PC1 and PC2.
 
 ```{r warning=FALSE}
 for (i in 1:ncol(p_values_matrix)) {
@@ -1245,7 +1243,7 @@ heatmap.2(
 )
 ```
 
-As expected the criteria of "disease" and "cell type" came out as significant which is a biological effect rather a batch one. The only batch effect turned out to be the biomaterial provider which is in PC1. Although the criteria of disease and cell type is only significant in PC1 we still decided to continue working with PC2 as it is completely batch-effect-free even though it is not ideal.
+As expected the criteria of "disease" and "cell type" came out as significant which is a biological effect rather than a batch one. The only batch effect turned out to be the biomaterial provider which is in PC1. Although the criteria of disease and cell type is only significant in PC1 we still decided to continue working with PC2 as it is completely batch-effect-free even though it is not ideal.
 
 Additionally, we decided to visualize our biological/batch effects on scatter plot in order to see how they are distributed.
 
