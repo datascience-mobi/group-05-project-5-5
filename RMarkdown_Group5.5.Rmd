@@ -1725,37 +1725,32 @@ We now wanted to find out what the tasks of our determined genes are.
 Our significant genes have following tasks:
 
 ENSG00000243702:
-RNA, 7SL, Cytoplasmic 638, Pseudogene
+RNA, 7SL, Cytoplasmic 638, Pseudogene: It is reportes to be a part of the signal recognition particle of the ribonucleoprotein complex. It is important for transfer of signal bearing protein into a membrane or transfer to endoplasmatic reticulum for secretion. 
 (Safran et al., 2010)
 
 ENSG00000253822:
-Immunoglobulin Lambda Variable 3-24
+Immunoglobulin Lambda Variable 3-24: Encodes for a part of the N-terminal variable region of the light chains in a immunoglobulin moleculare, which are the antigen recognition molecules of B cells.
 (Lefranc, 2014)(Safran et al., 2010)
-Lefranc, M.P. (2014). Immunoglobulin and T Cell Receptor Genes: IMGT((R)) and the Birth and Rise of Immunoinformatics. Front Immunol 5, 22.
 
 ENSG00000238622:
-Small Nucleolar RNA, C/D Box 97
+Small Nucleolar RNA, C/D Box 97: The gene is from a group of non-coding RNAs. They are reported to have several roles in the cell, but one of the most prominent ones is functioning as guide RNAs in post-transcriptional synthesis of 2′-O-methylated nucleotides.
 (Vitali et al., 2003)(Safran et al., 2010)
-Vitali, P., Royo, H., Seitz, H., Bachellerie, J.P., Huttenhofer, A., and Cavaille, J. (2003). Identification of 13 novel human modification guide RNAs. Nucleic Acids Res 31, 6543-6551.
 
 ENSG00000207504:
-RNA, U6 Small Nuclear 1031, Pseudogene
+RNA, U6 Small Nuclear 1031, Pseudogene: Have been proposed to be a part of the active center of the spliceosome.They function during the first and second step of the splicing process.
 (Hu et al., 2004)(Safran et al., 2010)
-Hu, P., Samudre, K., Wu, S., Sun, Y., and Hernandez, N. (2004). CK2 phosphorylation of Bdp1 executes cell cycle-specific RNA polymerase III transcription repression. Mol Cell 16, 81-92.
 
 ENSG00000244433:
-piggyBac transposable element derived 4 pseudogene 7
+piggyBac transposable element derived 4 pseudogene 7: short inverted-repeat-type DNA transposable element which was oroginally found in a moth genome, but similar sequences have also been found in humans. Possible function as a transposase, which catalyses the movement of the transposon within the genome. 
 (Sarkar et al., 2003)(Safran et al., 2010)
-Sarkar, A., Sim, C., Hong, Y.S., Hogan, J.R., Fraser, M.J., Robertson, H.M., and Collins, F.H. (2003). Molecular evolutionary analysis of the widespread piggyBac transposon family and related "domesticated" sequences. Mol Genet Genomics 270, 173-180.
 
 ENSG00000279415:
 Uncategorized gene, and is affiliated with the lncRNA class.
 (Safran et al., 2010)
 
 ENSG00000270336:
-Protein Phosphatase 2, Catalytic Subunit, Beta Isozyme (PPP2CB) Pseudogene
-This gene encodes the phosphatase 2A catalytic subunit. Protein phosphatase 2A is one of the four major Ser/Thr phosphatases, and it is implicated in the negative control of cell growth and division. It consists of a common heteromeric core enzyme, which is composed of a catalytic subunit and a constant regulatory subunit, that associates with a variety of regulatory subunits. This gene encodes a beta isoform of the catalytic subunit. [provided by RefSeq, Mar 2010]
-(Safran et al., 2010)
+Protein Phosphatase 2, Catalytic Subunit, Beta Isozyme (PPP2CB) Pseudogene: Has been reported to code fo the catalytic subunit of theThis gene encodes the phosphatase 2A catalytic subunit. This phosphatase has been involved in the negative control of cell growth and division.
+(Safran et al., 2010) (Götz, J., 1998)
 
 After all those analyse steps, we can conclude that the data, on which our analysis is based, is not proficient enough for our downstream analysis. We can in no way guarantee that this genes are relevant for mantle cell lymphoma.
 
@@ -1924,3 +1919,13 @@ Safran, M., Dalah, I., Alexander, J., Rosen, N., Iny Stein, T., Shmoish, M., Nat
 Walter, J., and H?mpel, A. (2017). Epigenetik - Implikationen f?r die Lebens- und Geisteswissenschaften, 1 edn (Nomos Verlagsgesellschaft mbH).
 
 Mohanty, A., Sandoval, N., Phan, A., Nguyen, T.V., Chen, R.W., Budde, E., Mei, M., Popplewell, L., Pham, L.V., Kwak, L.W., et al. (2019). Regulation of SOX11 expression through CCND1 and STAT3 in mantle cell lymphoma. Blood 133, 306-318.
+
+Lefranc, M.P. (2014). Immunoglobulin and T Cell Receptor Genes: IMGT((R)) and the Birth and Rise of Immunoinformatics. Front Immunol 5, 22.
+
+Vitali, P., Royo, H., Seitz, H., Bachellerie, J.P., Huttenhofer, A., and Cavaille, J. (2003). Identification of 13 novel human modification guide RNAs. Nucleic Acids Res 31, 6543-6551.
+
+Hu, P., Samudre, K., Wu, S., Sun, Y., and Hernandez, N. (2004). CK2 phosphorylation of Bdp1 executes cell cycle-specific RNA polymerase III transcription repression. Mol Cell 16, 81-92.
+
+Sarkar, A., Sim, C., Hong, Y.S., Hogan, J.R., Fraser, M.J., Robertson, H.M., and Collins, F.H. (2003). Molecular evolutionary analysis of the widespread piggyBac transposon family and related "domesticated" sequences. Mol Genet Genomics 270, 173-180.
+
+Götz, J., Probst, A., Ehler, E., Hemmings, B., & Kues, W. (1998). Delayed embryonic lethality in mice lacking protein phosphatase 2A catalytic subunit Cα. Proceedings of the National Academy of Sciences, 95(21), 12370-12375.
