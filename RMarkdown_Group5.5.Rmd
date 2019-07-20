@@ -206,7 +206,7 @@ lwd = 1)
 
 Again we can distinguish between two major SD groups in both histograms. It is important to mention, that 90 % of mean cancer coverages SD had way under SD = 10,000. In contrast, the 90 % quantile of mean healthy coverages SD was only slightly under SD = 10,000. A low standard deviation would be optimal but we had to accept our outcome of wide spread standard deviation because most of the data is acceptable spreaded.
 
-By setting the lower coverage threshold to 5 % and the upper to 99.9 %, we fulfilled our initial requirement of retaining around 90 % of the information. This is proven later. 
+By setting the lower coverage threshold to 5 % and the upper to 99.9 %, we fulfilled our initial requirement of retaining around 90 % of the information (Encodeproject.org, 2019). This is proven later. 
 
 ```{r}
 threshold_cancer_lower <-
@@ -1929,3 +1929,5 @@ Hu, P., Samudre, K., Wu, S., Sun, Y., and Hernandez, N. (2004). CK2 phosphorylat
 Sarkar, A., Sim, C., Hong, Y.S., Hogan, J.R., Fraser, M.J., Robertson, H.M., and Collins, F.H. (2003). Molecular evolutionary analysis of the widespread piggyBac transposon family and related "domesticated" sequences. Mol Genet Genomics 270, 173-180.
 
 Götz, J., Probst, A., Ehler, E., Hemmings, B., & Kues, W. (1998). Delayed embryonic lethality in mice lacking protein phosphatase 2A catalytic subunit Cα. Proceedings of the National Academy of Sciences, 95(21), 12370-12375.
+
+Encodeproject.org. (2019). Audits – ENCODE. [online] Available at: https://www.encodeproject.org/data-standards/audits/ [Accessed 20 Jul. 2019].
