@@ -18,7 +18,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ---
 <div style="text-align: justify">
-The alterations in cancer cell DNA methylation pattern have long been detected (Vogelstein and Feinberg, 1983). In many cancer types methylation level has also been shown to have effects on gene deregulation,  (Melnick, 2013). But not much research has been done associated with methylation in *mantle cell lymphoma* (MCL) cells. Therefore in the following project we want to address the following question.
+The alterations in cancer cell DNA methylation pattern have long been detected (Vogelstein and Feinberg, 1983). In many cancer types methylation level has also been shown to have effects on gene deregulation (Melnick, 2013). But not much research has been done associated with methylation in *mantle cell lymphoma* (MCL) cells. Therefore in our project we want to address the following question.
 $$~$$
 
 # Research question
@@ -39,7 +39,7 @@ Our data from MCL patients and a healthy control group originate from a project 
 Epigenetic modifications have an impact on DNA expression (Gibney and Nolan, 2010) and are important in some tumor genesis (Horn et al., 2009). These modifications are for example DNA methylation, histone modification and RNA mediated processes (Gibney and Nolan, 2010). In our project we want to focus on DNA methylation. In humans only cytosine can be methylated to 5-mehtylcytosine (5mC) (Walter and Huempel, 2017). In order for methylation to be inherited it needs to be in a CpG dimer, because in such a dimer there is a cytosine in the mother and daughter strand (Horn et al., 2009). After the DNA replication the enzyme DNA-methyltransferase 1 is able to methylate the daughter stand if there is a methylation in the CpG of the mother strand (Horn et al., 2009). During the lifetime of a cell different genes need to be expressed and therefore methylated. DNA methyltransferase 3a and 3b are able to methylate cytosine although there is no methylation in the complementary strand (Horn et al., 2009).
 Methylation in promoters normally leads to inactivation of the following gene (Horn et al., 2009). But there is also the possibility of activating a gene by methylation (Yang et al., 2014). For this the methylation needs to be in the gene.
 
-For an analysis of DNA methylation more steps are required than in normal DNA-sequencing because "normal" cytosine and 5-mC need to be distinguished. The methylation pattern of the samples in our data set was analyzed by the bisulfite sequencing method (bisulfite seq). The chemical sodium bisulfite converts unmethylated cytosine into uracil (Bock, 2012). The DNA with the converted bases can be amplified by PCR and after that it can be analysed by a next generation sequencing method (Bock, 2012). In our case they used Illumina. After the analysis of the converted and unconverted DNA both sequences can be compared (Bock, 2012).  If thymine pairs with cytosine an unmethylated cytosine was in this position in the original DNA (Bock, 2012). Thymine which pairs with adenine were originally thymine and every cytosine in the bisulfite treated DNA stands for a 5-mC (Bock, 2012). One problem of bisulife seq is that bisulfite can not distinguish between 5-mC and 5-hydroxymethylcytosine (5-hmC) (Huang et al., 2010). So it is not clear whether every methylated cytosine in our data set is really a 5-mC or not (Huang et al., 2010). The problem with this is that it has been observed that 5-hmC has not the same effect on gene expression as 5-mC (Moen et al., 2015). Advantages of bisulfite seq are great reproducibility, high accuracy and acomprehensive genomic coverage (Bock, 2012).
+For an analysis of DNA methylation more steps are required than in normal DNA-sequencing because "normal" cytosine and 5-mC need to be distinguished. The methylation pattern of the samples in our data set was analyzed by the bisulfite sequencing method (bisulfite seq). The chemical sodium bisulfite converts unmethylated cytosine into uracil (Bock, 2012). The DNA with the converted bases can be amplified by PCR and after that it can be analysed by a next generation sequencing method (Bock, 2012). In our case they used Illumina. After the analysis of the converted and unconverted DNA both sequences can be compared (Bock, 2012). If thymine pairs with cytosine an unmethylated cytosine was in this position in the original DNA (Bock, 2012). Thymine which pairs with adenine were originally thymine and every cytosine in the bisulfite treated DNA stands for a 5-mC (Bock, 2012). One problem of bisulife seq is that bisulfite can not distinguish between 5-mC and 5-hydroxymethylcytosine (5-hmC) (Huang et al., 2010). So it is not clear whether every methylated cytosine in our data set is really a 5-mC or not (Huang et al., 2010). The problem with this is that it has been observed that 5-hmC has not the same effect on gene expression as 5-mC (Moen et al., 2015). Advantages of bisulfite seq are great reproducibility, high accuracy and a comprehensive genomic coverage (Bock, 2012).
 $$~$$
 
 # Data summary
@@ -100,7 +100,7 @@ $$~$$
 ## Part 1: Data processing
 
 $$~$$
-For now, we want to single out the gene data frame of the patients to inspect it separately. We will examine only the gene data frame and neglect the data from tiling, promoters and cpg-islands because we want to focus on the genes in our project even though the oter genome parts are important too for a comprehensive analysis.
+For now, we want to single out the gene data frame of the patients to inspect it separately. We will examine only the gene data frame and neglect the data from tiling, promoters and cpg-islands because we want to focus on the genes in our project even though the other genome parts are important too for a comprehensive analysis.
 
 ```{r}
 Samples <- readRDS(file = "Mantle-Bcell_list.RDS.gz")
@@ -112,13 +112,13 @@ input_data_csv <-
 
 There is much information from 56175 genes across all 10 patients. We are mostly interested in the coverage and beta values. After the entire data clean-up we still want to retain around 90% of our beta value information (~500000 genes).
 
-We are starting the data clean-up with the sex chromosomes. In our case we have different numbers of female/male patients in healthy/cancer sample groups. In female X chromosomes inactivation leads to the silencing of the majority of genes on one X, this would lead to significant differences in the methylation profiles between female/male patients (Sharp et al., 2011). Therefore, we remove gene data of sex chromosomes. 
+We are starting the data clean-up with the sex chromosomes. In our case we have different numbers of female/male patients in healthy/cancer sample groups. In females X chromosome inactivation leads to the silencing of the majority of genes on one X, this would lead to significant differences in the methylation profiles between female/male patients (Sharp et al., 2011). Therefore we removed gene data of sex chromosomes. 
 
 ```{r}
-Gene_data_frame_x_y <- 
-  Gene_data_frame[-which(Gene_data_frame$Chromosome == "chrX"),]
-Gene_data_frame_x_y <- 
-  Gene_data_frame_x_y[-which(Gene_data_frame_x_y$Chromosome == "chrY"),]
+Gene_data_frame_x_y <-
+  Gene_data_frame[-which(Gene_data_frame$Chromosome == "chrX"), ]
+  Gene_data_frame_x_y <-
+  Gene_data_frame_x_y[-which(Gene_data_frame_x_y$Chromosome == "chrY"), ]
 ```
 
 Now we want to go through the coverage values separately to remove any unreliable values, outliers and possible systematic errors. First we separated the coverage values of healthy and cancer patients into 2 data frames. We did the same separation into 2 data frames with the beta-values because we will need these later. All the other information will be neglected until the analysis of batch effects and interpretation. 
@@ -142,14 +142,16 @@ hist(
   col = "indianred2",
   border = "gray20"
 )
-abline(v = log10(quantile(
-  mean_cancer_coverage,
-  probs = seq(0, 1, 0.1),
-  na.rm = TRUE
-)),
-col = "black",
-lty = 5,
-lwd = 1)
+abline(
+  v = log10(quantile(
+    mean_cancer_coverage,
+    probs = seq(0, 1, 0.1),
+    na.rm = TRUE
+  )),
+  col = "black",
+  lty = 5,
+  lwd = 1
+)
 
 mean_healthy_coverage <- rowMeans(healthy_coverage)
 hist(
@@ -157,22 +159,24 @@ hist(
   breaks = "fd",
   main = "Healthy coverage: Mean frequency",
   xlab = "Common logarithm of coverages",
-    col = "seagreen2",
-    border = "gray20"
+  col = "seagreen2",
+  border = "gray20"
 )
-abline(v = log10(quantile(
-  mean_healthy_coverage,
-  probs = seq(0, 1, 0.1),
-  na.rm = TRUE
-)),
-col = "black",
-lty = 5,
-lwd = 1)
+abline(
+  v = log10(quantile(
+    mean_healthy_coverage,
+    probs = seq(0, 1, 0.1),
+    na.rm = TRUE
+  )),
+  col = "black",
+  lty = 5,
+  lwd = 1
+)
 ```
 
-It was essential that we used a common logarithm scale because our coverages were wide spread over a great range and we did not want to seperate the histograms. But it is easy to see that we have two groups of mean coverage values in healthy coverage histogram. In cancer coverage histogram it was harder to decide how to handle the mean values between 10 and 100 coverages. We concluded that we also had two major mean value groups. But overall it is seen that most of our data had a strong coverage value and that we could later adapt our analysis to it. Not even one fifth of the beta values had less than 100 coverages. As previous said, healthy beta values had stronger coverages than cancer beta values. We need to see if this will effect our downstream analysis.
+It was essential that we used a common logarithm scale because our coverages were widely spread over a great range of values. But it is easy to see that we have two groups of mean coverage values in healthy coverage histogram. In cancer coverage histogram it was harder to decide how to handle the mean values between 10 and 100 coverages. We concluded that we also had two major mean value groups. But overall it is seen that the majority of our data have a high coverage value and that we could later adapt our analysis to it. Not even one fifth of the beta values had less than 100 coverages. As previously said, healthy beta values had stronger coverages than cancer beta values. We need to see if this will effect our downstream analysis.
 
-To check how widely spread the coverages across the patients are, we calculated the standard deviations (SD) of each gene across the patients. We plotted the SD-values for cancer and healthy samples on a histogram with a log scale and again quantiles from 0 % to 100 %.
+To check how widely spread the coverages across the patients are, we calculated the standard deviations (SD) of each gene across 10 patients. We plotted the SD-values for cancer and healthy samples on a histogram with a log scale with their corresponding quantiles from 0 % to 100 %.
 
 ```{r}
 sd_cancer_coverage <- apply(cancer_coverage, 1, sd)
@@ -193,24 +197,27 @@ lty = 5,
 lwd = 1)
 
 sd_healthy_coverage <- apply(healthy_coverage, 1, sd)
-hist(log10(sd_healthy_coverage),
-     breaks = "fd",
-     main = "Healthy coverage: SD frequency",
-     xlab = "Common logarithm of coverages",
-     col = "seagreen2",
-     border = "gray20"
+hist(
+  log10(sd_healthy_coverage),
+  breaks = "fd",
+  main = "Healthy coverage: SD frequency",
+  xlab = "Common logarithm of coverages",
+  col = "seagreen2",
+  border = "gray20"
 )
-abline(v = log10(quantile(
-  sd_healthy_coverage,
-  probs = seq(0, 1, 0.1),
-  na.rm = TRUE
-)),
-col = "black",
-lty = 5,
-lwd = 1)
+abline(
+  v = log10(quantile(
+    sd_healthy_coverage,
+    probs = seq(0, 1, 0.1),
+    na.rm = TRUE
+  )),
+  col = "black",
+  lty = 5,
+  lwd = 1
+)
 ```
 
-Again we can distinguish between two major SD groups in both histograms. It is important to mention, that 90 % of mean cancer coverages SD had way under SD = 10,000. In contrast, the 90 % quantile of mean healthy coverages SD was only slightly under SD = 10,000. A low standard deviation would be optimal but we had to accept our outcome of wide spread standard deviation because most of the data is acceptable spreaded.
+Again we can distinguish between two major SD groups in both histograms. It is important to mention, that 90 % of mean cancer coverages SD had way under SD = 10,000. In contrast, the 90 % quantile of mean healthy coverages SD was only slightly under SD = 10,000. A low standard deviation would be optimal but we had to accept our outcome of wide spread standard deviation because most of the data is acceptably spread.
 
 By setting the lower coverage threshold to 5 % and the upper to 99.9 %, we fulfilled our initial requirement of retaining around 90 % of the information (Encodeproject.org, 2019). This is proven later. 
 
@@ -269,7 +276,7 @@ healthy_beta_values[healthy_coverage == "NA"] <- NA
 healthy_coverage[healthy_coverage == "NA"] <- NA
 ```
 
-Now we needed to deal with NA's in the beta-values, because they represent no information and they could cause errors in our further analysis. We had many NA's but we cannot remove every gene with a NA because this would lead to a loss of too much information.
+Now we needed to deal with NA's in the beta-values, because they represent no information and they could cause errors in our further analysis. We had many NA's but we cannot remove every gene with a NA because this would lead to a loss of information.
 Our sum of NA's is:
 
 ```{r}
@@ -277,7 +284,7 @@ sum(is.na(cancer_beta_values))
 sum(is.na(healthy_beta_values))
 ```
 
-We decided that we want to remove each gene with 3 or more NA's in `healthy_beta_values` or 'cancer_beta_values', because if there are not enough values our results will be not meaningful. To do so we added two new columns to each data frame. One column is for the number of NA's per gene in healthy samples and one for the number of NA's per gene in cancer samples. We need both columns in both data frames because it makes it easier to remove the rows with too much NA's later.
+We decided that we want to remove each gene with 3 or more NA's in `healthy_beta_values` or 'cancer_beta_values', because if there are not enough values our results will not be meaningful. To do so we added two new columns to each data frame. One column is for the number of NA's per gene in healthy samples and one for the number of NA's per gene in cancer samples. We need both columns in both data frames because it makes it easier to remove the rows with too much NA's later.
 
 ```{r}
 cancer_beta_values$Number_of_NA_cancer <-
@@ -291,7 +298,7 @@ healthy_beta_values$Number_of_NA_cancer <-
   rowSums(is.na(cancer_beta_values))
 ```
 
-To visualize the number of NA's in the beta-values we plotted different histograms.
+To visualize the number of NA's in the beta-values we plotted several histograms.
 
 ```{r error=FALSE, warning=FALSE}
 p1 <- ggplot() +
@@ -362,10 +369,10 @@ p4 <- ggplot() +
 grid.arrange(p3, p4, ncol = 2)
 ```
 
-The first histogram of cancer/healthy is to get an overview over all numbers of missing values per gene. Most genes in `cancer_beta_values` and `healthy_beta_values` have no NA's. That is good, because it means we have much information in our analysis and our results will be more meaningful.
+The first histogram of cancer/healthy is to get an overview over all numbers of missing values per gene. Most genes in `cancer_beta_values` and `healthy_beta_values` fortunately have no NA's.
 We wanted to see the differences between 2, 3, 4 and 5 NA's per gene better. To do so we reduced the range of the axis. Now it is visible that in `healty_beta_values` around 800 genes have 5 NA's. With 3 or 4 NA's there are respectively a bit less than 1500 genes. In comparison to that `cancer_beta_values` has around 1200 genes with 5 NA's but less genes with 2, 3 or 4 NA's. 
 
-Then we removed the genes with 3 or more missing values. Here it was important to remove the genes in both data frames, because a gene in only one sample group without values to compare is meaningless. After the deletion we checked if the rownames are the same in both data frames and it was the case. This is important because otherwise the wrong rows would be compared later and the results would be completely wrong. 
+Then we removed the genes with 3 or more missing values. Here it was important to remove the genes in both data frames, because a gene in only one sample group without values to compare to is meaningless. After the deletion we checked if the rownames are the same in both data frames and it was the case. This is important because otherwise unequal amount of rows between the two data frames would lead to problems in the downstream analysis. 
 
 ```{r}
 cancer_beta_values <-
@@ -392,7 +399,6 @@ healthy_beta_values <-
   healthy_beta_values[,-which(
     colnames(healthy_beta_values)  %in%  c("Number_of_NA_cancer", "Number_of_NA_healthy")
   )]
-
 ```
 
 We can not keep the remaining NA's in the beta-values because this will cause errors in our downstream analysis. But we also did not want to delete the genes, so we decided to replace the NA's with the mean value of the respective gene.
@@ -415,14 +421,14 @@ cancer_beta_values <- data.frame(t(transposed_cancer_beta_values))
 healthy_beta_values <- data.frame(t(transposed_healthy_beta_values))
 ```
 
-We proofed that there are no more NA's left in the cancer and healthy data frames.
+We checked that there are no more NA's left in the cancer and healthy data frames.
 
 ```{r}
 sum(is.na(transposed_cancer_beta_values))
 sum(is.na(transposed_healthy_beta_values))
 ```
 $$~$$
-There are some important genes for MCL which have often a different methylation pattern in comparison to heatlhy b-cells. These genes are:
+There are several important genes for MCL which have often a different methylation pattern in comparison to heatlhy B-cells. These genes are:
 
 Gene   |Ensembl         |Function
 :---------:|:----------------------:|:-------------------------------------------------------------------:|
@@ -444,10 +450,10 @@ MAL  	 |ENSG00000172005	|	Myelin and Lymphocyte protein (MAL) is a putative canc
 NPTX2	 |ENSG00000106236	|	 Neuronal pentraxin-2 (NPTX2) is a proinflammatory cytokine. NPTX2 gene is hyper-methylated in MCL and thus non-apoptotic cell death is inhibited (Enjuanes et al., 2013; Li et al., 2018).
 PAX6	 |ENSG00000007372	|	Paired box protein (Pax6) is a regulator (transcription factor) of fate determination of precursor cells (Imamura and Greer, 2013). Suppression of PAX6 promotes cell proliferation and inhibits apoptosis (Meng et al., 2014). 
 TFPI2	 |ENSG00000105825	|	Tissue factor pathway inhibitor 2 (TFPI2) is a serine protease inhibitor which regulates physiological extracellular matrix remodeling (Puttabyatappa et al., 2017). Abberant methylation (hypermethylation) of TFPI2 gene protects the extracellular matrix of cancer cells from degradation and play an important role in the carcinogenesis of cancer (Hu et al., 2017). TFPI2 is identified as a tumor suppressor (Dong et al., 2015). 
-THEM4	 |ENSG00000159445	|	Thioesterase Superfamily Member 4 (THEM4) is a mediator which negatively regulates protein kinase B (PKB). PKB is targeted by receptor tyrosine kinasis which signals via phosphatidylinositol 3-kinase (PI3K) . THEM4 is hypermethylated (promoter) in MCL and mediates cell survival, growth, proliferation, cell migration and angiogenesis (Enjuanes et al., 2011; Rajapakse et al., 2018; Wang et al., 2014; Zhao et al., 2013). 
+THEM4	 |ENSG00000159445	|	Thioesterase Superfamily Member 4 (THEM4) is a mediator which negatively regulates protein kinase B (PKB). PKB is targeted by receptor tyrosine kinasis which signals via phosphatidylinositol 3-kinase (PI3K). THEM4 is hypermethylated (promoter) in MCL and mediates cell survival, growth, proliferation, cell migration and angiogenesis (Enjuanes et al., 2011; Rajapakse et al., 2018; Wang et al., 2014; Zhao et al., 2013). 
 TWIST1 |ENSG00000122691	|	Twist Family BHLH Transcription Factor 1 (TWIST1) is a key regulator in embryonic development and organogenesis.  TWIST1 is implicated in tumor initiation, stemness, angiogenesis, dissemination, and chemoresistance in various cancer types (Zhao et al., 2017). Overexpression of TWIST1 leads to suppression of transcription of pro-apoptotic BH3-only gene BCL2L11. TWIST1 promoter is hypermethylated in most cancers (Zhao et al., 2017) but has no impact on protein expression. Nevertheless, it can be a biomarker for cancer (Gort et al., 2008).
 
-To be sure we did not removed these genes in our data processing we tested if they are still all in our data frames. Because each of the 2 data frames contains the same genes it is enough to check if they are part of one of them.
+To be sure we did not remove these genes in our data processing we tested if they are still in our data frames. As each of the 2 data frames contains the same genes it is enough to check if these important genes are in one of them.
 
 ```{r}
 important_genes <-
@@ -483,14 +489,14 @@ for (i in 1:nrow(important_genes)) {
 sum(is.na(important_genes_in_data_set))
 ```
 
-Now, we can test if we fulfilled our initial requirement of retaining around 90 % of the information.
+Now, we can test if we fulfilled our initial requirement of retaining around 90% of the information.
 
 ```{r}
 dim(cancer_beta_values)/dim(Gene_data_frame_x_y)
 ```
 
-It so happens that we kept slightly over 90 % of the information (91.1 %). That is more than we expected and therefore our quality control was successful. 
-We can continue to our next step: data normalization and visualization.
+It so happens that we kept slightly over 90% of the information (91.1%). That is more than we expected and therefore our quality control was successful. 
+We can continue with our next step: data normalization and visualization.
 $$~$$
 
 ## Part 2: Data normalization and vizualisation
