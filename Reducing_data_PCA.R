@@ -367,7 +367,7 @@ heatmap.2(
 #------------ Conclusion from heatmap: biomaterial provider, cell type and disease have significant p-values in PC1
 # visualisation of the batch effects/biological factors on the PC1 against PC2 plot
 
-#---------biomaterial provider-------
+#---------biomaterial type-------
 
 p_bio_type <-
   ggplot(
