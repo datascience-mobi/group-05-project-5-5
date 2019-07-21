@@ -369,26 +369,28 @@ heatmap.2(
 
 #---------biomaterial provider-------
 
-p_bio_prov <-
+p_bio_type <-
   ggplot(
     pcs_of_m_values,
     aes(
       x = PC1,
       y = PC2,
       group = Samples,
-      fill = input_data_csv$BIOMATERIAL_PROVIDER
+      fill = input_data_csv$BIOMATERIAL_TYPE
     )
   ) +
   geom_point (aes(shape = Samples, color = Samples), size = 4) +
   theme_bw() +
-  ggtitle("Biomaterial provider") +
+  ggtitle("Biomaterial type") +
   theme(
     axis.text.x = element_blank(),
     axis.text.y = element_blank(),
     axis.ticks = element_blank()
   )  +
-  scale_colour_manual(values = c("indianred2", "seagreen2"))
-ggplotly(p_bio_prov)
+  scale_fill_manual(values = c("seagreen2", "indianred2")) +
+  scale_colour_manual(values = c("indianred2", "seagreen2")) +
+  scale_shape_manual(values = c(16, 17))
+ggplotly(p_bio_type)
 
 #---------cell type------------
 
