@@ -1,0 +1,1998 @@
+---
+title: "Are differentially methylated regions within genes associated with mantle cell lymphoma?"
+author: "Pascal Lafrenz, Mari Hambardzumyan, Lea Herzel, Franziska Lam"
+output:
+  html_document: 
+      hightlight: monochrome
+      number_sections: no
+      theme: yeti
+      toc: yes
+      toc_depth: 3
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+---
+<div style="text-align: justify">
+The alterations in cancer cell DNA methylation pattern have long been detected (Vogelstein and Feinberg, 1983). In many cancer types methylation level has also been shown to have effects on gene deregulation (Melnick, 2013). But not much research has been done associated with methylation in *mantle cell lymphoma* (MCL) cells. Therefore in our project we want to address the following question.
+$$~$$
+
+# Research question
+
+$$~$$
+Are differentially methylated regions within genes associated with mantle cell lymphoma?
+
+For that purpose we received a data set and an annotation file. Below is a short summary of important key points of the data set.
+$$~$$
+
+# Introduction
+
+$$~$$
+MCL is a B cell lymphoma which has its origin in the inner mantle zone of the lymph nodes (Hiddemann and Bartram, 2010). The most characteristic mutation in MCL is the translocation between the long arm of chromosome 11 and the long arm of chromosome 14 (t(11;14)(q13;q32)) (Hiddemann and Bartram, 2010). This mutation affects the heavy chains of immunoglobuline and leads to a cycline D1 (CCD1) overexpression (Hiddemann and Bartram, 2010). Cyclin D1 is a transcription factor which controlls the cell cycle (Hiddemann and Bartram, 2010). Through the overexpression of CCD1 the cell is able to proliferate but it can also influence the gene expression of other genes (Hiddemann and Bartram, 2010). It is observed, that a CCD1 overexpression leads to a deregulation of transcription factors and repair genes (Hiddemann and Bartram, 2010). 
+
+Our data from MCL patients and a healthy control group originate from a project called BLUEPRINT (Blueprint Project). It was a research association from 2011 to 2016 with the goal to understand the gene activation and gene expression better (Blueprint Project). To do so they generated reference epigenomes (Blueprint Project). They focused on certain haematopoietic cells from healthy and leukaemic people, but also on some auto immune diseases (Blueprint Project). 
+
+Epigenetic modifications have an impact on DNA expression (Gibney and Nolan, 2010) and are important in some tumor genesis (Horn et al., 2009). These modifications are for example DNA methylation, histone modification and RNA mediated processes (Gibney and Nolan, 2010). In our project we want to focus on DNA methylation. In humans only cytosine can be methylated to 5-mehtylcytosine (5mC) (Walter and Huempel, 2017). In order for methylation to be inherited it needs to be in a CpG dimer, because in such a dimer there is a cytosine in the mother and daughter strand (Horn et al., 2009). After the DNA replication the enzyme DNA-methyltransferase 1 is able to methylate the daughter stand if there is a methylation in the CpG of the mother strand (Horn et al., 2009). During the lifetime of a cell different genes need to be expressed and therefore methylated. DNA methyltransferase 3a and 3b are able to methylate cytosine although there is no methylation in the complementary strand (Horn et al., 2009).
+Methylation in promoters normally leads to inactivation of the following gene (Horn et al., 2009). But there is also the possibility of activating a gene by methylation (Yang et al., 2014). For this the methylation needs to be in the gene.
+
+For an analysis of DNA methylation more steps are required than in normal DNA-sequencing because "normal" cytosine and 5-mC need to be distinguished. The methylation pattern of the samples in our data set was analyzed by the bisulfite sequencing method (bisulfite seq). The chemical sodium bisulfite converts unmethylated cytosine into uracil (Bock, 2012). The DNA with the converted bases can be amplified by PCR and after that it can be analysed by a next generation sequencing method (Bock, 2012). In our case they used Illumina. After the analysis of the converted and unconverted DNA both sequences can be compared (Bock, 2012). If thymine pairs with cytosine an unmethylated cytosine was in this position in the original DNA (Bock, 2012). Thymine which pairs with adenine were originally thymine and every cytosine in the bisulfite treated DNA stands for a 5-mC (Bock, 2012). One problem of bisulife seq is that bisulfite can not distinguish between 5-mC and 5-hydroxymethylcytosine (5-hmC) (Huang et al., 2010). So it is not clear whether every methylated cytosine in our data set is really a 5-mC or not (Huang et al., 2010). The problem with this is that it has been observed that 5-hmC has not the same effect on gene expression as 5-mC (Moen et al., 2015). Advantages of bisulfite seq are great reproducibility, high accuracy and a comprehensive genomic coverage (Bock, 2012).
+$$~$$
+
+# Data summary
+
+$$~$$
+
+* Bisulfite-Seq data for 10 patients/samples (5 male, 5 female)
+* 5 healthy patients, 5 with MCL
+* Extracted DNA is from B-cells
+* 56175 genes across all samples
+* coverage and beta-values for each gene
+* Length of each gene
+
+Researching on MCL we found a range of genes which have been linked with this specific cancer, some of which include SOX11, p53, CCND1 etc (Queirós et al., 2016).
+To address the research question we broke down the project into 5 parts.
+$$~$$
+
+# Project steps
+
+$$~$$
+
+|1. Data processing  | 2. Data normalization and visualization | 3. Data reduction  | 4. Regression and interpretation    | 5. Annotate and interpret results
+------------- | ------------- | ------------- | ------------- | -------------
+Remove x and y chromosome genes  | Transform beta-values into homoscedastic M-values $$~$$ | Dimensionality reduction, e.g PCA  | Apply t-test        |   |
+Split data into 4 data frames (cancer vs. control, beta-values and coverage) $$~$$ | Add a column for mean, median and SD for better comparisons | Identify batch effect magnitude in the data set | Apply logistic regression |   |
+Set a threshold and examine variance for reliable coverage, replace unreliable beta-values with NA $$~$$ | Visualization through plots | Apply clustering method and visualize, e.g k-means |  |  |
+Separately inspect genes of interest for MCL $$~$$ |   |    |    |   
+Set a threshold and remove genes under/above threshold, imputate remaining NA's |   |    |    |   
+
+$$~$$
+To be able to run our code the following packages are needed.
+```{r eval=FALSE, include=FALSE}
+install.packages(tidyverse)
+install.packages(gridExtra)
+install.packages(ggrepel)
+install.packages(plotly)
+install.packages(gplots)
+install.packages(sandwich)
+install.packages(corrplot)
+install.packages(jtools)
+install.packages(grid)
+```
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(gridExtra)
+library(ggrepel)
+library(plotly)
+library(gplots)
+library(sandwich)
+library(corrplot)
+library(jtools)
+library(grid)
+```
+
+$$~$$
+
+## Part 1: Data processing
+
+$$~$$
+For now, we want to single out the gene data frame of the patients to inspect it separately. We will examine only the gene data frame and neglect the data from tiling, promoters and cpg-islands because we want to focus on the genes in our project even though the other genome parts are important too for a comprehensive analysis.
+
+```{r}
+Samples <- readRDS(file = "Mantle-Bcell_list.RDS.gz")
+Gene_data_frame <- Samples$genes
+dim(Gene_data_frame)
+input_data_csv <-
+  read.csv(file = "sample_annotation.csv", sep = ",")
+```
+
+There is much information from 56175 genes across all 10 patients. We are mostly interested in the coverage and beta values. After the entire data clean-up we still want to retain around 90% of our beta value information (~500000 genes).
+
+We are starting the data clean-up with the sex chromosomes. In our case we have different numbers of female/male patients in healthy/cancer sample groups. In females X chromosome inactivation leads to the silencing of the majority of genes on one X, this would lead to significant differences in the methylation profiles between female/male patients (Sharp et al., 2011). Therefore we removed gene data of sex chromosomes. 
+
+```{r}
+Gene_data_frame_x_y <-
+  Gene_data_frame[-which(Gene_data_frame$Chromosome == "chrX"),]
+Gene_data_frame_x_y <-
+  Gene_data_frame_x_y[-which(Gene_data_frame_x_y$Chromosome == "chrY"),]
+```
+
+Now we want to go through the coverage values separately to remove any unreliable values, outliers and possible systematic errors. First we separated the coverage values of healthy and cancer patients into 2 data frames. We did the same separation into 2 data frames with the beta-values because we will need these later. All the other information will be neglected until the analysis of batch effects and interpretation. 
+
+```{r}
+healthy_coverage <- Gene_data_frame_x_y[, 21:25]
+cancer_coverage <- Gene_data_frame_x_y[, 26:30]
+healthy_beta_values <- Gene_data_frame_x_y[, 11:15]
+cancer_beta_values <- Gene_data_frame_x_y[, 16:20]
+```
+
+Then we created a histogram with mean coverage values for each gene on a common log scale and added lines for the 10 quantiles from 0 % to 100 %.
+
+```{r}
+mean_cancer_coverage <- rowMeans(cancer_coverage)
+hist(
+  log10(mean_cancer_coverage),
+  breaks = "fd",
+  main = "Cancer coverage: Mean frequency",
+  xlab = "Common logarithm of coverages",
+  col = "indianred2",
+  border = "gray20"
+)
+abline(
+  v = log10(quantile(
+    mean_cancer_coverage,
+    probs = seq(0, 1, 0.1),
+    na.rm = TRUE
+  )),
+  col = "black",
+  lty = 5,
+  lwd = 1
+)
+
+mean_healthy_coverage <- rowMeans(healthy_coverage)
+hist(
+  log10(mean_healthy_coverage),
+  breaks = "fd",
+  main = "Healthy coverage: Mean frequency",
+  xlab = "Common logarithm of coverages",
+  col = "seagreen2",
+  border = "gray20"
+)
+abline(
+  v = log10(quantile(
+    mean_healthy_coverage,
+    probs = seq(0, 1, 0.1),
+    na.rm = TRUE
+  )),
+  col = "black",
+  lty = 5,
+  lwd = 1
+)
+```
+
+It was essential that we used a common logarithm scale because our coverages were widely spread over a great range of values. But it is easy to see that we have two groups of mean coverage values in healthy coverage histogram. In cancer coverage histogram it was harder to decide how to handle the mean values between 10 and 100 coverages. We concluded that we also had two major mean value groups. But overall it is seen that the majority of our data have a high coverage value and that we could later adapt our analysis to it. Not even one fifth of the beta values had less than 100 coverages. As previously said, healthy beta values had stronger coverages than cancer beta values. We need to see if this will effect our downstream analysis.
+
+To check how widely spread the coverages across the patients are, we calculated the standard deviations (SD) of each gene across 10 patients. We plotted the SD-values for cancer and healthy samples on a histogram with a log scale with their corresponding quantiles from 0 % to 100 %.
+
+```{r}
+sd_cancer_coverage <- apply(cancer_coverage, 1, sd)
+hist(
+  log10(sd_cancer_coverage),
+  breaks = "fd",
+  main = "Cancer coverage: SD frequency",
+  xlab = "Common logarithm of coverages",
+  col = "indianred2",
+  border = "gray20"
+)
+abline(
+  v = log10(quantile(
+    sd_cancer_coverage,
+    probs = seq(0, 1, 0.1),
+    na.rm = TRUE
+  )),
+  col = "black",
+  lty = 5,
+  lwd = 1
+)
+
+sd_healthy_coverage <- apply(healthy_coverage, 1, sd)
+hist(
+  log10(sd_healthy_coverage),
+  breaks = "fd",
+  main = "Healthy coverage: SD frequency",
+  xlab = "Common logarithm of coverages",
+  col = "seagreen2",
+  border = "gray20"
+)
+abline(
+  v = log10(quantile(
+    sd_healthy_coverage,
+    probs = seq(0, 1, 0.1),
+    na.rm = TRUE
+  )),
+  col = "black",
+  lty = 5,
+  lwd = 1
+)
+```
+
+Again we can distinguish between two major SD groups in both histograms. It is important to mention, that 90 % of mean cancer coverages SD had way under SD = 10,000. In contrast, the 90 % quantile of mean healthy coverages SD was only slightly under SD = 10,000. A low standard deviation would be optimal but we had to accept our outcome of wide spread standard deviation because most of the data is acceptably spread.
+
+By setting the lower coverage threshold to 5 % and the upper to 99.9 %, we fulfilled our initial requirement of retaining around 90 % of the information (Encodeproject.org, 2019). This is proven later. 
+
+```{r}
+threshold_cancer_lower <-
+  quantile(mean_cancer_coverage,
+           probs = 0.05,
+           na.rm = TRUE)
+threshold_cancer_upper <-
+  quantile(mean_cancer_coverage,
+           probs = 0.999,
+           na.rm = TRUE)
+
+threshold_healthy_lower <-
+  quantile(mean_healthy_coverage,
+           probs = 0.05,
+           na.rm = TRUE)
+threshold_healthy_upper <-
+  quantile(mean_healthy_coverage,
+           probs = 0.999,
+           na.rm = TRUE)
+```
+
+Beta-values with very low or extreme high coverages are not reliable. Therefore with the help of the predefined coverage threshold for each patient we will set the beta values of the genes which did not fulfill the coverage requirement to NA. We wrote a function which checked every table cell and set unreliable coverage value to zero. After that the associated table cells in bata values were set to NA.
+
+```{r}
+cancer_threshold_function <- function(cancer_coverage) {
+  if (cancer_coverage <= threshold_cancer_lower) {
+    return("NA")
+  }
+  else {
+    return(cancer_coverage)
+  }
+  
+  if (cancer_coverage >= threshold_cancer_upper) {
+    return("NA")
+  }
+  else{
+    return(cancer_coverage)
+  }
+}
+
+cancer_coverage <-
+  apply(cancer_coverage, MARGIN = c(1, 2), FUN = cancer_threshold_function)
+
+cancer_beta_values[cancer_coverage == "NA"] <- NA
+cancer_coverage[cancer_coverage == "NA"] <- NA
+
+
+healthy_threshold_function <- function(healthy_coverage) {
+  if (healthy_coverage <= threshold_healthy_lower) {
+    return("NA")
+  }
+  else {
+    return(healthy_coverage)
+  }
+  
+  if (healthy_coverage >= threshold_healthy_upper) {
+    return("NA")
+  }
+  else{
+    return(healthy_coverage)
+  }
+}
+
+healthy_coverage <-
+  apply(healthy_coverage, MARGIN = c(1, 2), FUN = healthy_threshold_function)
+
+healthy_beta_values[healthy_coverage == "NA"] <- NA
+healthy_coverage[healthy_coverage == "NA"] <- NA
+```
+
+Now we needed to deal with NA's in the beta-values, because they represent no information and they could cause errors in our further analysis. We had many NA's but we cannot remove every gene with a NA because this would lead to a loss of information.
+Our sum of NA's is:
+
+```{r}
+sum(is.na(cancer_beta_values))
+sum(is.na(healthy_beta_values))
+```
+
+We decided that we want to remove each gene with 3 or more NA's in `healthy_beta_values` or 'cancer_beta_values', because if there are not enough values our results will not be meaningful. To do so we added two new columns to each data frame. One column is for the number of NA's per gene in healthy samples and one for the number of NA's per gene in cancer samples. We need both columns in both data frames because it makes it easier to remove the rows with too much NA's later.
+
+```{r}
+cancer_beta_values$Number_of_NA_cancer <-
+  rowSums(is.na(cancer_beta_values))
+cancer_beta_values$Number_of_NA_healthy <-
+  rowSums(is.na(healthy_beta_values))
+
+healthy_beta_values$Number_of_NA_healthy <-
+  rowSums(is.na(healthy_beta_values))
+healthy_beta_values$Number_of_NA_cancer <-
+  rowSums(is.na(cancer_beta_values))
+```
+
+To visualize the number of NA's in the beta-values we plotted several histograms.
+
+```{r error=FALSE, warning=FALSE}
+p1 <- ggplot() +
+  geom_bar(
+    data = cancer_beta_values,
+    mapping = aes(x = cancer_beta_values$Number_of_NA_cancer),
+    fill = "indianred2"
+  ) +
+  ggtitle("NA's per Gene in \n cancer samples") +
+  labs(x = "Number of NA's", y = "Number of Genes") +
+  theme(plot.title = element_text(
+    color = "black",
+    size = 14,
+    face = "bold",
+    hjust = 0.5
+  ))
+
+p2 <- ggplot() +
+  geom_bar(
+    data = cancer_beta_values,
+    mapping = aes(x = cancer_beta_values$Number_of_NA_cancer),
+    fill = "indianred2"
+  ) +
+  xlim(0.5, 5.5) +
+  ggtitle("NA's per Gene in \n cancer samples \n (zoomed in)") +
+  labs(x = "Number of NA's", y = "Number of Genes") +
+  theme(plot.title = element_text(
+    color = "black",
+    size = 14,
+    face = "bold",
+    hjust = 0.5
+  ))
+grid.arrange(p1, p2, ncol = 2)
+```
+
+```{r error=FALSE, warning=FALSE}
+
+p3 <- ggplot() +
+  geom_bar(
+    data = healthy_beta_values,
+    mapping = aes(x = healthy_beta_values$Number_of_NA_healthy),
+    fill = "seagreen2"
+  ) +
+  ggtitle("NA's per Gene in \n healthy samples") +
+  labs(x = "Number of NA's", y = "Number of Genes") +
+  theme(plot.title = element_text(
+    color = "black",
+    size = 14,
+    face = "bold",
+    hjust = 0.5
+  ))
+
+p4 <- ggplot() +
+  geom_bar(
+    data = healthy_beta_values,
+    mapping = aes(x = healthy_beta_values$Number_of_NA_healthy),
+    fill = "seagreen2"
+  ) +
+  xlim(0.5, 5.5) +
+  ggtitle("NA's per Gene in \n healthy samples \n (zoomed in)") +
+  labs(x = "Number of NA's", y = "Number of Genes") +
+  theme(plot.title = element_text(
+    color = "black",
+    size = 14,
+    face = "bold",
+    hjust = 0.5
+  ))
+grid.arrange(p3, p4, ncol = 2)
+```
+
+The first histogram of cancer/healthy is to get an overview over all numbers of missing values per gene. Most genes in `cancer_beta_values` and `healthy_beta_values` fortunately have no NA's.
+We wanted to see the differences between 2, 3, 4 and 5 NA's per gene better. To do so we reduced the range of the axis. Now it is visible that in `healty_beta_values` around 800 genes have 5 NA's. With 3 or 4 NA's there are respectively a bit less than 1500 genes. In comparison to that `cancer_beta_values` has around 1200 genes with 5 NA's but less genes with 2, 3 or 4 NA's. 
+
+Then we removed the genes with 3 or more missing values. Here it was important to remove the genes in both data frames, because a gene in only one sample group without values to compare to is meaningless. After the deletion we checked if the rownames are the same in both data frames and it was the case. This is important because otherwise unequal amount of rows between the two data frames would lead to problems in the downstream analysis. 
+
+```{r}
+cancer_beta_values <-
+  cancer_beta_values[-which(
+    cancer_beta_values$Number_of_NA_cancer >= 3 |
+      cancer_beta_values$Number_of_NA_healthy >= 3
+  ), ]
+healthy_beta_values <-
+  healthy_beta_values[-which(
+    healthy_beta_values$Number_of_NA_cancer >= 3 |
+      healthy_beta_values$Number_of_NA_healthy >= 3
+  ), ]
+sum(rownames(healthy_beta_values) != rownames(cancer_beta_values))
+```
+
+We removed the columns with the NA-values because we did not need them anymore. 
+
+```{r}
+cancer_beta_values <-
+  cancer_beta_values[, -which(
+    colnames(cancer_beta_values) %in% c("Number_of_NA_cancer", "Number_of_NA_healthy")
+  )]
+healthy_beta_values <-
+  healthy_beta_values[, -which(
+    colnames(healthy_beta_values)  %in%  c("Number_of_NA_cancer", "Number_of_NA_healthy")
+  )]
+```
+
+We can not keep the remaining NA's in the beta-values because this will cause errors in our downstream analysis. But we also did not want to delete the genes, so we decided to replace the NA's with the mean value of the respective gene.
+To cut things short and to make it a little easier for our next analysis, we transposed both beta value data frames (cancer and healthy) for the replacement. Afterwards we transposed both data frames back for further analysis.
+
+```{r}
+transposed_cancer_beta_values <- t(cancer_beta_values)
+transposed_healthy_beta_values <- t(healthy_beta_values)
+
+for (i in 1:ncol(transposed_cancer_beta_values)) {
+  transposed_cancer_beta_values[is.na(transposed_cancer_beta_values[, i]), i] <-
+    mean(transposed_cancer_beta_values[, i], na.rm = TRUE)
+}
+for (i in 1:ncol(transposed_healthy_beta_values)) {
+  transposed_healthy_beta_values[is.na(transposed_healthy_beta_values[, i]), i] <-
+    mean(transposed_healthy_beta_values[, i], na.rm = TRUE)
+}
+
+cancer_beta_values <- data.frame(t(transposed_cancer_beta_values))
+healthy_beta_values <- data.frame(t(transposed_healthy_beta_values))
+```
+
+We checked that there are no more NA's left in the cancer and healthy data frames.
+
+```{r}
+sum(is.na(transposed_cancer_beta_values))
+sum(is.na(transposed_healthy_beta_values))
+```
+$$~$$
+There are several important genes for MCL which have often a different methylation pattern in comparison to heatlhy B-cells. These genes are:
+
+Gene   |Ensembl         |Function
+:---------:|:----------------------:|:-------------------------------------------------------------------:|
+CCND1  |ENSG00000110092 | Cycline D1 controlls cell cycle (Fu et al., 2004). CCND1 is essential for the maintenance of established MCL tumor cell lines and preserves genomic stability during DNA replication in MCL cells (Mohanty et al., 2017).  
+SOX11	 |ENSG00000176887 | SRY-box related gene	(SRY = sex determining region Y chromosome ) (Amann-Vesti et al., 2018). Critical for survival of neuronal and mesenchymal progenitor cells (Mohanty et al., 2019). One reason for expression in MCL is CCND1 (Mohanty et al., 2019). Epigenetically regulated (Wasik et al., 2013). Promotes oncogenic proliferation (Kuo et al., 2018).
+NR2F2	 |ENSG00000185551	| Is a nuclear receptor (https://www.ncbi.nlm.nih.gov/gene/7026, 6-6-2019) and plays a role as transcription factor in the differentiation and pluripotency of human embryonic stem cells (Rosa and Brivanlou, 2011).
+p53  	 |ENSG00000141510	| Transcription factor which can trigger a variety of antiproliferative programs by activating or repressing key effector genes. Modulates e.g. apoptosis, cell-cycle arrest, senescence, or modulation of autophagy (Zilfou and Lowe, 2009). 
+AHR  	 |ENSG00000106546	|	Activation of aryl hydrocarbon receptor (AhR) results in loss of apoptosis response through overexpression of cyclooxygenase-2 (COX-2) (key role in cancer development - especially in lymphoma). COX-2 upregulates antiapoptotic proteins (Vogel et al., 2007). 
+ROBO1	 |ENSG00000169855	| Tumor suppressor gene. Loss of function results in an invasive and metastasic cancer development (Parray et al., 2014). 
+SOX9 	 |ENSG00000125398	|SRY-box related gene	(SRY = sex determining region Y chromosome ) (Amann-Vesti et al., 2018). Important in developement of testicle (Amann-Vesti et al., 2018). 
+HOXA9	 |ENSG00000078399	|	Belongs to a family of highly conserved transcriptional regulators with critical roles in normal development and hematopoiesis. Effects of HoxA9 overexpression include strong self-renewal and inhibiting differentiation of progenitor cells (Brumatti et al., 2013). 
+CDH1 	 |ENSG00000039068	|	Encoding the tumour-suppressor protein E-cadherin (van der Post et al., 2015). Anaphase-promoting complex/cyclosome (APC/C) is dependent on Cdh1. Cdh1 is phosphorylated and inactivated at the Start transition of the new cell cycle (Ondracka et al., 2016). 
+CDC14B |ENSG00000081377	|	Important in DNA repair mechanisms and activation of APC/C-CDH1 complex (Zhou et al., 2016). Downregulation leads to genomic instability by enabling cells to down-regulate p53 and override cell cycle checkpoints (Klauck et al., 2018). 
+FOXC1	 |ENSG00000054598	| Forkhead box C1 (FOXC1) regulates tumor-associated genes and is regulated by multiple pathways that control its mRNA expression and protein activity (Xu et al., 2016; Yang et al., 2017). Aberrant FOXC1 expression promotes growth, migration, abnormal cell proliferation and angiogenesis therefore functions as an oncogene (Xu et al., 2016). 
+G0S2	 |ENSG00000123689	|	Lipolytic inhibitor G0/G1 switch gene 2 (G0S2) plays various important roles in cellular functions such as cell proliferation, apoptosis and oxidative phosphorylation. Upregulation leads to radioresistant cancer (Wang et al., 2019). G0S2 is normally epigenetically silenced (Welch et al., 2009). 
+GPX3	 |ENSG00000211445	|	Glutathione peroxidase 3 (GPX3) catalyzes reduction of reactive oxygen species (ROS) in plasma and acts as a redox signal modulator with tumor supressor activity. Protect cells against oxidative damage. Downregulation of GPX3 in many types of human cancer is caused by promoter hypermethylation (An et al., 2018). 
+LGALS3 |ENSG00000131981	|	Galectin-3 (LGALS3) elevates inflammatory processes. LGALS3 protects cancer cells by inducing tolerance to drug treatment. Auto-induction of Galectin-3 mRNA and pathways of inflammatory mediators (Fei et al., 2015). 
+MAL  	 |ENSG00000172005	|	Myelin and Lymphocyte protein (MAL) is a putative cancer marker associated with chemoresistance and cell survival (Zanotti et al., 2017). 
+NPTX2	 |ENSG00000106236	|	 Neuronal pentraxin-2 (NPTX2) is a proinflammatory cytokine. NPTX2 gene is hyper-methylated in MCL and thus non-apoptotic cell death is inhibited (Enjuanes et al., 2013; Li et al., 2018).
+PAX6	 |ENSG00000007372	|	Paired box protein (Pax6) is a regulator (transcription factor) of fate determination of precursor cells (Imamura and Greer, 2013). Suppression of PAX6 promotes cell proliferation and inhibits apoptosis (Meng et al., 2014). 
+TFPI2	 |ENSG00000105825	|	Tissue factor pathway inhibitor 2 (TFPI2) is a serine protease inhibitor which regulates physiological extracellular matrix remodeling (Puttabyatappa et al., 2017). Abberant methylation (hypermethylation) of TFPI2 gene protects the extracellular matrix of cancer cells from degradation and play an important role in the carcinogenesis of cancer (Hu et al., 2017). TFPI2 is identified as a tumor suppressor (Dong et al., 2015). 
+THEM4	 |ENSG00000159445	|	Thioesterase Superfamily Member 4 (THEM4) is a mediator which negatively regulates protein kinase B (PKB). PKB is targeted by receptor tyrosine kinasis which signals via phosphatidylinositol 3-kinase (PI3K). THEM4 is hypermethylated (promoter) in MCL and mediates cell survival, growth, proliferation, cell migration and angiogenesis (Enjuanes et al., 2011; Rajapakse et al., 2018; Wang et al., 2014; Zhao et al., 2013). 
+TWIST1 |ENSG00000122691	|	Twist Family BHLH Transcription Factor 1 (TWIST1) is a key regulator in embryonic development and organogenesis.  TWIST1 is implicated in tumor initiation, stemness, angiogenesis, dissemination, and chemoresistance in various cancer types (Zhao et al., 2017). Overexpression of TWIST1 leads to suppression of transcription of pro-apoptotic BH3-only gene BCL2L11. TWIST1 promoter is hypermethylated in most cancers (Zhao et al., 2017) but has no impact on protein expression. Nevertheless, it can be a biomarker for cancer (Gort et al., 2008).
+
+To be sure we did not remove these genes in our data processing we tested if they are still in our data frames. As each of the 2 data frames contains the same genes it is enough to check if these important genes are in one of them.
+
+```{r}
+important_genes <-
+  data.frame(
+    c(
+      "ENSG00000176887",
+      "ENSG00000185551",
+      "ENSG00000141510",
+      "ENSG00000110092",
+      "ENSG00000106546",
+      "ENSG00000169855",
+      "ENSG00000125398",
+      "ENSG00000078399",
+      "ENSG00000039068",
+      "ENSG00000081377",
+      "ENSG00000054598",
+      "ENSG00000123689",
+      "ENSG00000211445",
+      "ENSG00000131981",
+      "ENSG00000172005",
+      "ENSG00000106236",
+      "ENSG00000007372",
+      "ENSG00000105825",
+      "ENSG00000159445",
+      "ENSG00000122691"
+    )
+  )
+important_genes_in_data_set <- data.frame()
+for (i in 1:nrow(important_genes)) {
+  important_genes_in_data_set[i,] <-
+    cancer_beta_values[which(row.names(cancer_beta_values) == important_genes[i,]),]
+}
+sum(is.na(important_genes_in_data_set))
+```
+
+Now, we can test if we fulfilled our initial requirement of retaining around 90% of the information.
+
+```{r}
+dim(cancer_beta_values) / dim(Gene_data_frame_x_y)
+```
+
+It so happens that we kept slightly over 90% of the information (91.1%). That is more than we expected and therefore our quality control was successful. 
+We can continue with our next step: data normalization and visualization.
+$$~$$
+
+## Part 2: Data normalization and vizualisation
+
+$$~$$
+In this part we want to normalise the beta values in order to make them more homoscedastic for further statistical tests and downstream analysis. For that purpose we apply logit transformation and turn them into m values. For the conversion to m values we used the following formula: 
+$$ M_i~ = log_2(\frac{beta_i}{1-beta_i}) $$
+
+```{r}
+cancer_m_values <-
+  data.frame(log2(cancer_beta_values / (1 - cancer_beta_values)))
+healthy_m_values <-
+  data.frame(log2(healthy_beta_values / (1 - healthy_beta_values)))
+```
+
+We included mean and standard deviation values to the original data frame, therefore, we can later visualize them.
+
+```{r}
+mean_healthy_m_values <- rowMeans(healthy_m_values)
+mean_cancer_m_values <- rowMeans(cancer_m_values)
+sd_cancer_m_values <- apply(cancer_m_values, 1, sd)
+sd_healthy_m_values <- apply(healthy_m_values, 1, sd)
+extended_cancer_m_values <-
+  cbind.data.frame(cancer_m_values, mean_cancer_m_values, sd_cancer_m_values)
+extended_healthy_m_values <-
+  cbind.data.frame(healthy_m_values, mean_healthy_m_values, sd_healthy_m_values)
+```
+
+Firstly, we want to check if our transformation was successfull by comparing it to the literature.
+
+```{r}
+c1 <- ggplot() +
+  geom_point(
+    mapping = aes(
+      x = extended_cancer_m_values$mean_cancer_m_values,
+      y = rowMeans(cancer_beta_values)
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  labs(x = "Mean cancer beta values",
+       y = "Mean cancer m values",
+       title = "Comparison of mean values") +
+  theme_bw()
+
+c2 <- ggplot() +
+  geom_point(
+    mapping = aes(
+      x = extended_healthy_m_values$mean_healthy_m_values,
+      y = rowMeans(healthy_beta_values)
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  labs(x = "Mean healthy beta values",
+       y = "Mean healthy m values",
+       title = "Comparison of mean values") +
+  theme_bw()
+
+grid.arrange(c1, c2, ncol = 2)
+```
+
+Compared to literature, beta-value to m-value transition worked perfectly and we can continue our downstream analysis (Du et al., 2010). Aberration of transition occured because of mean value calculation.
+
+Afterwards we changed the endings of the patinets names to make it more clear to which data frame they belonged to.
+
+```{r}
+colnames(healthy_m_values) <-
+  c(
+    "Bcell_naive_VB_NBC_NC11_41.M",
+    "Bcell_naive_VB_NBC_NC11_83.M",
+    "Bcell_naive_VB_S001JP51.M",
+    "Bcell_naive_VB_S00DM851.M",
+    "Bcell_naive_VB_S01ECGA1.M"
+  )
+
+colnames(cancer_m_values) <- c(
+  "cancer_VB_S01FE8A1.M",
+  "cancer_VB_S01FF6A1.M",
+  "cancer_VB_S01FH2A1.M",
+  "cancer_VB_S01FJZA1.M",
+  "cancer_VB_S01FKXA1.M"
+)
+```
+
+Thereafter we calculated the means and standard deviations of m values, subsequently plotting a histogram for each, to see how they are spread.
+
+```{r warning=FALSE}
+hist(
+  log10(mean_cancer_m_values),
+  breaks = "fd",
+  main = "Cancer M values: Mean frequency",
+  xlab = "Common logarithm of M values",
+  col = "indianred2",
+  border = "gray20",
+  xlim = c(-1, 1)
+)
+abline(
+  v = log10(quantile(
+    mean_cancer_m_values,
+    probs = seq(0, 1, 0.1),
+    na.rm = TRUE
+  )),
+  col = "black",
+  lty = 5,
+  lwd = 1
+)
+
+hist(
+  log10(mean_healthy_m_values),
+  breaks = "fd",
+  main = "Healthy M values: Mean frequency",
+  xlab = "Common logarithm of M values",
+  col = "seagreen2",
+  border = "gray20",
+  xlim = c(-1, 1)
+)
+abline(
+  v = log10(quantile(
+    mean_healthy_m_values,
+    probs = seq(0, 1, 0.1),
+    na.rm = TRUE
+  )),
+  col = "black",
+  lty = 5,
+  lwd = 1
+)
+```
+
+```{r warning=FALSE}
+hist(
+  log10(sd_cancer_m_values),
+  breaks = "fd",
+  main = "Cancer M values: SD frequency",
+  xlab = "Common logarithm of M values",
+  col = "indianred2",
+  border = "gray20"
+)
+
+hist(
+  log10(sd_healthy_m_values),
+  breaks = "fd",
+  col = "seagreen2",
+  main = "Healthy M values: SD frequency",
+  xlab = "Common logarithm of M values",
+  border = "gray20"
+)
+```
+
+As we can see in the mean frequency histograms there are some values of common logarithms of m values which are more than 1.0 and less than -1.0, this is due to the beta values which were registered as 1 or 0 which resulted in m values of +inf and -inf. These will be removed before the principal component analysis. 
+Comparing the mean frequency histograms of cancer and healthy samples, we can conclude that both are right-skewed, whereas in healthy m values the effect is more prominent. In the mean m value histogram of healthy patients we can observe that the median lays around 0.6 which corresponds to beta values of around 0.8, in comparison to cancer, where the median lays around 0.2 which corresponds to beta values of 0.6. Important to mention is the fact that there are far less genes which have low beta values in the healthy samples than in the cancer samples (judging by the tenth quantiles).
+But overall we can assume a that the distribution is normal in both cancer and healthy histograms.
+Furthermore, we created a data frame which only includes our cancer related genes. This data frame is extended by gene name rather than ensembl name.
+
+```{r}
+
+extended_cancer_m_values_gene <- extended_cancer_m_values[c(
+  "ENSG00000176887",
+  "ENSG00000185551",
+  "ENSG00000141510",
+  "ENSG00000110092",
+  "ENSG00000106546",
+  "ENSG00000169855",
+  "ENSG00000125398",
+  "ENSG00000078399",
+  "ENSG00000039068",
+  "ENSG00000081377",
+  "ENSG00000054598",
+  "ENSG00000123689",
+  "ENSG00000211445",
+  "ENSG00000131981",
+  "ENSG00000172005",
+  "ENSG00000106236",
+  "ENSG00000007372",
+  "ENSG00000105825",
+  "ENSG00000159445",
+  "ENSG00000122691"
+), ]
+
+extended_healthy_m_values_gene <- extended_healthy_m_values[c(
+  "ENSG00000176887",
+  "ENSG00000185551",
+  "ENSG00000141510",
+  "ENSG00000110092",
+  "ENSG00000106546",
+  "ENSG00000169855",
+  "ENSG00000125398",
+  "ENSG00000078399",
+  "ENSG00000039068",
+  "ENSG00000081377",
+  "ENSG00000054598",
+  "ENSG00000123689",
+  "ENSG00000211445",
+  "ENSG00000131981",
+  "ENSG00000172005",
+  "ENSG00000106236",
+  "ENSG00000007372",
+  "ENSG00000105825",
+  "ENSG00000159445",
+  "ENSG00000122691"
+), ]
+
+extended_cancer_m_values_gene <-
+  cbind(
+    extended_cancer_m_values_gene,
+    Important_genes = c(
+      "SOX11",
+      "NR2F2",
+      "p53",
+      "CCND1",
+      "AHR",
+      "ROBO1",
+      "SOX9",
+      "HOXA9",
+      "CDH1",
+      "CDC14B",
+      "FOXC1",
+      "G0S2",
+      "GPX3",
+      "LGALS3",
+      "MAL",
+      "NPTX2",
+      "PAX6",
+      "TFPI2",
+      "THEM4",
+      "TWIST1"
+    )
+  )
+```
+
+Now, the task was to compare mean cancer m-values with mean healthy m-values. Our goal was, to visualize the differences and similarities in the m-values of cancer and healthy samples. A big resemblance would result in a linear line, while a curve indicates differences in the mean methylation patterns.
+$$~$$
+
+The following overview plot includes:
+
+* mean of cancer and healthy m-values (black points),
+* general trend of points to solve overplotting problem (gray smoothed curve),
+* straight line through the origin (y=x) for better interpretation (yellow line).
+
+```{r warning=FALSE}
+ggplot() +
+  geom_point(
+    mapping = aes(
+      x = extended_cancer_m_values$mean_cancer_m_values,
+      y = extended_healthy_m_values$mean_healthy_m_values
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  geom_smooth(
+    mapping = aes(
+      x = extended_cancer_m_values$mean_cancer_m_values,
+      y = extended_healthy_m_values$mean_healthy_m_values
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10,
+    colour = "darkgrey"
+  ) +
+  labs(x = "Mean cancer m-values",
+       y = "Mean healthy m-values",
+       title = "Comparison of mean m-values") +
+  theme_bw() +
+  geom_abline(
+    mapping = NULL,
+    data = NULL,
+    slope = 1,
+    intercept = 0,
+    colour = "yellow2"
+  ) +
+  xlim(-12, 9) +
+  ylim(-12, 9)
+```
+
+We compared mean healthy and cancer m-values. Infinite values are presented at the edges. The general trend indicates that a lot of high methylated genes in healthy samples are not methylated/less methylated in cancer samples. This trend is solidified by the yellow line, shown in the plot, which would indicate a linear trend between cancer and healthy sample methylation. Nevertheless, some genes have gained a higher methylation grade. Overall, it seems that a lot of genes have pretty much the same methylation grade because they are in a huge data cloud around 0 to 5. It would be interesting to see which genes have lost  or gained most of their methylation because it can be an indication of gain of function (no methylation) or loss of function (increase in methylation).
+
+So after that we focused on details to evaluate previously mentioned important genes. The following detailed plot visualizes:
+
+* mean of cancer and healthy m-values (black points), 
+* highlights of important genes for cancer (red points), 
+* labels of specific genes,
+* straight line through the origin (y=x) for better interpretation (yellow line).
+
+```{r}
+ggplot() +
+  geom_point(
+    mapping = aes(
+      x = extended_cancer_m_values$mean_cancer_m_values,
+      y = extended_healthy_m_values$mean_healthy_m_values
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  geom_point(
+    mapping = aes(
+      x = extended_cancer_m_values_gene$mean_cancer_m_values,
+      y = extended_healthy_m_values_gene$mean_healthy_m_values
+    ),
+    colour = "red",
+    size = 2
+  ) +
+  geom_label_repel(
+    aes(
+      label = Important_genes,
+      x = extended_cancer_m_values_gene$mean_cancer_m_values,
+      y = extended_healthy_m_values_gene$mean_healthy_m_values
+    ),
+    data = extended_cancer_m_values_gene,
+    point.padding = 0.5,
+    label.size = 0.1,
+    segment.colour = "cornflowerblue",
+    segment.alpha = 0.9
+  ) +
+  labs(x = "Mean cancer m-values",
+       y = "Mean healthy m-values",
+       title = "Comparison of mean m-values") +
+  theme_bw() +
+  xlim(-5, 5) +
+  ylim(-5, 5) +
+  geom_abline(
+    mapping = NULL,
+    data = NULL,
+    slope = 1,
+    intercept = 0,
+    colour = "yellow2"
+  )
+```
+
+For better plot evaluation we drew a line with the equation y = x. Thus, we can identify if there is a linear relationship. Overall, our predicted important genes have not fully lost their methylation or gained full methylation. 
+As stated in several studies, DNA demethylation in gene regions tends to downregulate gene expression but is also dependent on several key factors, including:
+
+* whether embedded demethylated functional elements regain activity,
+* whether demethylated regions are located at intron-exon junctions together with destabilized nucleosomes and
+* possible effects on the rates of transcript elongation and splicing (Yang et al., 2014).
+
+Therefore, we can only predict what otucome differentially methylated gene regions could have.
+$$~$$
+
+Gene   | Comparison of methylation between samples | Interpretation
+:---------:|:----------------------------:|:-------------------------------------------------------------:|
+CCND1  | healthy > cancer | Less expression in cancer samples therefore lower genomic stability during DNA replication in MCL cells.
+SOX11  | cancer > healthy | Higher expression in cancer samples therefore SOX11 activation: Change of mature B cells phenotype to aberrant cell type. Promotion of oncogenic proliferation of MCL.
+NR2F2  | cancer > healthy | Higher expression in cancer samples thus NR2F2 activation: Gain of pluripotency of MCL.
+p53    | healthy > cancer | Less expression in cancer samples thus downregulation: Loss of tumor supressor gene which is important for apoptosis initiation which is therefore disabled in MCL.
+AHR    | healthy > cancer | Less expression in cancer samples thus downregulation: No stabilization of lymphoma and no cell death escape. Other mechanisms to upregulate this gene.
+ROBO1  | healthy > cancer | Less expression in cancer samples thus downregulation: Development of invasive and metastatic tumor through loss of function of important tumor supressor gene in MCL.
+SOX9   | cancer > healthy | Higher expression in cancer samples: Gain of autosomal sex-reversal in MCL.
+HOXA9  | cancer > healthy | Higher expression in cancer samples: Overexpression leads to strong self-renewal and inhibition of differentiation of MCL cells.
+CDH1   | healthy > cancer | Gene expression is dependent on cell cycle phase therefore can not be evaluated properly.
+CDC14B | healthy > cancer | Less expression (cancer samples) and thus additional p53 deactivation and overriding cell cyle checkpoints. Enables unlimited cancer cell growth of MCL cells.
+FOXC1  | cancer > healthy | Higher expression leads to abnormal growth, migration, cell proliferation and thus functions as an oncogene for MCL.
+G0S2   | cancer > healthy | Upregulated gene enables MCL resistance towards treatment.
+GPX3   | healthy > cancer | Downregulation leads to inactivation of an important tumor supressor gene in MCL.
+LGALS3 | healthy > cancer | Downregulated therefore no drug tolerance in tested MCL samples.
+MAL    | healthy > cancer | Downregulated therefore this specific MCL marker is not active.
+PAX6   | cancer > healthy | Higher expression leads to apoptosis of MCL cells. Other mechanisms to downregulate this specific gene.
+TFPI2  | healthy > cancer | Less expression in MCL cells and therefore important tumor supressor is disabled leading to an extracellular matrix remodeling.
+THEM4  | healthy > cancer | Downregulation enables cell survival, growth, proliferation, cell migration and angiogenesis of MCL cells which are necessary for MCL survival.
+TWIST1 | healthy > cancer | Less expression of TWIST1 in cancer. Other mechanisms for overexpression in cancer than methylation.
+
+To validate our assumptions it would be important to analyse protein concentrations in cancer cells and compare it to DNA methylation status of genes.
+
+For better evaluation of how conclusive following results are, it will be helpfull, if we compare standard deviations (SD) of cancer and healthy m-values.
+At first, we compared general information with following attributes shown in the plot:
+
+* SD of cancer and healthy m-values (black points) 
+
+```{r}
+ggplot() +
+  geom_point(
+    mapping = aes(
+      x = extended_cancer_m_values$sd_cancer_m_values,
+      y = extended_healthy_m_values$sd_healthy_m_values
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  labs(x = "SD cancer m-values",
+       y = "SD healthy m-values",
+       title = "Comparison of SD of m-values") +
+  theme_bw()
+```
+
+Our standard deviations are generally not that high and only a few genes have high standard deviations.
+
+For further analysis, it would be proficient if cancer related genes have low standard deviations in both sample groups. The following detailed plot visualizes:
+
+* SD of cancer and healthy m-values (black points), 
+* highlights of important genes for cancer (red points), 
+* labels of specific genes. 
+
+```{r}
+ggplot() +
+  geom_point(
+    mapping = aes(
+      x = extended_cancer_m_values$sd_cancer_m_values,
+      y = extended_healthy_m_values$sd_healthy_m_values
+    ),
+    na.rm = TRUE,
+    alpha = 1 / 10
+  ) +
+  geom_point(
+    mapping = aes(
+      x = extended_cancer_m_values_gene$sd_cancer_m_values,
+      y = extended_healthy_m_values_gene$sd_healthy_m_values
+    ),
+    colour = "red",
+    size = 2
+  ) +
+  geom_label_repel(
+    aes(
+      label = Important_genes,
+      x = extended_cancer_m_values_gene$sd_cancer_m_values,
+      y = extended_healthy_m_values_gene$sd_healthy_m_values
+    ),
+    data = extended_cancer_m_values_gene,
+    point.padding = 0.5,
+    label.size = 0.1,
+    segment.colour = "cornflowerblue",
+    segment.alpha = 0.9,
+    max.iter = 5000
+  ) +
+  labs(x = "SD cancer m-values",
+       y = "SD healthy m-values",
+       title = "Comparison of SD of m-values") +
+  xlim(-1, 2.5) +
+  ylim(-1, 2.5) +
+  theme_bw()
+```
+
+In general, our important genes for MCL have a low standard deviation which enhances the explanatory power of our previous assumptions. A few genes tend to be more differently methylated in cancer samples than in healthy samples. For example one of them is SOX11.
+SOX11 tends to be differently methylated in cancer samples. This observation can be made because MCL can be devided into 2 groups: SOX11 positive and SOX11 negative patients (Ferrando, 2013). Depending on this status, different clinical outcomes can be observed (Ferrando, 2013).
+In general, methylation of cancer patients have stronger discrepancies among each other because cancer origin is unique for each patient.
+$$~$$
+
+## Part 3: Data reduction
+
+$$~$$
+The aim of this part of the project is to narrow down our data to the significant genes which account for the majority of the variation between methylation values of healthy and cancer samples. Therefore, we need to reduce high dimensional data into low dimensional data with as little information loss as possible. 
+A common way to identify the direction of highest variability in the data is by conducting a principal component analysis (PCA) which we also applied to our data (Ma and Dai, 2011). Hence the covariance matrix is used to calculate the eigenvector which correspond to the largest eigenvalues (the principal components). These eigenvectors are used to reconstruct a significant fraction of the variance of the original data.
+These new principal components (features) can now be used for predictive analysis and model building. A crucial benefit is, that each principal component is independent of the other.
+
+But first we need to tweak our data. There are several +/- infinity values in our m-value dataset, with which PCA does not function. These were caused by beta values of 0 and 1. The most straightforward solution would be to approximate these values with 0.00001 and 0.99999 and calculate the m-values again.
+
+```{r}
+cancer_beta_values[cancer_beta_values == 0] <- 0.00001
+cancer_beta_values[cancer_beta_values == 1] <- 0.99999
+healthy_beta_values[healthy_beta_values == 0] <- 0.00001
+healthy_beta_values[healthy_beta_values == 1] <- 0.99999
+
+cancer_m_values <-
+  data.frame(log2(cancer_beta_values / (1 - cancer_beta_values)))
+healthy_m_values <-
+  data.frame(log2(healthy_beta_values / (1 - healthy_beta_values)))
+```
+
+After that we changed the endings of the column names in our new m-values dataframe from .bed to .M for better distinctiveness between the two data frames of beta and m-values. 
+
+```{r echo=TRUE}
+colnames(healthy_m_values) <-
+  c(
+    "Bcell_naive_VB_NBC_NC11_41.M",
+    "Bcell_naive_VB_NBC_NC11_83.M",
+    "Bcell_naive_VB_S001JP51.M",
+    "Bcell_naive_VB_S00DM851.M",
+    "Bcell_naive_VB_S01ECGA1.M"
+  )
+
+colnames(cancer_m_values) <- c(
+  "cancer_VB_S01FE8A1.M",
+  "cancer_VB_S01FF6A1.M",
+  "cancer_VB_S01FH2A1.M",
+  "cancer_VB_S01FJZA1.M",
+  "cancer_VB_S01FKXA1.M"
+)
+```
+
+Aferwards we merged the healthy and cancer m-value datasets with each other and applied the function for pca.
+
+```{r}
+m_values <- cbind(healthy_m_values, cancer_m_values)
+pca_m_values <- prcomp(t(m_values))
+summary(pca_m_values)
+```
+
+From the summary of the PCA we can conclude that PC1 and PC2 together account for more than 50% of the varaince in the data. To get a feeling of how the samples were spread across PC1 and PC2 we plotted a scatterplot. Additionally, we used the function `plotly()` to define each point on the plot by pointing on it.
+We also added an extra column with information about the patients' health status so that cancer patients would be shown as red and healthy patients as green points.
+
+```{r}
+pcs_of_m_values <-
+  data.frame(cbind(
+    pca_m_values$x,
+    Samples = c(
+      "Healthy",
+      "Healthy",
+      "Healthy",
+      "Healthy",
+      "Healthy",
+      "Cancer",
+      "Cancer",
+      "Cancer",
+      "Cancer",
+      "Cancer"
+    )
+  ))
+
+
+p <-
+  ggplot(pcs_of_m_values,
+         aes(x = PC1,
+             y = PC2,
+             group = Samples)) +
+  geom_point (aes(shape = Samples, color = Samples), size = 4) +
+  theme_bw() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank()
+  ) +
+  scale_colour_manual(values = c("indianred2", "seagreen2"))
+ggplotly(p)
+```
+
+The scatterplot visualzies that the methylation differences in healthy an cancer samples are well represented in PC1. But PC2 shows no separation of the two groups. This might be caused by batch effects which are an unwanted source of variation in data (Leek, 2012). To see if the batch effects are really the cause of the bad separation we carried out several statistical test.
+
+But before doing so we need to verify a few assumptions we made. First we can perform kmeans clustering. We know that there should be two clusters (healthy/cancer) but to prove that, we plotted the number of clusteres against the total within-clusters sum of squares.
+
+```{r}
+wss <-  sapply(1:5, function(k) {
+  kmeans(x = pca_m_values$x,
+         centers = k,
+         iter.max = 100)$tot.withinss
+})
+plot(
+  1:5,
+  wss,
+  type = "b",
+  pch = 19,
+  xlab = "Number of clusters K",
+  ylab = "Total within-clusters sum of squares"
+)
+
+cluster <-
+  kmeans(x = pcs_of_m_values[1:10],
+         centers = 2,
+         iter.max = 100)$cluster
+```
+
+The knick in the elbow is as expected at 2 clusters. This means we only have the two groups: cancer and healthy.
+
+With the help of the elbow method we wanted to visualize what was said before. The first two PCs contain most information about the methylation differences.
+
+```{r}
+std_dev <- pca_m_values$sdev
+variance <- std_dev ^ 2
+prop_var <- variance / sum(variance)
+
+plot(
+  prop_var,
+  main = "Variance explained by principal components",
+  xlab = "Principal Components",
+  ylab = "Proportion of Variance Explained",
+  type = "b"
+)
+```
+
+The knick in the graph is clearly at the 2nd PC. Therefore we will be testing each batch effect in the first two principal components because they account for the majority of the variation in the data. 
+Batch effects are technical/non-biological sources of variation (Goh et al., 2017). But there is also the possibility of biological causes for significant divergence. Variation which is caused by batch effects is always bad in comparison to that biological variations can be a good sign. So looking through our annotation file `input_data_scv` we found the following 8 possible sources for significant variation:
+
+* biomaterial provider
+* biomaterial type
+* disease 
+* donor sex
+* sequence run counts
+* donor age
+* submission date
+* cell type
+
+For each of those we needed to obtain a p-value in order to assess its sigificance, thus we created a matrix for those p-values in order to later visualize our results with a heatmap. The following code shows the backbone of that matrix.
+
+```{r}
+p_values_matrix <- matrix(nrow = 8, ncol = 2)
+colnames(p_values_matrix) <- c("PC1", "PC2")
+rownames(p_values_matrix) <-
+  c(
+    "BIOMATERIAL_PROVIDER",
+    "BIOMATERIAL_TYPE",
+    "DISEASE",
+    "DONOR_SEX",
+    "SEQ_RUNS_COUNT",
+    "DONOR_AGE",
+    "SUBMISSION_DATE",
+    "CELL_TYPE"
+  )
+```
+
+To check if there are significant differences in our data we created a new data frame with the data from the first two PCs. After that we added the specific columns from `input_data_csv` which we wanted to test on significant differences in the mehtylation pattern.
+
+```{r}
+batch_pcs <-
+  cbind(pcs_of_m_values[, 1:2], c(input_data_csv[, c(
+    "BIOMATERIAL_PROVIDER",
+    "BIOMATERIAL_TYPE",
+    "cellTypeShort",
+    "DONOR_SEX",
+    "DISEASE",
+    "FIRST_SUBMISSION_DATE",
+    "SEQ_RUNS_COUNT",
+    "DONOR_AGE"
+  )]))
+```
+
+To be able to perform tests to find the p-values out it is important to convert the data from PC 1 and 2 from the class factor to numeric.
+
+```{r}
+batch_pcs <- within(batch_pcs, {
+  PC1 <- as.numeric(as.character(PC1))
+})
+
+batch_pcs <- within(batch_pcs, {
+  PC2 <- as.numeric(as.character(PC2))
+})
+```
+
+As the criteria which we are testing for possible significant differences have differnt formats, we need to apply appropriate statistical test for each of them. The statistical test which we chose are: Wilcoxon Rank Sum Test, Kruskal-Wallis Rank Sum Test and Monte Carlo permutation test.
+
+Wilcoxon Rank Sum Test is used to find out if there is a significant difference between two independent groups (Rasch et al., 2010). This is the case in the data from biomaterial provider, biomaterial type, disease, sex and cell type.
+We used Kruskal-Wallis Rank Sum Test for to test the significane of submission date, because we have more than two possible independent conditions (Rasch et al., 2010).
+Monte Carlo permutation test is a randomization test which can be used if the data is not normal distributed or if the distribution is not known (MA, Jianqiang, 2009). An advantage is the possibility to use the test on very big data sets (MA, Jianqiang, 2009). We decided to use this test on donor age and sequence run counts.
+
+For the Monte Carlo permutation test we defined a function wich we applied to the corresponding criteria.
+
+```{r warning=FALSE}
+cor.perm <- function (x, y, nperm = 1000)
+{
+  r.obs <- cor (x = x, y = y)
+  p_value <- cor.test (x = x, y = y)$p.value
+  r.per <-
+    sapply (
+      1:nperm,
+      FUN = function (i)
+        cor (x = x, y = sample (y))
+    )
+  r.per <- c(r.per, r.obs)
+  P.per <- sum (abs (r.per) >= abs (r.obs)) / (nperm + 1)
+  return (list (
+    r.obs = r.obs,
+    p_value = p_value,
+    P.per = P.per
+  ))
+}
+```
+
+Here we filled the `p_values_matrix` with the corresponding test statistics p-values. A "for-loop" was used in order to avoid redundantly performing the same test on PC1 and PC2.
+
+```{r warning=FALSE}
+for (i in 1:ncol(p_values_matrix)) {
+  bio_prov_test <- wilcox.test(
+    batch_pcs [, i] ~ batch_pcs$BIOMATERIAL_PROVIDER,
+    mu = 0,
+    alt = "two.sided",
+    conf.int = T,
+    conf.level = 0.99,
+    paired = F,
+    exact = T
+  )
+  p_values_matrix  [1, i] <- as.matrix(bio_prov_test$p.value)
+  
+  bio_type_test <- wilcox.test(
+    batch_pcs [, i] ~ batch_pcs$BIOMATERIAL_TYPE,
+    mu = 0,
+    alt = "two.sided",
+    conf.int = T,
+    conf.level = 0.99,
+    paired = F,
+    exact = T
+  )
+  p_values_matrix  [2, i] <- as.matrix(bio_type_test$p.value)
+  
+  disease_test <- wilcox.test(
+    batch_pcs[, i] ~ batch_pcs$DISEASE,
+    mu = 0,
+    alt = "two.sided",
+    conf.int = T,
+    conf.level = 0.99,
+    paired = F,
+    exact = T
+  )
+  p_values_matrix  [3, i] <- as.matrix(disease_test$p.value)
+  
+  donor_sex_test <- wilcox.test(
+    batch_pcs [, i] ~ batch_pcs$DONOR_SEX,
+    mu = 0,
+    alt = "two.sided",
+    conf.int = T,
+    conf.level = 0.99,
+    paired = F,
+    exact = T
+  )
+  p_values_matrix  [4, i] <- as.matrix(donor_sex_test$p.value)
+  
+  seq_runs_count_test <-
+    cor.perm (x = batch_pcs [, i], y = batch_pcs$SEQ_RUNS_COUNT)
+  p_values_matrix  [5, i] <-
+    as.matrix(seq_runs_count_test$p_value)
+  
+  donor_age_test <-
+    cor.perm (x = batch_pcs [, i],
+              y = c(62, 47, 72, 52, 62, 82, 67, 82, 77, 62))
+  p_values_matrix  [6, i] <- as.matrix(donor_age_test$p_value)
+  
+  submission_date_test <-
+    kruskal.test(batch_pcs [, i] ~ batch_pcs$FIRST_SUBMISSION_DATE,
+                 data = batch_pcs)
+  p_values_matrix  [7, i] <-
+    as.matrix(submission_date_test$p.value)
+  
+  cell_type_test <- wilcox.test(
+    batch_pcs [, i] ~ batch_pcs$cellTypeShort,
+    mu = 0,
+    alt = "two.sided",
+    conf.int = T,
+    conf.level = 0.99,
+    paired = F,
+    exact = T
+  )
+  p_values_matrix  [8, i] <- as.matrix(cell_type_test$p.value)
+}
+```
+
+Thereafter a heatmap of `p_values_matrix` was created to see whether the batch/biological effects are significant in the PCs and to determine which PCs to use for the downstream analysis.
+
+```{r warning=FALSE}
+my_palette <- colorRampPalette(c("indianred2", "seagreen2")) (n = 3)
+color_breaks <- c(seq(0, 0.01, length = 2),
+                  seq(0.011, 1, length = 2))
+heatmap.2(
+  p_values_matrix,
+  main = "       Batch and biological effects",
+  trace = "none",
+  margins = c(10, 12),
+  cexRow = 0.8,
+  Rowv = FALSE,
+  Colv = FALSE,
+  col = my_palette,
+  breaks = color_breaks,
+  sepwidth = c(0.01, 0.01),
+  sepcolor = "black",
+  colsep = 1:ncol(p_values_matrix),
+  rowsep = 1:nrow(p_values_matrix)
+)
+```
+
+As expected the criteria of "disease" and "cell type" came out as significant which is a biological effect rather than a batch one. The only batch effect turned out to be the biomaterial type which is in PC1. Although the criteria of disease and cell type is only significant in PC1 we still decided to continue working with PC2 as it is completely batch-effect-free even though it is not ideal.
+
+Additionally, we decided to visualize our biological/batch effects on scatter plot in order to see how they are distributed.
+
+```{r}
+p_bio_type <-
+  ggplot(
+    pcs_of_m_values,
+    aes(
+      x = PC1,
+      y = PC2,
+      group = Samples,
+      fill = input_data_csv$BIOMATERIAL_TYPE
+    )
+  ) +
+  geom_point (aes(shape = Samples, color = Samples), size = 4) +
+  theme_bw() +
+  ggtitle("Biomaterial type") +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank()
+  )  +
+  scale_fill_manual(values = c("seagreen2", "indianred2")) +
+  scale_colour_manual(values = c("indianred2", "seagreen2")) +
+  scale_shape_manual(values = c(16, 17))
+ggplotly(p_bio_type)
+```
+
+The batch effect in PC1 in biomaterial type causes that some samples from healthy and cancer are closer to each other than to other samples of the same group. The biomaterial type indicates if the samples derive from primary cells or primary tissue. Batch effects in this category mean that there are significant methylation differences within primary cells or primary tissue even though there should be no big differences. We only know that there are batch effects which influence our data but we can not delete the batch effects.
+
+```{r}
+p_cell_type <-
+  ggplot(
+    pcs_of_m_values,
+    aes(
+      x = PC1,
+      y = PC2,
+      group = Samples,
+      fill = input_data_csv$cellTypeShort
+    )
+  ) +
+  geom_point (aes(shape = as.factor(cluster), color = Samples), size = 4) +
+  theme_bw() +
+  ggtitle("Cell type") +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank()
+  ) +
+  scale_fill_manual(values = c("seagreen2", "indianred2")) +
+  scale_colour_manual(values = c("indianred2", "seagreen2")) +
+  scale_shape_manual(values = c(16, 17))
+ggplotly(p_cell_type)
+```
+
+```{r}
+p_disease <-
+  ggplot(pcs_of_m_values,
+         aes(
+           x = PC1,
+           y = PC2,
+           group = Samples,
+           fill = input_data_csv$DISEASE
+         )) +
+  geom_point (aes(shape = as.factor(cluster), color = Samples), size = 4) +
+  theme_bw() +
+  ggtitle("Disease") +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank()
+  ) +
+  scale_fill_manual (values = c("indianred2", "seagreen2")) +
+  scale_colour_manual (values = c("indianred2", "seagreen2")) +
+  scale_shape_manual(values = c(16, 17))
+ggplotly(p_disease)
+```
+
+The two plots from disease and cell type look alike because the data are the same. B-cells are always healthy in our dataset and cause no cancer. In comparison to that cancer cells are always from the cancer type mantle cell lymphoma in our dataset. It is clearly visible that PC2 can not distinguish between healthy and cancer samples while PC1 can. Because of that fact there is a vertical seperation between the groups but no horizontal separation.
+
+$$~$$
+
+
+### Clustering
+
+$$~$$
+With this part we intended to see if our samples coincide with their labels (healthy/cancer) and find the genes that are the most differentially methylated between our healthy and cancer samples (differentially methylated regions (DMRs)). DMRs can help distinguish cancer from healthy patients and are therefore the basis of our logistic regression that will be used for predictions. We wanted to obtain the DMRs through a process with multiple steps. 
+
+To begin with, we looked at the loading scores of the genes from PC2. These values can be used to find the genes that influenced our PCA the most by ranking the scores by their absolute value. Then we plotted the loadings to find a kink in the curve which indicates up until what gene the influence is significant. 
+
+```{r}
+loading_scores <- pca_m_values$rotation[, 2]
+ranked_gene_loading <- sort(abs(loading_scores), decreasing = TRUE)
+plot(
+  ranked_gene_loading,
+  main = "Loading scores of genes",
+  xlab = "Genes",
+  ylab = "loading scores",
+  type = "b"
+)
+```
+
+The kink is somewhere between 0 and 10000 genes so we adjusted the x-axis to have a better look at the kink.
+
+```{r}
+plot(
+  ranked_gene_loading[0:10000],
+  main = "Loading scores of genes",
+  xlab = "Genes",
+  ylab = "loading scores",
+  type = "b"
+)
+abline(v = 2000,
+       col = "red",
+       lty = 5,
+       lwd = 2)
+```
+
+Although the kink seems to be around 2000 genes when we tried to apply k means clustering with these 2000 genes the healthy and cancer samples weren't assigned to their respective clusters.
+
+```{r}
+set.seed(200)
+top_2000_genes <- data.frame(ranked_gene_loading[1:2000])
+top_2000_kmeans <-
+  rbind(m_values[c(as.list.data.frame(rownames(top_2000_genes))), ])
+km <-
+  kmeans(x = t(top_2000_kmeans),
+         centers = 2,
+         iter.max = 500)
+km$cluster
+```
+
+If we used only 2000 genes for our downstream analysis there wouldn't be reliable results coming out of it. To set the right initial conditions we tested how high the number of genes needs to be for the samples to be classified correctly. For this we applied k-means clustering for 1000 - 10000 genes and observed when the clusters were reliably right. 
+First, we generated an empty matrix with the right dimension to put the cluster assignments of the samples in.
+
+```{r}
+clustering_matrix <- matrix(nrow = 10, ncol = 10)
+rownames(clustering_matrix) <- c(
+  "Bcell_naive_VB_NBC_NC11_41.M",
+  "Bcell_naive_VB_NBC_NC11_83.M",
+  "Bcell_naive_VB_S001JP51.M",
+  "Bcell_naive_VB_S00DM851.M",
+  "Bcell_naive_VB_S01ECGA1.M",
+  "cancer_VB_S01FE8A1.M",
+  "cancer_VB_S01FF6A1.M",
+  "cancer_VB_S01FH2A1.M",
+  "cancer_VB_S01FJZA1.M",
+  "cancer_VB_S01FKXA1.M"
+)
+
+colnames(clustering_matrix) <- c(
+  "1000 genes",
+  "2000 genes",
+  "3000 genes",
+  "4000 genes",
+  "5000 genes",
+  "6000 genes",
+  "7000 genes",
+  "8000 genes",
+  "9000 genes",
+  "10000 genes"
+)
+```
+
+To test the right amount of genes a loop goes through the first thousand to ten thousand genes with the highest loading scores and puts the allocated clusters into the prepared matrix.
+
+```{r}
+set.seed(200)
+for (i in 1:10) {
+  top_genes <- data.frame(ranked_gene_loading[1:(i * 1000)])
+  clustering_data <-
+    rbind(m_values[c(as.list.data.frame(rownames(top_genes))), ])
+  k <-
+    kmeans(
+      x = t(clustering_data),
+      centers = 2,
+      iter.max = 500
+    )
+  
+  clustering_matrix[, i] <- as.matrix(k$cluster)
+}
+clustering_matrix
+
+```
+
+After generating this multiple times it became clear that from 5000 genes on the samples were assigned correctly. So, the top 5000 genes were used for further analysis.
+
+```{r}
+top_5000_genes <- data.frame(ranked_gene_loading[1:5000])
+clustering_data <-
+  rbind(m_values[c(as.list.data.frame(rownames(top_5000_genes))),])
+
+```
+
+Also we wanted to check if we used the amount of clusters that is also recommended by k means for our clustering. Because the purpose of our clustering is to review the right assignment to the sample label it would make sense to use two. We wanted to check if our chosen amount of data suggest this too.
+Therefore we ran k-means for 1 - 5 clusters and looked at the total within-clusters sum of squares (that is the distance of every point inside the cluster to the center) and plotted the values. 
+
+```{r}
+set.seed(20000)
+wss2 <-  sapply(1:5, function(k) {
+  kmeans(x = clustering_data,
+         centers = k,
+         iter.max = 100)$tot.withinss
+})
+plot(
+  1:5,
+  wss2,
+  type = "b",
+  pch = 19,
+  main = "Elbow method for different numbers of clusters",
+  xlab = "Number of clusters K",
+  ylab = "Total within-clusters sum of squares"
+)
+```
+
+By looking at the kink in the curve we found that as expected 2 cluster were the most suitable number of clusters for our data and thus, the clustering was correctly done. 
+
+To find the differentially methylated regions we had to find the genes that were the most significantly different in cancer and healthy samples.
+The significance of the difference for each gene was evaluated by measuring the p-value through the student's t test.
+
+```{r}
+transposed_clustering_data <- as.data.frame(t(clustering_data))
+
+p_value_each_gene <-
+  sapply(1:ncol(transposed_clustering_data), function(k) {
+    t.test(transposed_clustering_data[1:5, k],
+           transposed_clustering_data[6:10, k],
+           var.equal = T)$p.value
+  })
+
+p_value_each_gene <- as.data.frame(p_value_each_gene)
+
+```
+
+We also looked specifically at the p-values of the important genes for MCL we found in literature and whether the difference of these genes is significant in our data, too.
+
+```{r}
+clust_data_important_genes <-
+  cbind(transposed_clustering_data[, c(unlist(important_genes))])
+
+p_value_important_genes <-
+  sapply(1:ncol(clust_data_important_genes), function(k) {
+    t.test(clust_data_important_genes[1:5, k],
+           clust_data_important_genes[6:10, k],
+           var.equal = T)$p.value
+  })
+
+p_value_important_genes <-
+  as.data.frame(cbind(important_genes, p_value_important_genes))
+colnames(p_value_important_genes) <- c("Genes", "p-values")
+
+p_value_important_genes
+
+```
+There is only one gene which p value is under 0.01, LGALS3 (ENSG00000131981) with p value = 0.0019. As in Part 1: Data Analysis already mentioned the function of LGALS3 is to elevate inflammatory processes. LGALS3 protects cancer cells by inducing tolerance to drug treatment.
+
+To visualise our p-values and the distribution of the significance of our genes we generated a volcano plot. For the volcano plot the fold change is plotted along the x-axis. The fold change is calculated by applying log2 on the mean beta value of healthy and cancer samples respectively and then subtracting the cancer value from the healthy one. It is important to use beta values because these range only from 0 to 1 while m values can be negative figures of which log2 is not defined.
+Along the y-axis the negative common logarithm of the p values is plotted. 
+As thresholds we decided on 0.01 for p-values and 2.0 for the fold change which we visualized through ablines on the graph.
+
+```{r}
+top_genes_beta_values <-
+  rbind(healthy_beta_values[c(as.list.data.frame(rownames(top_5000_genes))),])
+top_genes_beta_values <-
+  cbind(top_genes_beta_values, cancer_beta_values[c(as.list.data.frame(rownames(top_5000_genes))),])
+top_genes_beta_values <-
+  cbind(
+    top_genes_beta_values,
+    Mean_Healthy = log2(rowMeans(top_genes_beta_values[, 1:5])),
+    Mean_Cancer = log2(rowMeans(top_genes_beta_values[, 6:10]))
+  )
+
+fold <-
+  top_genes_beta_values$Mean_Healthy - top_genes_beta_values$Mean_Cancer
+p_value <- p_value_each_gene[, 1]
+
+plot(
+  x = fold,
+  y = -log10(p_value),
+  xlab = "log2 fold change",
+  ylab = "-log10 p-value"
+)
+
+fold_threshold = 2
+pvalue_threshold = 0.001
+
+abline(v = fold_threshold, col = "blue", lwd = 2)
+abline(v = -fold_threshold,
+       col = "red",
+       lwd = 2)
+abline(h = -log10(pvalue_threshold),
+       col = "green",
+       lwd = 2)
+
+fold_filtered = abs(fold) >= fold_threshold
+pvalue_filtered = abs(p_value) <= pvalue_threshold
+filter_combined = fold_filtered & pvalue_filtered
+
+plot(
+  x = fold,
+  y = -log10(p_value),
+  xlab = "log2 Fold Change",
+  ylab = "-log10 p_value"
+)
+points (fold[filter_combined &
+               fold < 0],-log10(p_value[filter_combined &
+                                          fold < 0]),
+        pch = 20, col = "red")
+points (fold[filter_combined &
+               fold > 0],-log10(p_value[filter_combined &
+                                          fold > 0]),
+        pch = 20, col = "blue")
+```
+
+The statistically significant (p-value <= 0.01) genes with a higher fold than 1 are hypermethylated (Higher methylated in cancer than in healthy samples) and highlighted in blue.
+The genes that have a p-value under 0.01 and have a lower fold than -1 are hypomethylated (less methylated in cancer than in healthy samples). These are accentuated in red.
+There are many genes with a fold change of around zero and many of the genes that seem to be biologically significant have a low statistical significance. This leads to only some genes with biological and statistical significance. Another interesting feature is that the genes in cancer samples tend to be more methylated than in healthy ones.
+
+After having a first look at our genes plotted by significance we wanted to adjust the p values for multiple comparisons to avoid type I errors.
+To find the best method for this we applied different correction methods and compared them.
+
+```{r}
+p_value_each_gene$BH <-
+  p.adjust(p_value_each_gene$p_value_each_gene,
+           method = "BH")
+p_value_each_gene$bonferroni <-
+  p.adjust(p_value_each_gene$p_value_each_gene,
+           method = "bonferroni")
+p_value_each_gene$holm <-
+  p.adjust(p_value_each_gene$p_value_each_gene,
+           method = "holm")
+p_value_each_gene$hochberg <-
+  p.adjust(p_value_each_gene$p_value_each_gene,
+           method = "hochberg")
+p_value_each_gene$hommel <-
+  p.adjust(p_value_each_gene$p_value_each_gene,
+           method = "hommel")
+p_value_each_gene$BY <-
+  p.adjust(p_value_each_gene$p_value_each_gene,
+           method = "BY")
+
+plot(p_value_each_gene)
+```
+
+The adjustment of the p values with various methods is really diverse and dependent on the chosen method. The one that seems to be the most suitable for our data is the one of Bonferroni-Holm. After adjusting our p values we replaced the uncorrected ones in our data frame and decided on 0.05 as a threshold for them. 
+
+```{r}
+p_value_each_gene$Names <- rownames(clustering_data)
+
+p_value_each_gene <-
+  p_value_each_gene[which(p_value_each_gene$BH < 0.05), ]
+
+rownames(p_value_each_gene) <- p_value_each_gene$Names
+
+
+clustering_data <- clustering_data[c(rownames(p_value_each_gene)), ]
+```
+
+To find the differentially methylated genes we used a similar approach to the one we used to make the volcano plot. 
+Firstly, we calculated the mean m values of healthy and cancer samples and then calculated the absolute difference.
+
+```{r}
+healthy_mean_m_values_diff_methylated <-
+  as.matrix(sapply(1:nrow(clustering_data), function(k) {
+    rowMeans(clustering_data[k, 1:5])
+  }))
+cancer_mean_m_values_diff_methylated <-
+  as.matrix(sapply(1:nrow(clustering_data), function(k) {
+    rowMeans(clustering_data[k, 6:10])
+  }))
+
+mean_values_together <-
+  as.matrix(
+    cbind(
+      cancer_mean_m_values_diff_methylated,
+      healthy_mean_m_values_diff_methylated
+    )
+  )
+absolute_diff_m_values <-
+  as.matrix(sapply(1:nrow(mean_values_together), function(k) {
+    abs(diff(mean_values_together[k,]))
+  }))
+```
+
+Then, we set a threshold for the m value difference (>5) and the adjusted p values (<0.01) and searched for genes that meet the requirements as these are the ones that are the most significantly differentially methylated genes in our data set.
+
+```{r}
+p_value_each_gene <-
+  as.data.frame(cbind(p_value_each_gene, absolute_diff_m_values))
+diff_methylated_genes <-
+  p_value_each_gene[(p_value_each_gene$BH < 0.01) &
+                      (p_value_each_gene$absolute_diff_m_values > 5),]
+dim(diff_methylated_genes)
+
+```
+With that, we obtained 75 DMRs.
+
+
+$$~$$
+
+## Part 4: Logistic Regression
+
+$$~$$
+To obtain a "good" prediction system, we had to check on correlation between our final genes first. A high correlation would result in a bad regression model because of insufficient information. Correlation ranges from 0 to 1. The value 0 means no correlation, therefore, maximum information. In contrast, the value 1 means high correlation, therefore, no information in our case. 
+
+```{r}
+correlation_top_genes <-
+  cor(clustering_data)
+corrplot(correlation_top_genes)
+```
+
+Going into details, the first plot visualizes general correlation between samples, therefore, including every gene of one sample and calculating overall correlation. The larger the point, the greater the correlation is. The color range also indicates how much correlation there is. Blue for positive, red for negative correlation. 
+
+```{r}
+heatmap(as.matrix(cor(t(clustering_data))),
+        main = "Heat map of genes")
+```
+
+The second plot shows a heat map. Through a heatmap we visualized hierarchical clustering. Data values were transformed to color scale, thus, we simultaneously identified clusters of samples and features. This process starts with hierarchical clustering of both the rows and the columns of the data matrix. Then columns/rows of the data matrix are re-ordered according to the hierarchical clustering result, putting similar observations close to each other. The blocks of 'high' and 'low' values are adjacent in the data matrix. Finally, a color scheme is applied for visualization and the data matrix is displayed. Visualizing the data matrix in this way can help with finding the variables that appear to be characteristic for each sample cluster. Thus, we identified a general trend. Almost every gene of each sample followed the same trend. This showed the relationship of high correlation again, because distances between genes were very small. A distance of zero indicates a perfect correlation of 1 (Distance = 1 - Correlation).
+
+```{r}
+hist(cor(t(clustering_data)),
+     main = "Genes correlation", xlab = "Correlation value")
+```
+
+Last but not least, a complementary histogram is shown to quantify the frequency of correlation values. This plot underlines previous results of analysis.
+
+To conclude, there is high positive correlation between our samples within a group. But between our cancer and control/healthy groups we have almost no correlation. Hopefully, this is sufficient for our prediction model.
+
+In the process of testing different models, we faced several problems. Firstly, we had way too many genes which were highly correlated. Thus, we tried to reduce the amount of genes with regard to the amount of their correlation. For this, we had to calculate their correlation index and set a threshold reasonably enough for further analysis.
+
+```{r}
+correlation_top_genes <-
+  cor(t(clustering_data))
+correlation_top_genes[upper.tri(correlation_top_genes)] <- 0
+diag(correlation_top_genes) <- 0
+correlation_top_genes <-
+  correlation_top_genes[, !apply(correlation_top_genes,
+                                 2, function(x) {
+                                   any(x > 0.9 | x < -0.9)
+                                 })]
+
+regression_data <-
+  clustering_data
+regression_data <-
+  regression_data[c(colnames(correlation_top_genes)), ]
+```
+
+Our chosen threshold was 0.9 because we did not want to be too conservative. Thus, each column (gene) which contained more than one value above this threshold was removed. Through this threshold we obtained a reasonably mediocre regression model which was better than nothing. Our correlation relationship significantly improved to our favour.
+
+```{r}
+correlation_top_genes <-
+  cor(t(regression_data))
+corrplot(correlation_top_genes)
+```
+
+After that we still had correlation which was not optimal but we would have faced too much data loss if we had tried to proceed in reducing more.
+With this new data frame as a basis, we tried to fit a logistic regression model. We used a logistic regression model, because it manages to model a binomial outcome (0,1) with one or more explanatory variables. In our case the variables are the selected genes. It measures the relationship between the categorical dependent variable (cancer/healthy) and one or more independent variables by estimating probabilities using a logistic function which is the cumulative logistic distribution. 
+Logistic function: 
+$$ p(X) = \frac{e^{β_0+β_1X}}{1+e^{β_0+β_1X}} $$
+
+```{r warning=FALSE}
+regression_data_uncorrelated_genes <-
+  cbind(Health_status =
+          as.numeric(c(0,
+                       0,
+                       0,
+                       0,
+                       0,
+                       1,
+                       1,
+                       1,
+                       1,
+                       1)),
+        as.data.frame(t(regression_data)))
+regression_model_uncorrelated_genes <-
+  glm(
+    formula = Health_status ~ .,
+    family = binomial(link = "logit"),
+    data = regression_data_uncorrelated_genes,
+    maxit = 4
+  )
+
+summary(regression_model_uncorrelated_genes)
+summ(
+  regression_model_uncorrelated_genes,
+  confint = TRUE,
+  digits = 3,
+  ci.width = .9
+)
+```
+
+The error "did not converge" gave a first impression of our model. It is really bad. None of our remaining genes are significant as further predictors. Moreover, we obtained high standard errors which underline unperfect model creation. We had to reduce iterations to 4 to prevent error message "fitted probabilities numerically 0 or 1 occurred". This indicated that both data were seperated in two sides. On the one side (cancer(1)) and on the other side (healthy(0)). Without cross validation, we tried to test this model on the same data again. 
+Moreover, we calculated the value of χ-squared of our model and its p-value. Because of sufficient data it seemed that our model is good enough (p = 0.055) and fitted our needs (if we set α-level to e.g. α = 0.05 and therfore not rejecting our H0-hypothesis). 
+Furthermore, when analyzing data with a logistic regression, an equivalent statistic to R-squared does not exist. However, to evaluate the goodness-of-fit of logistic models, several pseudo R-squareds have been developed. These are “pseudo” R-squareds because they look like R-squared in the sense that they are on a similar scale, ranging from 0 to 1 (though some pseudo R-squareds never achieve 0 or 1) with higher values indicating better model fit, but they can not be interpreted as one would interpret an OLS R-squared and different pseudo R-squareds can appear at very different values. Our logistic regression model had pretty good pseudo R-squared values (0.997 and 0.994) with two different methods. Thus, we estimated that our model has a good goodness-of-fit.
+
+```{r warning=FALSE}
+predict(regression_model_uncorrelated_genes,
+        newdata = regression_data_uncorrelated_genes,
+        type = "response")
+```
+
+We were able to predict samples of patients which we used to model the regression model. Thankfully, predictions were correct and we were able to go on with cross validation.
+
+Here the cross validation can be seen:
+
+```{r warning=FALSE}
+control <-
+  which(regression_data_uncorrelated_genes$Health_status == "0")
+control.train <-
+  sample(control, floor(0.75 * length(control)))
+cancer <-
+  which(regression_data_uncorrelated_genes$Health_status == "1")
+cancer.train <-
+  sample(cancer, floor(0.75 * length(cancer)))
+train <-
+  c(control.train, cancer.train)
+train.set <-
+  regression_data_uncorrelated_genes[train,]
+test.set <-
+  regression_data_uncorrelated_genes[-train,]
+
+regression_model_cross_validation <-
+  glm(
+    formula = Health_status ~ .,
+    family = binomial(link = "logit"),
+    data = train.set,
+    maxit = 4
+  )
+
+predict(regression_model_cross_validation,
+        newdata = test.set,
+        type = "response")
+
+summ(regression_model_cross_validation)
+```
+
+After splitting up the data into test and train set, we modelled a regression system based on the train set. Then we used this regression model to finally see if this model was good enough to predict the test set. Using this on the test set had mutiple false predictions thus samples were not predicted correctly. 
+Overall χ-squared (p=0.14) and pseudo R-squared values improved slightly. This indicated an improved logistic regression model but we could not validate this because of the failed predictions.
+
+We now wanted to find out what the tasks of our determined genes are.
+Our significant genes have following tasks:
+
+Gen | Information
+:-------:|:-----------------------------------------------------------------------------------:
+ENSG00000243702 | RNA, 7SL, Cytoplasmic 638, Pseudogene: It is reportes to be a part of the signal recognition particle of the ribonucleoprotein complex. It is important for transfer of signal bearing protein into a membrane or transfer to endoplasmatic reticulum for secretion. (Safran et al., 2010)
+ENSG00000253822 | Immunoglobulin Lambda Variable 3-24: Encodes for a part of the N-terminal variable region of the light chains in a immunoglobulin moleculare, which are the antigen recognition molecules of B cells.(Lefranc, 2014)(Safran et al., 2010)
+ENSG00000238622 | Small Nucleolar RNA, C/D Box 97: The gene is from a group of non-coding RNAs. They are reported to have several roles in the cell, but one of the most prominent ones is functioning as guide RNAs in post-transcriptional synthesis of 2′-O-methylated nucleotides.(Vitali et al., 2003)(Safran et al., 2010)
+ENSG00000207504 | RNA, U6 Small Nuclear 1031, Pseudogene: Have been proposed to be a part of the active center of the spliceosome.They function during the first and second step of the splicing process.(Hu et al., 2004)(Safran et al., 2010)
+ENSG00000244433 | piggyBac transposable element derived 4 pseudogene 7: short inverted-repeat-type DNA transposable element which was oroginally found in a moth genome, but similar sequences have also been found in humans. Possible function as a transposase, which catalyses the movement of the transposon within the genome. (Sarkar et al., 2003)(Safran et al., 2010)
+ENSG00000279415 | Uncategorized gene, and is affiliated with the lncRNA class.(Safran et al., 2010)
+ENSG00000270336 | Protein Phosphatase 2, Catalytic Subunit, Beta Isozyme (PPP2CB) Pseudogene: Has been reported to code fo the catalytic subunit of theThis gene encodes the phosphatase 2A catalytic subunit. This phosphatase has been involved in the negative control of cell growth and division.(Safran et al., 2010) (Götz, J., 1998)
+
+After all those analyse steps, we can conclude that the data, on which our analysis is based, is not proficient enough for our analysis. We can in no way guarantee that these genes are relevant for mantle cell lymphoma.
+
+For the sake of completeness, the following logistic regression model included all of the genes after evaluating through t-test and p-adjustment.
+
+```{r}
+regression_data_all_genes_before_uncorrelation <-
+  cbind(Health_status = as.numeric(c(0,
+                                     0,
+                                     0,
+                                     0,
+                                     0,
+                                     1,
+                                     1,
+                                     1,
+                                     1,
+                                     1)), as.data.frame(t(clustering_data)))
+regression_model_all_genes_after_ttest <-
+  glm(formula = Health_status ~ .,
+      family = binomial(link = "logit"),
+      data = regression_data_all_genes_before_uncorrelation)
+
+summary(regression_model_all_genes_after_ttest)$coefficients
+```
+
+As previously mentioned, this model is as bad as it possibly can be. We faced a lot of NA values (only 10 variables with coefficients) based on highly correlated data on the one hand and on the other we had to deal with values of approximately 1. We rejected this model and did some extra work to create a better model shown above.
+
+Last but not least, we tried to use our previous researched, relevant genes for MCL to create a logistic regression model.
+
+```{r warning=FALSE}
+rownames(important_genes) <- important_genes[, 1]
+m_values_pp <-  m_values[c(rownames(important_genes)),]
+
+regression_data_researched_important_genes <-
+  cbind(Health_status = as.numeric(c(0,
+                                     0,
+                                     0,
+                                     0,
+                                     0,
+                                     1,
+                                     1,
+                                     1,
+                                     1,
+                                     1)),
+        as.data.frame(t(m_values_pp)))
+
+regression_model_researched_important_genes <-
+  glm(
+    formula = Health_status ~ .,
+    family = binomial(link = "logit"),
+    data = regression_data_researched_important_genes,
+    maxit = 4
+  )
+
+summary(regression_model_researched_important_genes)
+predict(regression_model_researched_important_genes,
+        newdata = regression_data_researched_important_genes,
+        type = "response")
+```
+
+This summary showed us, that we could not generate a regression model with this data. Again we got a lot of NA's and a model which seems to predict correctly but this was not true as can be seen in the summary.
+
+# Conclusion
+As a final conclusion, we faced different problems throughout this analysis and at the end we were not fully able to create a completely functional and good regression model to predict MCL in given samples. Our previous researched genes can not be confirmed as differentially methylated in gene coding regions. But we did not test for differentially methylated regions (DMRs) in other coding and non-coding genome regions of our samples. It could be possible that these genes are DMRs e.g. in promotor region.</div>
+$$~$$
+
+# References
+
+$$~$$
+	
+Amann-Vesti, B., Arnold, C., Panzer, U., Stahl, R.A.K., Thaiss, F., and Wenzel, U., eds. (2018). Klinische Pathophysiologie, 10., vollst?ndig ?berarbeitete und erweiterte Auflage edn (Stuttgart ; New York: Georg Thieme Verlag).	
+
+Blueprint Project, http://www.blueprint-epigenome.eu/index.cfm?p=31AD6D30-9B3C-BB97-E7F81875121FEC41, Stand 04.07.2019	
+
+Bock, C. (2012). Analysing and interpreting DNA methylation data. Nature Reviews Genetics 13, 705.	
+
+Brumatti, G., Salmanidis, M., Kok, C.H., Bilardi, R.A., Sandow, J.J., Silke, N., Mason, K., Visser, J., Jabbour, A.M., Glaser, S.P., et al. (2013). HoxA9 regulated Bcl-2 expression mediates survival of myeloid progenitors and the severity of HoxA9-dependent leukemia. Oncotarget 4, 1933-1947.	
+
+Cunningham, F., Achuthan, P., Akanni, W., Allen, J., Amode, M.R., Armean, I.M., Bennett, R., Bhai, J., Billis, K., Boddu, S., et al. (2019). Ensembl 2019. Nucleic Acids Res 47, D745-D751.	
+
+Dong, Y., Tan, Q., Tao, L., Pan, X., Pang, L., Liang, W., Liu, W., Zhang, W., Li, F., and Jia, W. (2015). Hypermethylation of TFPI2 correlates with cervical cancer incidence in the Uygur and Han populations of Xinjiang, China. Int J Clin Exp Pathol 8, 1844-1854.
+
+Encodeproject.org. (2019). Audits – ENCODE. [online] Available at: https://www.encodeproject.org/data-standards/audits/ [Accessed 20 Jul. 2019].	
+
+Enjuanes, A., Albero, R., Clot, G., Navarro, A., Bea, S., Pinyol, M., Martin-Subero, J.I., Klapper, W., Staudt, L.M., Jaffe, E.S., et al. (2013). Genome-wide methylation analyses identify a subset of mantle cell lymphoma with a high number of methylated CpGs and aggressive clinicopathological features. Int J Cancer 133, 2852-2863.	
+
+Enjuanes, A., Fernandez, V., Hernandez, L., Navarro, A., Bea, S., Pinyol, M., Lopez-Guillermo, A., Rosenwald, A., Ott, G., Campo, E., et al. (2011). Identification of methylated genes associated with aggressive clinicopathological features in mantle cell lymphoma. PLoS One 6, e19736.	
+
+Fei, F., Joo, E.J., Tarighat, S.S., Schiffer, I., Paz, H., Fabbri, M., Abdel-Azim, H., Groffen, J., and Heisterkamp, N. (2015). 
+
+B-cell precursor acute lymphoblastic leukemia and stromal cells communicate through Galectin-3. Oncotarget 6, 11378-11394.	
+
+Ferrando, A.A. (2013). SOX11 is a mantle cell lymphoma oncogene. Blood 121, 2169.	
+
+Fu, M., Wang, C., Li, Z., Sakamaki, T., and Pestell, R.G. (2004). Minireview: Cyclin D1: Normal and Abnormal Functions. Endocrinology 145, 5439-5447.	
+
+Götz, J., Probst, A., Ehler, E., Hemmings, B., & Kues, W. (1998). Delayed embryonic lethality in mice lacking protein phosphatase 2A catalytic subunit Cα. Proceedings of the National Academy of Sciences, 95(21), 12370-12375.	
+
+Gibney, E.R., and Nolan, C.M. (2010). Epigenetics and gene expression. Heredity 105, 4.	
+
+Goh, W.W.B., Wang, W., and Wong, L. (2017). Why Batch Effects Matter in Omics Data, and How to Avoid Them. Trends in Biotechnology 35, 10 S.	
+
+Gort, E.H., Suijkerbuijk, K.P., Roothaan, S.M., Raman, V., Vooijs, M., van der Wall, E., and van Diest, P.J. (2008). Methylation of the TWIST1 promoter, TWIST1 mRNA levels, and immunohistochemical expression of TWIST1 in breast cancer. Cancer Epidemiol Biomarkers Prev 17, 3325-3330.	
+
+Hiddemann, W., and Bartram, C. (2010). Die Onkologie, 2 edn (Heidelberg: Springer Medizin Verlag).	
+Horn, F., Moc, I., Schneider, N., Grillh?sl, C., Berghold, S., and Lindenmeier, G. (2009). Biochemie des Menschen. In Biochemie des Menschen (Georg Thieme Verlag).	
+
+Hu, H., Chen, X., Wang, C., Jiang, Y., Li, J., Ying, X., Yang, Y., Li, B., Zhou, C., Zhong, J., et al. (2017). The role of TFPI2 hypermethylation in the detection of gastric and colorectal cancer. Oncotarget 8, 84054-84065.	
+
+Hu, P., Samudre, K., Wu, S., Sun, Y., and Hernandez, N. (2004). CK2 phosphorylation of Bdp1 executes cell cycle-specific RNA polymerase III transcription repression. Mol Cell 16, 81-92.	
+
+Huang, Y., Pastor, W.A., Shen, Y., Tahiliani, M., Liu, D.R., and Rao, A. (2010). The Behaviour of 5-Hydroxymethylcytosine in Bisulfite Sequencing. PLOS ONE 5, e8888.	
+
+Imamura, F., and Greer, C.A. (2013). Pax6 regulates Tbr1 and Tbr2 expressions in olfactory bulb mitral cells. Mol Cell Neurosci 54, 58-70.	
+
+Klauck, P.J., Bagby, S.M., Capasso, A., Bradshaw-Pierce, E.L., Selby, H.M., Spreafico, A., Tentler, J.J., Tan, A.C., Kim, J., Arcaroli, J.J., et al. (2018). Antitumor activity of the polo-like kinase inhibitor, TAK-960, against preclinical models of colorectal cancer. BMC Cancer 18, 136.	
+
+Kuo, P.Y., Jatiani, S.S., Rahman, A.H., Edwards, D., Jiang, Z., Ahr, K., Perumal, D., Leshchenko, V.V., Brody, J., Shaknovich, R., et al. (2018). SOX11 augments BCR signaling to drive MCL-like tumor development. Blood 131, 2247-2255.	
+
+Leek, J.T., Johnson, W.E., Parker, H.S., Jaffe, A.E., and Storey, J.D. (2012). The sva package for removing batch effects and other unwanted variation in high-throughput experiments. BIOINFORMATICS 28, 2 S.	
+
+Lefranc, M.P. (2014). Immunoglobulin and T Cell Receptor Genes: IMGT((R)) and the Birth and Rise of Immunoinformatics. Front Immunol 5, 22.	
+
+Li, Y., Han, L., Huang, C., Dai, W., Tian, G., Huang, F., Li, J., Liu, J., Wang, Q., and Zhou, Z. (2018). New Contributions to Asarum Powder on Immunology Related Toxicity Effects in Lung. Evid Based Complement Alternat Med 2018, 1054032.	
+
+Ma, S., and Dai, Y. (2011). Principal component analysis based methods in bioinformatics studies	
+McEntyre, J., and Birney, E. (2016). The EMBL-EBI channel. F1000Res 5, 52.	
+
+Meng, B., Wang, Y., and Li, B. (2014). Suppression of PAX6 promotes cell proliferation and inhibits apoptosis in human retinoblastoma cells. Int J Mol Med 34, 399-408.	
+
+Moen, E.L., Mariani, C.J., Zullow, H., Jeff-Eke, M., Litwin, E., Nikitas, J.N., and Godley, L.A. (2015). New themes in the biological functions of 5-methylcytosine and 5-hydroxymethylcytosine. Immunological Reviews 263, 36-49.	
+
+Mohanty, A., Sandoval, N., Phan, A., Nguyen, T.V., Chen, R.W., Budde, E., Mei, M., Popplewell, L., Pham, L.V., Kwak, L.W., et al. (2019). Regulation of SOX11 expression through CCND1 and STAT3 in mantle cell lymphoma. Blood 133, 306-318.	
+
+Mohanty, A., Sandoval, N., Phan, A., Nguyen, T.V., Chen, R.W., Budde, E., Mei, M., Popplewell, L., Pham, L.V., Kwak, L.W., et al. (2019). Regulation of SOX11 expression through CCND1 and STAT3 in mantle cell lymphoma. Blood 133, 306-318.	
+
+Mohanty, S., Mohanty, A., Sandoval, N., Tran, T., Bedell, V., Wu, J., Scuto, A., Murata-Collins, J., Weisenburger, D.D., and Ngo, V.N. (2017). Cyclin D1 depletion induces DNA damage in mantle cell lymphoma lines. Leuk Lymphoma 58, 676-688.	
+
+n, B.C., Choi, Y.D., Oh, I.J., Kim, J.H., Park, J.I., and Lee, S.W. (2018). GPx3-mediated redox signaling arrests the cell cycle and acts as a tumor suppressor in lung cancer cell lines. PLoS One 13, e0204170.	
+
+Ondracka, A., Robbins, J.A., and Cross, F.R. (2016). An APC/C-Cdh1 Biosensor Reveals the Dynamics of Cdh1 Inactivation at the G1/S Transition. PLoS One 11, e0159166.	
+
+Parray, A., Siddique, H.R., Kuriger, J.K., Mishra, S.K., Rhim, J.S., Nelson, H.H., Aburatani, H., Konety, B.R., Koochekpour, S., and Saleem, M. (2014). ROBO1, a tumor suppressor and critical molecular barrier for localized tumor cells to acquire invasive phenotype: study in African-American and Caucasian prostate cancer models. Int J Cancer 135, 2493-2506.	
+
+Permutation Test and Monte Carlo Sampling, http://www.let.rug.nl/nerbonne/teach/rema-stats-meth-seminar/presentations/Permutation-Monte-Carlo-Jianqiang-2009.pdf, MA, Jianqiang, Stand 10.07.2019	
+
+Puttabyatappa, M., Al-Alem, L.F., Zakerkish, F., Rosewell, K.L., Brannstrom, M., and Curry, T.E., Jr. (2017). Induction of Tissue Factor Pathway Inhibitor 2 by hCG Regulates Periovulatory Gene Expression and Plasmin Activity. Endocrinology 158, 109-120.	
+
+Rajapakse, V.N., Luna, A., Yamade, M., Loman, L., Varma, S., Sunshine, M., Iorio, F., Sousa, F.G., Elloumi, F., Aladjem, M.I., et al. (2018). CellMinerCDB for Integrative Cross-Database Genomics and Pharmacogenomics Analyses of Cancer Cell Lines. iScience 10, 247-264.	
+
+Rasch, B., Hofmann, W., Friese, M., and Naumann, E. (2010). Quantitative Methoden 2 - Einf?hrung in die Statistik f?r Psychologen und Sozialwissenschaftler, 3. Edition edn (Berlin, Heidelberg: Springer).	
+
+Rosa, A., and Brivanlou, A.H. (2011). A regulatory circuitry comprised of miR-302 and the transcription factors OCT4 and NR2F2 regulates human embryonic stem cell differentiation. The EMBO Journal 30, 237-248.	
+
+Safran, M., Dalah, I., Alexander, J., Rosen, N., Iny Stein, T., Shmoish, M., Nativ, N., Bahir, I., Doniger, T., Krug, H., et al. (2010). GeneCards Version 3: the human gene integrator. Database (Oxford) 2010, baq020.	
+
+Sarkar, A., Sim, C., Hong, Y.S., Hogan, J.R., Fraser, M.J., Robertson, H.M., and Collins, F.H. (2003). Molecular evolutionary analysis of the widespread piggyBac transposon family and related "domesticated" sequences. Mol Genet Genomics 270, 173-180.	
+
+Sharp, A.J., Stathaki, E., Migliavacca, E., Brahmachary, M., Montgomery, S.B., Dupre, Y., and Antonarakis, S.E. (2011). DNA methylation profiles of human active and inactive X chromosomes. Genome Res 21, 1592-1600.	
+
+Special Issue: Collaborative Bioinformatics and RNA Analysis. Briefings in Bioinformatics 12, 9 S.	
+
+van der Post, R.S., Vogelaar, I.P., Carneiro, F., Guilford, P., Huntsman, D., Hoogerbrugge, N., Caldas, C., Schreiber, K.E., Hardwick, R.H., Ausems, M.G., et al. (2015). Hereditary diffuse gastric cancer: updated clinical guidelines with an emphasis on germline CDH1 mutation carriers. J Med Genet 52, 361-374.	
+
+Vitali, P., Royo, H., Seitz, H., Bachellerie, J.P., Huttenhofer, A., and Cavaille, J. (2003). Identification of 13 novel human modification guide RNAs. Nucleic Acids Res 31, 6543-6551.	
+
+Vogel, C.F., Li, W., Sciullo, E., Newman, J., Hammock, B., Reader, J.R., Tuscano, J., and Matsumura, F. (2007). Pathogenesis of aryl hydrocarbon receptor-mediated development of lymphoma is associated with increased cyclooxygenase-2 expression. Am J Pathol 171, 1538-1548.	
+
+Walter, J., and H?mpel, A. (2017). Epigenetik - Implikationen f?r die Lebens- und Geisteswissenschaften, 1 edn (Nomos Verlagsgesellschaft mbH).	
+
+Wang, Q., He, Y., Shen, Y., Zhang, Q., Chen, D., Zuo, C., Qin, J., Wang, H., Wang, J., and Yu, Y. (2014). Vitamin D inhibits COX-2 expression and inflammatory response by targeting thioesterase superfamily member 4. J Biol Chem 289, 11681-11694.	
+
+Wang, Y., Hou, Y., Zhang, W., Alvarez, A.A., Bai, Y., Hu, B., Cheng, S.Y., Yang, K., Li, Y., and Feng, H. (2019). Lipolytic inhibitor G0S2 modulates glioma stem-like cell radiation response. J Exp Clin Cancer Res 38, 147.	
+
+Wasik, A.M., Lord, M., Wang, X., Zong, F., Andersson, P., Kimby, E., Christensson, B., Karimi, M., and Sander, B. (2013). SOXC transcription factors in mantle cell lymphoma: the role of promoter methylation in SOX11 expression. Sci Rep 3, 1400.	
+
+Welch, C., Santra, M.K., El-Assaad, W., Zhu, X., Huber, W.E., Keys, R.A., Teodoro, J.G., and Green, M.R. (2009). Identification of a protein, G0S2, that lacks Bcl-2 homology domains and interacts with and antagonizes Bcl-2. Cancer Res 69, 6782-6789.	
