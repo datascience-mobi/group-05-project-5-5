@@ -1503,9 +1503,10 @@ p_value_important_genes <-
 
 p_value_important_genes <-
   as.data.frame(cbind(important_genes, p_value_important_genes))
+p_value_important_genes
 
 ```
-There is only one gene which p value is under 0.01 
+There is only one gene which p value is under 0.01, LGALS3 (ENSG00000131981) with p value = 0.0019. As in Part 1: Data Analysis already mentioned the function of LGALS3 is to elevate inflammatory processes. LGALS3 protects cancer cells by inducing tolerance to drug treatment.
 
 To visualise our p-values and the distribution of the significance of our genes we generated a volcano plot. For the volcano plot the "fold change" is plotted along the x-axis. The fold change is calculated by applying log2 on the mean beta value of healthy and cancer samples respectively and then subtracting the cancer value from the healthy one. It is important to use beta values because these range only from 0 to 1 while m values can be negative figures of which log2 is not defined.
 Along the y-axis the negative common logarithm of the p values is plotted. 
@@ -1513,9 +1514,9 @@ As thresholds we decided on 0.01 for p-values and 1.0 for the fold change which 
 
 ```{r}
 top_genes_beta_values <-
-  rbind(healthy_beta_values[c(as.list.data.frame(rownames(top_5000_genes))), ])
+  rbind(healthy_beta_values[c(as.list.data.frame(rownames(top_5000_genes))),])
 top_genes_beta_values <-
-  cbind(top_genes_beta_values, cancer_beta_values[c(as.list.data.frame(rownames(top_5000_genes))), ])
+  cbind(top_genes_beta_values, cancer_beta_values[c(as.list.data.frame(rownames(top_5000_genes))),])
 top_genes_beta_values <-
   cbind(
     top_genes_beta_values,
@@ -1523,8 +1524,9 @@ top_genes_beta_values <-
     Mean_Cancer = log2(rowMeans(top_genes_beta_values[, 6:10]))
   )
 
-fold <- top_genes_beta_values$Mean_Healthy - top_genes_beta_values$Mean_Cancer
-p_value <- p_value_each_gene[,1]
+fold <-
+  top_genes_beta_values$Mean_Healthy - top_genes_beta_values$Mean_Cancer
+p_value <- p_value_each_gene[, 1]
 
 plot(
   x = fold,
@@ -1537,8 +1539,12 @@ fold_threshold = 2
 pvalue_threshold = 0.001
 
 abline(v = fold_threshold, col = "blue", lwd = 2)
-abline(v = -fold_threshold, col = "red", lwd = 2)
-abline(h = -log10(pvalue_threshold), col = "green", lwd = 2)
+abline(v = -fold_threshold,
+       col = "red",
+       lwd = 2)
+abline(h = -log10(pvalue_threshold),
+       col = "green",
+       lwd = 2)
 
 fold_filtered = abs(fold) >= fold_threshold
 pvalue_filtered = abs(p_value) <= pvalue_threshold
@@ -1548,13 +1554,16 @@ plot(
   x = fold,
   y = -log10(p_value),
   xlab = "log2 Fold Change",
-  ylab = "-log10 p_value")
-points (fold[filter_combined & fold < 0],
-        -log10(p_value[filter_combined & fold < 0]),
+  ylab = "-log10 p_value"
+)
+points (fold[filter_combined & fold < 0],-log10(p_value[filter_combined &
+                                                          fold < 0]),
         pch = 20, col = "red")
-points (fold[filter_combined & fold > 0],
-        -log10(p_value[filter_combined & fold > 0]),
+points (fold[filter_combined & fold > 0],-log10(p_value[filter_combined &
+                                                          fold > 0]),
         pch = 20, col = "blue")
+points (
+)
 ```
 
 The statistically significant (p-value <= 0.01) genes with a higher fold than 1 are hypermethylated (Higher methylated in cancer than in healthy samples) and highlighted in blue.
