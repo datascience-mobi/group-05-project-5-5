@@ -1295,7 +1295,7 @@ p_bio_type <-
 ggplotly(p_bio_type)
 ```
 
-Theoretically we there should be only the two groups cancer and healthy. But we obtained 3 groups. This is because of batch effects. One group are the cancer samples. The second group are healthy samples from Jose I. Martin-Subero who is one of the biomaterial providers. The third group are also healthy samples but they are from NIIHR Cambridge BioResource. The probleme here is that we have distinct values in the cancer samples. But we do not know how the batch effects influence the healthy samples in detail. The only thing we know is that they are influenced. So we can not delete the batch effects.
+The batch effect in PC1 in biomaterial type causes that some samples from healthy and cancer are closer to each other than to other samples of the same group. The biomaterial type indicates if the samples derive from primary cells or primary tissue. Batch effects in this category mean that there are significant methylation differences within primary cells or primary tissue even though there should be no big differences. We only know that there are batch effects which influence our data but we can not delete the batch effects.
 
 ```{r}
 p_cell_type <-
@@ -1345,7 +1345,7 @@ p_disease <-
 ggplotly(p_disease)
 ```
 
-The two plots from disease and cell type look alike because the data are the same. B-cells are always healthy in our dataset and cause no cancer. In comparison to that cancer cells are always from the cancer type mantle cell lymphoma in our dataset.
+The two plots from disease and cell type look alike because the data are the same. B-cells are always healthy in our dataset and cause no cancer. In comparison to that cancer cells are always from the cancer type mantle cell lymphoma in our dataset. It is clearly visible that PC2 can not distinguish between healthy and cancer samples while PC1 can. Because of that fact there is a vertical seperation between the groups but no horizontal separation.
 
 $$~$$
 
