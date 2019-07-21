@@ -1549,10 +1549,8 @@ points (fold[filter_combined & fold < 0],
 points (fold[filter_combined & fold > 0],
         -log10(p_value[filter_combined & fold > 0]),
         pch = 20, col = "blue")
-
-#volcano_upper_right <- volcano_data[which(volcano_data["Fold_Change"] > 5 & volcano_data["p_value"] < 0.01)]
-
 ```
+
 The statistically significant (p-value <= 0.01) genes with a higher fold than 1 are hypermethylated (Higher methylated in cancer than in healthy samples) and highlighted in blue.
 The genes that have a p-value under 0.01 and have a lower fold than -1 are hypomethylated (less methylated in cancer than in healthy samples). These are accentuated in red.
 There are many genes with a fold change of around zero and many of the genes that seem to be biologically significant have a low statistical significance. This leads to only some genes with biological and statistical significance. Another interesting feature is that the genes in cancer samples tend to be more methylated than in healthy ones.
@@ -1785,33 +1783,15 @@ Overall χ-squared (p=0.14) and pseudo R-squared values improved slightly. This 
 We now wanted to find out what the tasks of our determined genes are.
 Our significant genes have following tasks:
 
-ENSG00000243702:
-RNA, 7SL, Cytoplasmic 638, Pseudogene: It is reportes to be a part of the signal recognition particle of the ribonucleoprotein complex. It is important for transfer of signal bearing protein into a membrane or transfer to endoplasmatic reticulum for secretion. 
-(Safran et al., 2010)
-
-ENSG00000253822:
-Immunoglobulin Lambda Variable 3-24: Encodes for a part of the N-terminal variable region of the light chains in a immunoglobulin moleculare, which are the antigen recognition molecules of B cells.
-(Lefranc, 2014)(Safran et al., 2010)
-
-ENSG00000238622:
-Small Nucleolar RNA, C/D Box 97: The gene is from a group of non-coding RNAs. They are reported to have several roles in the cell, but one of the most prominent ones is functioning as guide RNAs in post-transcriptional synthesis of 2′-O-methylated nucleotides.
-(Vitali et al., 2003)(Safran et al., 2010)
-
-ENSG00000207504:
-RNA, U6 Small Nuclear 1031, Pseudogene: Have been proposed to be a part of the active center of the spliceosome.They function during the first and second step of the splicing process.
-(Hu et al., 2004)(Safran et al., 2010)
-
-ENSG00000244433:
-piggyBac transposable element derived 4 pseudogene 7: short inverted-repeat-type DNA transposable element which was oroginally found in a moth genome, but similar sequences have also been found in humans. Possible function as a transposase, which catalyses the movement of the transposon within the genome. 
-(Sarkar et al., 2003)(Safran et al., 2010)
-
-ENSG00000279415:
-Uncategorized gene, and is affiliated with the lncRNA class.
-(Safran et al., 2010)
-
-ENSG00000270336:
-Protein Phosphatase 2, Catalytic Subunit, Beta Isozyme (PPP2CB) Pseudogene: Has been reported to code fo the catalytic subunit of theThis gene encodes the phosphatase 2A catalytic subunit. This phosphatase has been involved in the negative control of cell growth and division.
-(Safran et al., 2010) (Götz, J., 1998)
+Gen | Information
+:-------:|:-----------------------------------------------------------------------------------:
+ENSG00000243702 | RNA, 7SL, Cytoplasmic 638, Pseudogene: It is reportes to be a part of the signal recognition particle of the ribonucleoprotein complex. It is important for transfer of signal bearing protein into a membrane or transfer to endoplasmatic reticulum for secretion. (Safran et al., 2010)
+ENSG00000253822 | Immunoglobulin Lambda Variable 3-24: Encodes for a part of the N-terminal variable region of the light chains in a immunoglobulin moleculare, which are the antigen recognition molecules of B cells.(Lefranc, 2014)(Safran et al., 2010)
+ENSG00000238622 | Small Nucleolar RNA, C/D Box 97: The gene is from a group of non-coding RNAs. They are reported to have several roles in the cell, but one of the most prominent ones is functioning as guide RNAs in post-transcriptional synthesis of 2′-O-methylated nucleotides.(Vitali et al., 2003)(Safran et al., 2010)
+ENSG00000207504 | RNA, U6 Small Nuclear 1031, Pseudogene: Have been proposed to be a part of the active center of the spliceosome.They function during the first and second step of the splicing process.(Hu et al., 2004)(Safran et al., 2010)
+ENSG00000244433 | piggyBac transposable element derived 4 pseudogene 7: short inverted-repeat-type DNA transposable element which was oroginally found in a moth genome, but similar sequences have also been found in humans. Possible function as a transposase, which catalyses the movement of the transposon within the genome. (Sarkar et al., 2003)(Safran et al., 2010)
+ENSG00000279415 | Uncategorized gene, and is affiliated with the lncRNA class.(Safran et al., 2010)
+ENSG00000270336 | Protein Phosphatase 2, Catalytic Subunit, Beta Isozyme (PPP2CB) Pseudogene: Has been reported to code fo the catalytic subunit of theThis gene encodes the phosphatase 2A catalytic subunit. This phosphatase has been involved in the negative control of cell growth and division.(Safran et al., 2010) (Götz, J., 1998)
 
 After all those analyse steps, we can conclude that the data, on which our analysis is based, is not proficient enough for our downstream analysis. We can in no way guarantee that this genes are relevant for mantle cell lymphoma.
 
@@ -1886,109 +1866,111 @@ $$~$$
 # References
 
 $$~$$
-Sharp, A.J., Stathaki, E., Migliavacca, E., Brahmachary, M., Montgomery, S.B., Dupre, Y., and Antonarakis, S.E. (2011). DNA methylation profiles of human active and inactive X chromosomes. Genome Res 21, 1592-1600.
+	
+Amann-Vesti, B., Arnold, C., Panzer, U., Stahl, R.A.K., Thaiss, F., and Wenzel, U., eds. (2018). Klinische Pathophysiologie, 10., vollst?ndig ?berarbeitete und erweiterte Auflage edn (Stuttgart ; New York: Georg Thieme Verlag).	
 
-n, B.C., Choi, Y.D., Oh, I.J., Kim, J.H., Park, J.I., and Lee, S.W. (2018). GPx3-mediated redox signaling arrests the cell cycle and acts as a tumor suppressor in lung cancer cell lines. PLoS One 13, e0204170.
+Blueprint Project, http://www.blueprint-epigenome.eu/index.cfm?p=31AD6D30-9B3C-BB97-E7F81875121FEC41, Stand 04.07.2019	
 
-Brumatti, G., Salmanidis, M., Kok, C.H., Bilardi, R.A., Sandow, J.J., Silke, N., Mason, K., Visser, J., Jabbour, A.M., Glaser, S.P., et al. (2013). HoxA9 regulated Bcl-2 expression mediates survival of myeloid progenitors and the severity of HoxA9-dependent leukemia. Oncotarget 4, 1933-1947.
+Bock, C. (2012). Analysing and interpreting DNA methylation data. Nature Reviews Genetics 13, 705.	
 
-Ferrando, A.A. (2013). SOX11 is a mantle cell lymphoma oncogene. Blood 121, 2169.
+Brumatti, G., Salmanidis, M., Kok, C.H., Bilardi, R.A., Sandow, J.J., Silke, N., Mason, K., Visser, J., Jabbour, A.M., Glaser, S.P., et al. (2013). HoxA9 regulated Bcl-2 expression mediates survival of myeloid progenitors and the severity of HoxA9-dependent leukemia. Oncotarget 4, 1933-1947.	
 
-Cunningham, F., Achuthan, P., Akanni, W., Allen, J., Amode, M.R., Armean, I.M., Bennett, R., Bhai, J., Billis, K., Boddu, S., et al. (2019). Ensembl 2019. Nucleic Acids Res 47, D745-D751.
+Cunningham, F., Achuthan, P., Akanni, W., Allen, J., Amode, M.R., Armean, I.M., Bennett, R., Bhai, J., Billis, K., Boddu, S., et al. (2019). Ensembl 2019. Nucleic Acids Res 47, D745-D751.	
 
 Dong, Y., Tan, Q., Tao, L., Pan, X., Pang, L., Liang, W., Liu, W., Zhang, W., Li, F., and Jia, W. (2015). Hypermethylation of TFPI2 correlates with cervical cancer incidence in the Uygur and Han populations of Xinjiang, China. Int J Clin Exp Pathol 8, 1844-1854.
 
-Enjuanes, A., Albero, R., Clot, G., Navarro, A., Bea, S., Pinyol, M., Martin-Subero, J.I., Klapper, W., Staudt, L.M., Jaffe, E.S., et al. (2013). Genome-wide methylation analyses identify a subset of mantle cell lymphoma with a high number of methylated CpGs and aggressive clinicopathological features. Int J Cancer 133, 2852-2863.
+Encodeproject.org. (2019). Audits – ENCODE. [online] Available at: https://www.encodeproject.org/data-standards/audits/ [Accessed 20 Jul. 2019].	
 
-Enjuanes, A., Fernandez, V., Hernandez, L., Navarro, A., Bea, S., Pinyol, M., Lopez-Guillermo, A., Rosenwald, A., Ott, G., Campo, E., et al. (2011). Identification of methylated genes associated with aggressive clinicopathological features in mantle cell lymphoma. PLoS One 6, e19736.
+Enjuanes, A., Albero, R., Clot, G., Navarro, A., Bea, S., Pinyol, M., Martin-Subero, J.I., Klapper, W., Staudt, L.M., Jaffe, E.S., et al. (2013). Genome-wide methylation analyses identify a subset of mantle cell lymphoma with a high number of methylated CpGs and aggressive clinicopathological features. Int J Cancer 133, 2852-2863.	
 
-Fei, F., Joo, E.J., Tarighat, S.S., Schiffer, I., Paz, H., Fabbri, M., Abdel-Azim, H., Groffen, J., and Heisterkamp, N. (2015). B-cell precursor acute lymphoblastic leukemia and stromal cells communicate through Galectin-3. Oncotarget 6, 11378-11394.
+Enjuanes, A., Fernandez, V., Hernandez, L., Navarro, A., Bea, S., Pinyol, M., Lopez-Guillermo, A., Rosenwald, A., Ott, G., Campo, E., et al. (2011). Identification of methylated genes associated with aggressive clinicopathological features in mantle cell lymphoma. PLoS One 6, e19736.	
 
-Gort, E.H., Suijkerbuijk, K.P., Roothaan, S.M., Raman, V., Vooijs, M., van der Wall, E., and van Diest, P.J. (2008). Methylation of the TWIST1 promoter, TWIST1 mRNA levels, and immunohistochemical expression of TWIST1 in breast cancer. Cancer Epidemiol Biomarkers Prev 17, 3325-3330.
+Fei, F., Joo, E.J., Tarighat, S.S., Schiffer, I., Paz, H., Fabbri, M., Abdel-Azim, H., Groffen, J., and Heisterkamp, N. (2015). 
 
-Hu, H., Chen, X., Wang, C., Jiang, Y., Li, J., Ying, X., Yang, Y., Li, B., Zhou, C., Zhong, J., et al. (2017). The role of TFPI2 hypermethylation in the detection of gastric and colorectal cancer. Oncotarget 8, 84054-84065.
+B-cell precursor acute lymphoblastic leukemia and stromal cells communicate through Galectin-3. Oncotarget 6, 11378-11394.	
 
-Imamura, F., and Greer, C.A. (2013). Pax6 regulates Tbr1 and Tbr2 expressions in olfactory bulb mitral cells. Mol Cell Neurosci 54, 58-70.
+Ferrando, A.A. (2013). SOX11 is a mantle cell lymphoma oncogene. Blood 121, 2169.	
 
-Klauck, P.J., Bagby, S.M., Capasso, A., Bradshaw-Pierce, E.L., Selby, H.M., Spreafico, A., Tentler, J.J., Tan, A.C., Kim, J., Arcaroli, J.J., et al. (2018). Antitumor activity of the polo-like kinase inhibitor, TAK-960, against preclinical models of colorectal cancer. BMC Cancer 18, 136.
+Fu, M., Wang, C., Li, Z., Sakamaki, T., and Pestell, R.G. (2004). Minireview: Cyclin D1: Normal and Abnormal Functions. Endocrinology 145, 5439-5447.	
 
-Kuo, P.Y., Jatiani, S.S., Rahman, A.H., Edwards, D., Jiang, Z., Ahr, K., Perumal, D., Leshchenko, V.V., Brody, J., Shaknovich, R., et al. (2018). SOX11 augments BCR signaling to drive MCL-like tumor development. Blood 131, 2247-2255.
+Götz, J., Probst, A., Ehler, E., Hemmings, B., & Kues, W. (1998). Delayed embryonic lethality in mice lacking protein phosphatase 2A catalytic subunit Cα. Proceedings of the National Academy of Sciences, 95(21), 12370-12375.	
 
-Li, Y., Han, L., Huang, C., Dai, W., Tian, G., Huang, F., Li, J., Liu, J., Wang, Q., and Zhou, Z. (2018). New Contributions to Asarum Powder on Immunology Related Toxicity Effects in Lung. Evid Based Complement Alternat Med 2018, 1054032.
+Gibney, E.R., and Nolan, C.M. (2010). Epigenetics and gene expression. Heredity 105, 4.	
 
-McEntyre, J., and Birney, E. (2016). The EMBL-EBI channel. F1000Res 5, 52.
+Goh, W.W.B., Wang, W., and Wong, L. (2017). Why Batch Effects Matter in Omics Data, and How to Avoid Them. Trends in Biotechnology 35, 10 S.	
 
-Meng, B., Wang, Y., and Li, B. (2014). Suppression of PAX6 promotes cell proliferation and inhibits apoptosis in human retinoblastoma cells. Int J Mol Med 34, 399-408.
+Gort, E.H., Suijkerbuijk, K.P., Roothaan, S.M., Raman, V., Vooijs, M., van der Wall, E., and van Diest, P.J. (2008). Methylation of the TWIST1 promoter, TWIST1 mRNA levels, and immunohistochemical expression of TWIST1 in breast cancer. Cancer Epidemiol Biomarkers Prev 17, 3325-3330.	
 
-Mohanty, S., Mohanty, A., Sandoval, N., Tran, T., Bedell, V., Wu, J., Scuto, A., Murata-Collins, J., Weisenburger, D.D., and Ngo, V.N. (2017). Cyclin D1 depletion induces DNA damage in mantle cell lymphoma lines. Leuk Lymphoma 58, 676-688.
+Hiddemann, W., and Bartram, C. (2010). Die Onkologie, 2 edn (Heidelberg: Springer Medizin Verlag).	
+Horn, F., Moc, I., Schneider, N., Grillh?sl, C., Berghold, S., and Lindenmeier, G. (2009). Biochemie des Menschen. In Biochemie des Menschen (Georg Thieme Verlag).	
 
-Ondracka, A., Robbins, J.A., and Cross, F.R. (2016). An APC/C-Cdh1 Biosensor Reveals the Dynamics of Cdh1 Inactivation at the G1/S Transition. PLoS One 11, e0159166.
+Hu, H., Chen, X., Wang, C., Jiang, Y., Li, J., Ying, X., Yang, Y., Li, B., Zhou, C., Zhong, J., et al. (2017). The role of TFPI2 hypermethylation in the detection of gastric and colorectal cancer. Oncotarget 8, 84054-84065.	
 
-Parray, A., Siddique, H.R., Kuriger, J.K., Mishra, S.K., Rhim, J.S., Nelson, H.H., Aburatani, H., Konety, B.R., Koochekpour, S., and Saleem, M. (2014). ROBO1, a tumor suppressor and critical molecular barrier for localized tumor cells to acquire invasive phenotype: study in African-American and Caucasian prostate cancer models. Int J Cancer 135, 2493-2506.
+Hu, P., Samudre, K., Wu, S., Sun, Y., and Hernandez, N. (2004). CK2 phosphorylation of Bdp1 executes cell cycle-specific RNA polymerase III transcription repression. Mol Cell 16, 81-92.	
 
-Puttabyatappa, M., Al-Alem, L.F., Zakerkish, F., Rosewell, K.L., Brannstrom, M., and Curry, T.E., Jr. (2017). Induction of Tissue Factor Pathway Inhibitor 2 by hCG Regulates Periovulatory Gene Expression and Plasmin Activity. Endocrinology 158, 109-120.
+Huang, Y., Pastor, W.A., Shen, Y., Tahiliani, M., Liu, D.R., and Rao, A. (2010). The Behaviour of 5-Hydroxymethylcytosine in Bisulfite Sequencing. PLOS ONE 5, e8888.	
 
-Rajapakse, V.N., Luna, A., Yamade, M., Loman, L., Varma, S., Sunshine, M., Iorio, F., Sousa, F.G., Elloumi, F., Aladjem, M.I., et al. (2018). CellMinerCDB for Integrative Cross-Database Genomics and Pharmacogenomics Analyses of Cancer Cell Lines. iScience 10, 247-264.
+Imamura, F., and Greer, C.A. (2013). Pax6 regulates Tbr1 and Tbr2 expressions in olfactory bulb mitral cells. Mol Cell Neurosci 54, 58-70.	
 
-van der Post, R.S., Vogelaar, I.P., Carneiro, F., Guilford, P., Huntsman, D., Hoogerbrugge, N., Caldas, C., Schreiber, K.E., Hardwick, R.H., Ausems, M.G., et al. (2015). Hereditary diffuse gastric cancer: updated clinical guidelines with an emphasis on germline CDH1 mutation carriers. J Med Genet 52, 361-374.
+Klauck, P.J., Bagby, S.M., Capasso, A., Bradshaw-Pierce, E.L., Selby, H.M., Spreafico, A., Tentler, J.J., Tan, A.C., Kim, J., Arcaroli, J.J., et al. (2018). Antitumor activity of the polo-like kinase inhibitor, TAK-960, against preclinical models of colorectal cancer. BMC Cancer 18, 136.	
 
-Vogel, C.F., Li, W., Sciullo, E., Newman, J., Hammock, B., Reader, J.R., Tuscano, J., and Matsumura, F. (2007). Pathogenesis of aryl hydrocarbon receptor-mediated development of lymphoma is associated with increased cyclooxygenase-2 expression. Am J Pathol 171, 1538-1548.
+Kuo, P.Y., Jatiani, S.S., Rahman, A.H., Edwards, D., Jiang, Z., Ahr, K., Perumal, D., Leshchenko, V.V., Brody, J., Shaknovich, R., et al. (2018). SOX11 augments BCR signaling to drive MCL-like tumor development. Blood 131, 2247-2255.	
 
-Wang, Q., He, Y., Shen, Y., Zhang, Q., Chen, D., Zuo, C., Qin, J., Wang, H., Wang, J., and Yu, Y. (2014). Vitamin D inhibits COX-2 expression and inflammatory response by targeting thioesterase superfamily member 4. J Biol Chem 289, 11681-11694.
+Leek, J.T., Johnson, W.E., Parker, H.S., Jaffe, A.E., and Storey, J.D. (2012). The sva package for removing batch effects and other unwanted variation in high-throughput experiments. BIOINFORMATICS 28, 2 S.	
 
-Permutation Test and Monte Carlo Sampling, http://www.let.rug.nl/nerbonne/teach/rema-stats-meth-seminar/presentations/Permutation-Monte-Carlo-Jianqiang-2009.pdf, MA, Jianqiang, Stand 10.07.2019
+Lefranc, M.P. (2014). Immunoglobulin and T Cell Receptor Genes: IMGT((R)) and the Birth and Rise of Immunoinformatics. Front Immunol 5, 22.	
 
-Wang, Y., Hou, Y., Zhang, W., Alvarez, A.A., Bai, Y., Hu, B., Cheng, S.Y., Yang, K., Li, Y., and Feng, H. (2019). Lipolytic inhibitor G0S2 modulates glioma stem-like cell radiation response. J Exp Clin Cancer Res 38, 147.
+Li, Y., Han, L., Huang, C., Dai, W., Tian, G., Huang, F., Li, J., Liu, J., Wang, Q., and Zhou, Z. (2018). New Contributions to Asarum Powder on Immunology Related Toxicity Effects in Lung. Evid Based Complement Alternat Med 2018, 1054032.	
 
-Wasik, A.M., Lord, M., Wang, X., Zong, F., Andersson, P., Kimby, E., Christensson, B., Karimi, M., and Sander, B. (2013). SOXC transcription factors in mantle cell lymphoma: the role of promoter methylation in SOX11 expression. Sci Rep 3, 1400.
+Ma, S., and Dai, Y. (2011). Principal component analysis based methods in bioinformatics studies	
+McEntyre, J., and Birney, E. (2016). The EMBL-EBI channel. F1000Res 5, 52.	
 
-Welch, C., Santra, M.K., El-Assaad, W., Zhu, X., Huber, W.E., Keys, R.A., Teodoro, J.G., and Green, M.R. (2009). Identification of a protein, G0S2, that lacks Bcl-2 homology domains and interacts with and antagonizes Bcl-2. Cancer Res 69, 6782-6789.
+Meng, B., Wang, Y., and Li, B. (2014). Suppression of PAX6 promotes cell proliferation and inhibits apoptosis in human retinoblastoma cells. Int J Mol Med 34, 399-408.	
 
-Leek, J.T., Johnson, W.E., Parker, H.S., Jaffe, A.E., and Storey, J.D. (2012). The sva package for removing batch effects and other unwanted variation in high-throughput experiments. BIOINFORMATICS 28, 2 S.
+Moen, E.L., Mariani, C.J., Zullow, H., Jeff-Eke, M., Litwin, E., Nikitas, J.N., and Godley, L.A. (2015). New themes in the biological functions of 5-methylcytosine and 5-hydroxymethylcytosine. Immunological Reviews 263, 36-49.	
 
-Ma, S., and Dai, Y. (2011). Principal component analysis based methods in bioinformatics studies
-Special Issue: Collaborative Bioinformatics and RNA Analysis. Briefings in Bioinformatics 12, 9 S.
+Mohanty, A., Sandoval, N., Phan, A., Nguyen, T.V., Chen, R.W., Budde, E., Mei, M., Popplewell, L., Pham, L.V., Kwak, L.W., et al. (2019). Regulation of SOX11 expression through CCND1 and STAT3 in mantle cell lymphoma. Blood 133, 306-318.	
 
-Blueprint Project, http://www.blueprint-epigenome.eu/index.cfm?p=31AD6D30-9B3C-BB97-E7F81875121FEC41, Stand 04.07.2019
+Mohanty, A., Sandoval, N., Phan, A., Nguyen, T.V., Chen, R.W., Budde, E., Mei, M., Popplewell, L., Pham, L.V., Kwak, L.W., et al. (2019). Regulation of SOX11 expression through CCND1 and STAT3 in mantle cell lymphoma. Blood 133, 306-318.	
 
-Goh, W.W.B., Wang, W., and Wong, L. (2017). Why Batch Effects Matter in Omics Data, and How to Avoid Them. Trends in Biotechnology 35, 10 S.
+Mohanty, S., Mohanty, A., Sandoval, N., Tran, T., Bedell, V., Wu, J., Scuto, A., Murata-Collins, J., Weisenburger, D.D., and Ngo, V.N. (2017). Cyclin D1 depletion induces DNA damage in mantle cell lymphoma lines. Leuk Lymphoma 58, 676-688.	
 
-Amann-Vesti, B., Arnold, C., Panzer, U., Stahl, R.A.K., Thaiss, F., and Wenzel, U., eds. (2018). Klinische Pathophysiologie, 10., vollst?ndig ?berarbeitete und erweiterte Auflage edn (Stuttgart ; New York: Georg Thieme Verlag).
+n, B.C., Choi, Y.D., Oh, I.J., Kim, J.H., Park, J.I., and Lee, S.W. (2018). GPx3-mediated redox signaling arrests the cell cycle and acts as a tumor suppressor in lung cancer cell lines. PLoS One 13, e0204170.	
 
-Bock, C. (2012). Analysing and interpreting DNA methylation data. Nature Reviews Genetics 13, 705.
+Ondracka, A., Robbins, J.A., and Cross, F.R. (2016). An APC/C-Cdh1 Biosensor Reveals the Dynamics of Cdh1 Inactivation at the G1/S Transition. PLoS One 11, e0159166.	
 
-Fu, M., Wang, C., Li, Z., Sakamaki, T., and Pestell, R.G. (2004). Minireview: Cyclin D1: Normal and Abnormal Functions. Endocrinology 145, 5439-5447.
+Parray, A., Siddique, H.R., Kuriger, J.K., Mishra, S.K., Rhim, J.S., Nelson, H.H., Aburatani, H., Konety, B.R., Koochekpour, S., and Saleem, M. (2014). ROBO1, a tumor suppressor and critical molecular barrier for localized tumor cells to acquire invasive phenotype: study in African-American and Caucasian prostate cancer models. Int J Cancer 135, 2493-2506.	
 
-Gibney, E.R., and Nolan, C.M. (2010). Epigenetics and gene expression. Heredity 105, 4.
+Permutation Test and Monte Carlo Sampling, http://www.let.rug.nl/nerbonne/teach/rema-stats-meth-seminar/presentations/Permutation-Monte-Carlo-Jianqiang-2009.pdf, MA, Jianqiang, Stand 10.07.2019	
 
-Hiddemann, W., and Bartram, C. (2010). Die Onkologie, 2 edn (Heidelberg: Springer Medizin Verlag).
+Puttabyatappa, M., Al-Alem, L.F., Zakerkish, F., Rosewell, K.L., Brannstrom, M., and Curry, T.E., Jr. (2017). Induction of Tissue Factor Pathway Inhibitor 2 by hCG Regulates Periovulatory Gene Expression and Plasmin Activity. Endocrinology 158, 109-120.	
 
-Horn, F., Moc, I., Schneider, N., Grillh?sl, C., Berghold, S., and Lindenmeier, G. (2009). Biochemie des Menschen. In Biochemie des Menschen (Georg Thieme Verlag).
+Rajapakse, V.N., Luna, A., Yamade, M., Loman, L., Varma, S., Sunshine, M., Iorio, F., Sousa, F.G., Elloumi, F., Aladjem, M.I., et al. (2018). CellMinerCDB for Integrative Cross-Database Genomics and Pharmacogenomics Analyses of Cancer Cell Lines. iScience 10, 247-264.	
 
-Huang, Y., Pastor, W.A., Shen, Y., Tahiliani, M., Liu, D.R., and Rao, A. (2010). The Behaviour of 5-Hydroxymethylcytosine in Bisulfite Sequencing. PLOS ONE 5, e8888.
+Rasch, B., Hofmann, W., Friese, M., and Naumann, E. (2010). Quantitative Methoden 2 - Einf?hrung in die Statistik f?r Psychologen und Sozialwissenschaftler, 3. Edition edn (Berlin, Heidelberg: Springer).	
 
-Moen, E.L., Mariani, C.J., Zullow, H., Jeff-Eke, M., Litwin, E., Nikitas, J.N., and Godley, L.A. (2015). New themes in the biological functions of 5-methylcytosine and 5-hydroxymethylcytosine. Immunological Reviews 263, 36-49.
+Rosa, A., and Brivanlou, A.H. (2011). A regulatory circuitry comprised of miR-302 and the transcription factors OCT4 and NR2F2 regulates human embryonic stem cell differentiation. The EMBO Journal 30, 237-248.	
 
-Mohanty, A., Sandoval, N., Phan, A., Nguyen, T.V., Chen, R.W., Budde, E., Mei, M., Popplewell, L., Pham, L.V., Kwak, L.W., et al. (2019). Regulation of SOX11 expression through CCND1 and STAT3 in mantle cell lymphoma. Blood 133, 306-318.
+Safran, M., Dalah, I., Alexander, J., Rosen, N., Iny Stein, T., Shmoish, M., Nativ, N., Bahir, I., Doniger, T., Krug, H., et al. (2010). GeneCards Version 3: the human gene integrator. Database (Oxford) 2010, baq020.	
 
-Rasch, B., Hofmann, W., Friese, M., and Naumann, E. (2010). Quantitative Methoden 2 - Einf?hrung in die Statistik f?r Psychologen und Sozialwissenschaftler, 3. Edition edn (Berlin, Heidelberg: Springer).
+Sarkar, A., Sim, C., Hong, Y.S., Hogan, J.R., Fraser, M.J., Robertson, H.M., and Collins, F.H. (2003). Molecular evolutionary analysis of the widespread piggyBac transposon family and related "domesticated" sequences. Mol Genet Genomics 270, 173-180.	
 
-Rosa, A., and Brivanlou, A.H. (2011). A regulatory circuitry comprised of miR-302 and the transcription factors OCT4 and NR2F2 regulates human embryonic stem cell differentiation. The EMBO Journal 30, 237-248.
+Sharp, A.J., Stathaki, E., Migliavacca, E., Brahmachary, M., Montgomery, S.B., Dupre, Y., and Antonarakis, S.E. (2011). DNA methylation profiles of human active and inactive X chromosomes. Genome Res 21, 1592-1600.	
 
-Safran, M., Dalah, I., Alexander, J., Rosen, N., Iny Stein, T., Shmoish, M., Nativ, N., Bahir, I., Doniger, T., Krug, H., et al. (2010). GeneCards Version 3: the human gene integrator. Database (Oxford) 2010, baq020.
- 
-Walter, J., and H?mpel, A. (2017). Epigenetik - Implikationen f?r die Lebens- und Geisteswissenschaften, 1 edn (Nomos Verlagsgesellschaft mbH).
+Special Issue: Collaborative Bioinformatics and RNA Analysis. Briefings in Bioinformatics 12, 9 S.	
 
-Mohanty, A., Sandoval, N., Phan, A., Nguyen, T.V., Chen, R.W., Budde, E., Mei, M., Popplewell, L., Pham, L.V., Kwak, L.W., et al. (2019). Regulation of SOX11 expression through CCND1 and STAT3 in mantle cell lymphoma. Blood 133, 306-318.
+van der Post, R.S., Vogelaar, I.P., Carneiro, F., Guilford, P., Huntsman, D., Hoogerbrugge, N., Caldas, C., Schreiber, K.E., Hardwick, R.H., Ausems, M.G., et al. (2015). Hereditary diffuse gastric cancer: updated clinical guidelines with an emphasis on germline CDH1 mutation carriers. J Med Genet 52, 361-374.	
 
-Lefranc, M.P. (2014). Immunoglobulin and T Cell Receptor Genes: IMGT((R)) and the Birth and Rise of Immunoinformatics. Front Immunol 5, 22.
+Vitali, P., Royo, H., Seitz, H., Bachellerie, J.P., Huttenhofer, A., and Cavaille, J. (2003). Identification of 13 novel human modification guide RNAs. Nucleic Acids Res 31, 6543-6551.	
 
-Vitali, P., Royo, H., Seitz, H., Bachellerie, J.P., Huttenhofer, A., and Cavaille, J. (2003). Identification of 13 novel human modification guide RNAs. Nucleic Acids Res 31, 6543-6551.
+Vogel, C.F., Li, W., Sciullo, E., Newman, J., Hammock, B., Reader, J.R., Tuscano, J., and Matsumura, F. (2007). Pathogenesis of aryl hydrocarbon receptor-mediated development of lymphoma is associated with increased cyclooxygenase-2 expression. Am J Pathol 171, 1538-1548.	
 
-Hu, P., Samudre, K., Wu, S., Sun, Y., and Hernandez, N. (2004). CK2 phosphorylation of Bdp1 executes cell cycle-specific RNA polymerase III transcription repression. Mol Cell 16, 81-92.
+Walter, J., and H?mpel, A. (2017). Epigenetik - Implikationen f?r die Lebens- und Geisteswissenschaften, 1 edn (Nomos Verlagsgesellschaft mbH).	
 
-Sarkar, A., Sim, C., Hong, Y.S., Hogan, J.R., Fraser, M.J., Robertson, H.M., and Collins, F.H. (2003). Molecular evolutionary analysis of the widespread piggyBac transposon family and related "domesticated" sequences. Mol Genet Genomics 270, 173-180.
+Wang, Q., He, Y., Shen, Y., Zhang, Q., Chen, D., Zuo, C., Qin, J., Wang, H., Wang, J., and Yu, Y. (2014). Vitamin D inhibits COX-2 expression and inflammatory response by targeting thioesterase superfamily member 4. J Biol Chem 289, 11681-11694.	
 
-Götz, J., Probst, A., Ehler, E., Hemmings, B., & Kues, W. (1998). Delayed embryonic lethality in mice lacking protein phosphatase 2A catalytic subunit Cα. Proceedings of the National Academy of Sciences, 95(21), 12370-12375.
+Wang, Y., Hou, Y., Zhang, W., Alvarez, A.A., Bai, Y., Hu, B., Cheng, S.Y., Yang, K., Li, Y., and Feng, H. (2019). Lipolytic inhibitor G0S2 modulates glioma stem-like cell radiation response. J Exp Clin Cancer Res 38, 147.	
 
-Encodeproject.org. (2019). Audits – ENCODE. [online] Available at: https://www.encodeproject.org/data-standards/audits/ [Accessed 20 Jul. 2019].
+Wasik, A.M., Lord, M., Wang, X., Zong, F., Andersson, P., Kimby, E., Christensson, B., Karimi, M., and Sander, B. (2013). SOXC transcription factors in mantle cell lymphoma: the role of promoter methylation in SOX11 expression. Sci Rep 3, 1400.	
+
+Welch, C., Santra, M.K., El-Assaad, W., Zhu, X., Huber, W.E., Keys, R.A., Teodoro, J.G., and Green, M.R. (2009). Identification of a protein, G0S2, that lacks Bcl-2 homology domains and interacts with and antagonizes Bcl-2. Cancer Res 69, 6782-6789.	
