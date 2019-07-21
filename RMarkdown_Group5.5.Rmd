@@ -523,7 +523,6 @@ extended_cancer_m_values <-
   cbind.data.frame(cancer_m_values, mean_cancer_m_values, sd_cancer_m_values)
 extended_healthy_m_values <-
   cbind.data.frame(healthy_m_values, mean_healthy_m_values, sd_healthy_m_values)
-
 ```
 
 Firstly, we want to check if our transformation was successfull by comparing it to the literature.
@@ -558,12 +557,11 @@ c2 <- ggplot() +
   theme_bw()
 
 grid.arrange(c1, c2, ncol = 2)
-
 ```
 
-Compared to literature, beta-value to m-value transition worked perfectly well and we can continue our downstream analysis (Du et al., 2010). Aberration of transition occured because of mean value calculation.
+Compared to literature, beta-value to m-value transition worked perfectly and we can continue our downstream analysis (Du et al., 2010). Aberration of transition occured because of mean value calculation.
 
-Afterwards we changed the endings of the patinets names to make it more clear to which data frame they belonged.
+Afterwards we changed the endings of the patinets names to make it more clear to which data frame they belonged to.
 
 ```{r}
 colnames(healthy_m_values) <-
@@ -584,10 +582,9 @@ colnames(cancer_m_values) <- c(
 )
 ```
 
-Thereafter we calculated the means and standard deviations of the m values, subsequently plotting a histogram for each, to see how they are spread.
+Thereafter we calculated the means and standard deviations of m values, subsequently plotting a histogram for each, to see how they are spread.
 
 ```{r warning=FALSE}
-
 hist(
   log10(mean_cancer_m_values),
   breaks = "fd",
@@ -596,17 +593,19 @@ hist(
   col = "indianred2",
   border = "gray20",
   xlim = c(-1, 1)
-)
-abline(v = log10(quantile(
+  )
+  abline(
+  v = log10(quantile(
   mean_cancer_m_values,
   probs = seq(0, 1, 0.1),
   na.rm = TRUE
-)),
-col = "black",
-lty = 5,
-lwd = 1)
-
-hist(
+  )),
+  col = "black",
+  lty = 5,
+  lwd = 1
+  )
+  
+  hist(
   log10(mean_healthy_m_values),
   breaks = "fd",
   main = "Healthy M values: Mean frequency",
@@ -614,15 +613,17 @@ hist(
   col = "seagreen2",
   border = "gray20",
   xlim = c(-1, 1)
-)
-abline(v = log10(quantile(
+  )
+  abline(
+  v = log10(quantile(
   mean_healthy_m_values,
   probs = seq(0, 1, 0.1),
   na.rm = TRUE
-)),
-col = "black",
-lty = 5,
-lwd = 1)
+  )),
+  col = "black",
+  lty = 5,
+  lwd = 1
+  )
 ```
 
 ```{r warning=FALSE}
@@ -646,9 +647,9 @@ hist(
 ```
 
 As we can see in the mean frequency histograms there are some values of common logarithms of m values which are more than 1.0 and less than -1.0, this is due to the beta values which were registered as 1 or 0 which resulted in m values of +inf and -inf. These will be removed before the principal component analysis. 
-Comparing the mean frequency histograms of cancer and healthy samples, we can conclude that both are right-skewed, whereas in healthy m values the effect is more prominent. In the mean m value histogram of healthy patients we can observe that the median lays around 0.6 which corresponds to beta values of around 0.8, in comparison to cancer where the median lays around 0.2 which correspond to beta vlues of 0.6. Important to mention is the fact that  there are far less genes which have low beta values in the healthy samples as in the cancer samples (judging by the tenth quantiles of the mean histograms). 
-But overall we can assume a normal distribution in healthy and cancer distribution.
-Furthermore, we created a data frame which only include our cancer related genes. This data frame is extended by gene name rather than ensembl name.
+Comparing the mean frequency histograms of cancer and healthy samples, we can conclude that both are right-skewed, whereas in healthy m values the effect is more prominent. In the mean m value histogram of healthy patients we can observe that the median lays around 0.6 which corresponds to beta values of around 0.8, in comparison to cancer, where the median lays around 0.2 which corresponds to beta values of 0.6. Important to mention is the fact that there are far less genes which have low beta values in the healthy samples than in the cancer samples (judging by the tenth quantiles).
+But overall we can assume a that the distribution is normal in both cancer and healthy histograms.
+Furthermore, we created a data frame which only includes our cancer related genes. This data frame is extended by gene name rather than ensembl name.
 
 ```{r}
 
@@ -731,9 +732,9 @@ $$~$$
 
 The following overview plot includes:
 
-* mean of cancer and healthy m-values (black points), 
+* mean of cancer and healthy m-values (black points),
 * general trend of points to solve overplotting problem (gray smoothed curve),
-* straight line through origin (y=x) for better interpreting (yellow line)
+* straight line through the origin (y=x) for better interpretation (yellow line).
 
 ```{r warning=FALSE}
 ggplot() +
@@ -769,14 +770,14 @@ ggplot() +
   ylim(-12,9)
 ```
 
-We compared mean healthy and cancer m-values. Infinite values are presented at the edges. The general trend indicates that a lot of high methylated genes in healthy samples are not methylated/less methylated in cancer samples. This trend is solidified by the yellow line, shown in the plot, which would indicate a linear trend between cancer and healthy sample methylation. Nevertheless, some genes have gain a higher methylation grade. Overall, it seems that a lot of genes have pretty much the same methylation grade because they are in a huge data cloud around 0 to 5. It would be interesting to see which genes have lost  most of their methylation or gain most of it because it can be an indication of function gain (no methylation) or function loss (methylation increase).
+We compared mean healthy and cancer m-values. Infinite values are presented at the edges. The general trend indicates that a lot of high methylated genes in healthy samples are not methylated/less methylated in cancer samples. This trend is solidified by the yellow line, shown in the plot, which would indicate a linear trend between cancer and healthy sample methylation. Nevertheless, some genes have gained a higher methylation grade. Overall, it seems that a lot of genes have pretty much the same methylation grade because they are in a huge data cloud around 0 to 5. It would be interesting to see which genes have lost  or gained most of their methylation because it can be an indication of gain of function (no methylation) or loss of function (increase in methylation).
 
-So after that we focused on details to evaluate previous mentioned important genes. The following detailed plot visualizes:
+So after that we focused on details to evaluate previously mentioned important genes. The following detailed plot visualizes:
 
 * mean of cancer and healthy m-values (black points), 
 * highlights of important genes for cancer (red points), 
 * labels of specific genes,
-* straight line through origin (y=x) for better interpreting (yellow line)
+* straight line through the origin (y=x) for better interpretation (yellow line).
 
 ```{r}
 ggplot() +
@@ -823,15 +824,14 @@ ggplot() +
   )
 ```
 
-For better plot evaluation we draw a line with equation y = x. Thus, we can identify if there is a linear relationship. Overall, our predicted important genes have not fully lost their methylation or gain full methylation. 
+For better plot evaluation we drew a line with the equation y = x. Thus, we can identify if there is a linear relationship. Overall, our predicted important genes have not fully lost their methylation or gained full methylation. 
 As stated in several studies, DNA demethylation in gene regions tends to downregulate gene expression but is also dependent on several key factors, including:
 
 * whether embedded demethylated functional elements regain activity,
 * whether demethylated regions are located at intron-exon junctions together with destabilized nucleosomes and
-* possible effects on the rates of transcript elongation and splicing. 
-(Yang et al., 2014)
+* possible effects on the rates of transcript elongation and splicing (Yang et al., 2014).
 
-Therefore, we can only predict what otucome different methylated gene regions could have.
+Therefore, we can only predict what otucome differentially methylated gene regions could have.
 $$~$$
 
 Gene   | Comparison of methylation between samples | Interpretation
@@ -856,9 +856,9 @@ TFPI2  | healthy > cancer | Less expression in MCL cells and therefore important
 THEM4  | healthy > cancer | Downregulation enables cell survival, growth, proliferation, cell migration and angiogenesis of MCL cells which are necessary for MCL survival.
 TWIST1 | healthy > cancer | Less expression of TWIST1 in cancer. Other mechanisms for overexpression in cancer than methylation.
 
-To valididate our assumptions it would be important to analyse protein concentrations in cancer cells and compare it to DNA methylation status of genes.
+To validate our assumptions it would be important to analyse protein concentrations in cancer cells and compare it to DNA methylation status of genes.
 
-For better valuation of how conclusive following analysis are, it would be pretty neat, if we compare standard deviations (SD) of cancer and healthy m-values.
+For better evaluation of how conclusive following results are, it will be helpfull, if we compare standard deviations (SD) of cancer and healthy m-values.
 At first, we compared general information with following attributes shown in the plot:
 
 * SD of cancer and healthy m-values (black points) 
@@ -879,13 +879,13 @@ ggplot() +
   theme_bw()
 ```
 
-In general, our standard deviation is sufficient and only a few have a high standard deviation.
+Our standard deviations are generally not that high and only a few genes have high standard deviations.
 
 For further analysis, it would be proficient if cancer related genes have low standard deviations in both sample groups. The following detailed plot visualizes:
 
 * SD of cancer and healthy m-values (black points), 
 * highlights of important genes for cancer (red points), 
-* labels of specific genes 
+* labels of specific genes. 
 
 ```{r}
 ggplot() +
@@ -926,9 +926,9 @@ ggplot() +
   theme_bw()
 ```
 
-In general, our important genes for MCL have a low standard deviation which enhance the explanatory power of previous assumptions. A few genes tend to be more differently methylated in cancer samples than in healthy samples. For example one of this gene is SOX11.
-SOX11 tends to be differently methylated in cancer samples. This observation can be made because MCL can be devided into 2 groups: SOX11 positive and SOX11 negative patients (Ferrando, 2013). Depending on this status, different clinical outcome can be observed (Ferrando, 2013).
-Broadly, methylation of cancer patients have stronger discrepancies among each other because cancer in each patient differs.
+In general, our important genes for MCL have a low standard deviation which enhances the explanatory power of our previous assumptions. A few genes tend to be more differently methylated in cancer samples than in healthy samples. For example one of them is SOX11.
+SOX11 tends to be differently methylated in cancer samples. This observation can be made because MCL can be devided into 2 groups: SOX11 positive and SOX11 negative patients (Ferrando, 2013). Depending on this status, different clinical outcomes can be observed (Ferrando, 2013).
+In general, methylation of cancer patients have stronger discrepancies among each other because cancer origin is unique for each patient.
 $$~$$
 
 ## Part 3: Data reduction
