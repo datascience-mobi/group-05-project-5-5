@@ -934,7 +934,7 @@ $$~$$
 ## Part 3: Data reduction
 
 $$~$$
-The aim of this part of the project is to narrow down our data to the significant genes which account for the majority of the variation between methylation values of healthy and cancer samples. Therefore, we need to reduce high dimensional data into low dimensional data with few information loss. 
+The aim of this part of the project is to narrow down our data to the significant genes which account for the majority of the variation between methylation values of healthy and cancer samples. Therefore, we need to reduce high dimensional data into low dimensional data with as little information loss as possible. 
 A common way to identify the direction of highest variability in the data is by conducting a principal component analysis (PCA) which we also applied to our data (Ma and Dai, 2011). Hence the covariance matrix is used to calculate the eigenvector which correspond to the largest eigenvalues (the principal components). These eigenvectors are used to reconstruct a significant fraction of the variance of the original data.
 These new principal components (features) can now be used for predictive analysis and model building. A crucial benefit is, that each principal component is independent of the other.
 
@@ -1358,7 +1358,6 @@ plot(
   ylab = "loading scores",
   type = "b"
 )
-
 ```
 
 The kink is somewhere between 0 and 10000 genes so we adjusted the x-axis to have a better look at the kink.
@@ -1391,7 +1390,6 @@ top_2000_genes <- data.frame(ranked_gene_loading[1:2000])
       iter.max = 500
     )
  km$cluster
-
 ```
 
 If we used only 2000 genes for our downstream analysis no reliable results would come out of it. To set the right initial conditions we tested how high the number of genes needs to be for the samples to be classified correctly. For this we applied k-means clustering for 1000 - 10000 genes and observed when the clusters were reliably right. 
