@@ -1335,7 +1335,7 @@ The two plots from disease and cell type look alike because the data are the sam
 $$~$$
 
 
-## Part 4: Clustering
+### Clustering
 
 $$~$$
 With this part we intended to see if our samples coincide with their labels (healthy/cancer) and find the genes that are the most differentially methylated between our healthy and cancer samples (differentially methylated regions (DMRs)). DMRs can help distinguish cancer from healthy patients and are therefore the basis of our logistic regression that will be used for predictions. We wanted to obtain the DMRs through a process with multiple steps. 
@@ -1359,20 +1359,22 @@ The kink is somewhere between 0 and 10000 genes so we adjusted the x-axis to hav
 
 ```{r}
 plot(
-  ranked_gene_loading[0 : 10000],
+  ranked_gene_loading[0:10000],
   main = "Loading scores of genes",
   xlab = "Genes",
   ylab = "loading scores",
   type = "b"
 )
-abline(
-  v = 
-)
+abline(v = 2000,
+       col = "red",
+       lty = 5,
+       lwd = 2)
 ```
 
 Although the kink seems to be around 2000 genes when we tried to apply k means clustering with these 2000 genes the healthy and cancer samples weren't assigned to their respective clusters.
 
 ```{r}
+set.seed(200)
 top_2000_genes <- data.frame(ranked_gene_loading[1:2000])
   top_2000_kmeans <-
     rbind(m_values[c(as.list.data.frame(rownames(top_2000_genes))), ])
@@ -1503,6 +1505,8 @@ p_value_important_genes <-
 
 p_value_important_genes <-
   as.data.frame(cbind(important_genes, p_value_important_genes))
+colnames(p_value_important_genes) <- c("Genes", "p-values")
+
 p_value_important_genes
 
 ```
@@ -1562,8 +1566,6 @@ points (fold[filter_combined & fold < 0],-log10(p_value[filter_combined &
 points (fold[filter_combined & fold > 0],-log10(p_value[filter_combined &
                                                           fold > 0]),
         pch = 20, col = "blue")
-points (
-)
 ```
 
 The statistically significant (p-value <= 0.01) genes with a higher fold than 1 are hypermethylated (Higher methylated in cancer than in healthy samples) and highlighted in blue.
@@ -1649,7 +1651,7 @@ With that, we obtained 75 DMRs.
 
 $$~$$
 
-## Part 5: Logistic Regression
+## Part 4: Logistic Regression
 
 $$~$$
 To obtain a "good" prediction system, we first had to check on correlation between our final genes. A high correlation would result in a bad regression model because of insufficient information. Correlation ranges from 0 to 1. The value 0 means no correlation, therefore, maximum information. In the contrast, the value 1 means high correlation, therefore, no information in our case. 
@@ -1880,7 +1882,7 @@ predict(regression_model_researched_important_genes, newdata = regression_data_r
 
 This summary showed us, that we could not generate a regression model through this data. Again we faced a lot of NA's and a model which seems to predict correctly but this was not true as can be seen in the summary.
 
-## Conclusion
+# Conclusion
 As a final conclusion, we faced different problems through this downstream analysis and at the end we were not fully able to create a full functional and good regression model to predict MCL in given samples. Our previous researched genes cannot be confirmed as different methylated in gene coding region. But we did not test for different methylated regions (DMRs) in other coding and non-coding regions of our samples. It could be possible that these genes are DMRs e.g. in promotor region.</div>
 $$~$$
 
