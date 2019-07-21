@@ -1670,7 +1670,7 @@ $$~$$
 ## Part 4: Logistic Regression
 
 $$~$$
-To obtain a "good" prediction system, we had to check on correlation between our final genes first. A high correlation would result in a bad regression model because of insufficient information. Correlation ranges from 0 to 1. The value 0 means no correlation, therefore, maximum information. In the contrast, the value 1 means high correlation, therefore, no information in our case. 
+To obtain a "good" prediction system, we had to check on correlation between our final genes first. A high correlation would result in a bad regression model because of insufficient information. Correlation ranges from 0 to 1. The value 0 means no correlation, therefore, maximum information. In contrast, the value 1 means high correlation, therefore, no information in our case. 
 
 ```{r}
 correlation_top_genes <-
@@ -1678,136 +1678,128 @@ correlation_top_genes <-
 corrplot(correlation_top_genes)
 ```
 
-Going into details, the first plot visualizes general correlation between samples, therefore, including every gene of one sample and calculating overall correlation. The larger the point is, the greater the correlation is. The color range also indicates how much correlation there is. Blue for positive, red for negative correlation. 
+Going into details, the first plot visualizes general correlation between samples, therefore, including every gene of one sample and calculating overall correlation. The larger the point, the greater the correlation is. The color range also indicates how much correlation there is. Blue for positive, red for negative correlation. 
 
 ```{r}
-heatmap(
-  as.matrix(cor(t(clustering_data))), 
-  main = "Heat map of genes"
-  )
+heatmap(as.matrix(cor(t(clustering_data))),
+        main = "Heat map of genes")
 ```
 
-The second plot shows a heat map. Through a heatmap we visualized hierarchical clustering. Data values were transformed to color scale, thus, we simultaneously identified clusters of samples and features. This process starts with hierarchical clustering of both the rows and the columns of the data matrix. Then columns/rows of the data matrix are re-ordered according to the hierarchical clustering result, putting similar observations close to each other. The blocks of 'high' and 'low' values are adjacent in the data matrix. Finally, a color scheme is applied for the visualization and the data matrix is displayed. Visualizing the data matrix in this way can help to find the variables that appear to be characteristic for each sample cluster. Thus, we identified a general trend. Almost every gene of each sample followed the same trend. This showed again the relationship of high correlation, because distances between genes were pretty small. A distance of zero indicates a perfect correlation of 1 (Distance = 1 - Correlation).
+The second plot shows a heat map. Through a heatmap we visualized hierarchical clustering. Data values were transformed to color scale, thus, we simultaneously identified clusters of samples and features. This process starts with hierarchical clustering of both the rows and the columns of the data matrix. Then columns/rows of the data matrix are re-ordered according to the hierarchical clustering result, putting similar observations close to each other. The blocks of 'high' and 'low' values are adjacent in the data matrix. Finally, a color scheme is applied for visualization and the data matrix is displayed. Visualizing the data matrix in this way can help with finding the variables that appear to be characteristic for each sample cluster. Thus, we identified a general trend. Almost every gene of each sample followed the same trend. This showed the relationship of high correlation again, because distances between genes were very small. A distance of zero indicates a perfect correlation of 1 (Distance = 1 - Correlation).
 
 ```{r}
-hist(
-  cor(t(clustering_data)), 
-  main = "Genes correlation", xlab = "Correlation value"
-  )
+hist(cor(t(clustering_data)),
+     main = "Genes correlation", xlab = "Correlation value")
 ```
 
 Last but not least, a complementary histogram is shown to quantify the frequency of correlation values. This plot underlines previous results of analysis.
 
-To conclude, there is high positive correlation between our samples within a group. But between our cancer and control/healthy group we have pretty much no correlation. Hopefully, this is sufficient for our prediction model.
+To conclude, there is high positive correlation between our samples within a group. But between our cancer and control/healthy groups we have almost no correlation. Hopefully, this is sufficient for our prediction model.
 
-In the process of testing different models, we faced several problems. Firstly, we had way too many genes which were high correlated. Thus we tried to reduce the amount of genes with regard to their correlation amount. For this, we had to calculate their correlation index and set a threshold reasonably enough for further analysis.
+In the process of testing different models, we faced several problems. Firstly, we had way too many genes which were highly correlated. Thus, we tried to reduce the amount of genes with regard to the amount of their correlation. For this, we had to calculate their correlation index and set a threshold reasonably enough for further analysis.
 
 ```{r}
-correlation_top_genes <- 
-  cor(t(clustering_data)
-      )
+correlation_top_genes <-
+  cor(t(clustering_data))
 correlation_top_genes[upper.tri(correlation_top_genes)] <- 0
 diag(correlation_top_genes) <- 0
-correlation_top_genes <- 
-  correlation_top_genes[ ,
-    !apply(
-      correlation_top_genes,
-      2,function(x) {
-        any(x > 0.9 | x < -0.9)
-        }
-      )
-    ]
+correlation_top_genes <-
+  correlation_top_genes[, !apply(correlation_top_genes,
+                                 2, function(x) {
+                                   any(x > 0.9 | x < -0.9)
+                                 })]
 
-regression_data <- 
+regression_data <-
   clustering_data
-regression_data <- 
-  regression_data[
-    c(
-    colnames(correlation_top_genes)),  
-    ]
+regression_data <-
+  regression_data[c(colnames(correlation_top_genes)), ]
 ```
 
-Our chosen threshold was 0.9 because we did not want to be too conservative. Thus, each column (gene) which contained more than one value above this threshold was removed. Through this threshold, we obtained a reasonably mediocre regression model which was better than nothing. Our correlation relationship significantly improved  to our favour.
+Our chosen threshold was 0.9 because we did not want to be too conservative. Thus, each column (gene) which contained more than one value above this threshold was removed. Through this threshold we obtained a reasonably mediocre regression model which was better than nothing. Our correlation relationship significantly improved to our favour.
 
 ```{r}
-correlation_top_genes <- 
-  cor(
-    t(regression_data)
-    )
-corrplot(
-  correlation_top_genes
-  )
+correlation_top_genes <-
+  cor(t(regression_data))
+corrplot(correlation_top_genes)
 ```
 
-After that we still had correlation which was not optimal but we faced too much data loss if we would have tried to procede in reducing more.
-On the base of this new data frame, we try to fit a logistic regression model. We used a logistic regression model, because it manages to model a binomial outcome (0,1) with one or more explanatory variables. In our case the variables are the selected genes. It measures the relationship between the categorical dependent variable (cancer/healthy) and one or more independent variables by estimating probabilities using a logistic function, which is the cumulative logistic distribution. 
+After that we still had correlation which was not optimal but we would have faced too much data loss if we had tried to proceed in reducing more.
+With this new data frame as a basis, we tried to fit a logistic regression model. We used a logistic regression model, because it manages to model a binomial outcome (0,1) with one or more explanatory variables. In our case the variables are the selected genes. It measures the relationship between the categorical dependent variable (cancer/healthy) and one or more independent variables by estimating probabilities using a logistic function which is the cumulative logistic distribution. 
 Logistic function: 
 $$ p(X) = \frac{e^{β_0+β_1X}}{1+e^{β_0+β_1X}} $$
 
 ```{r warning=FALSE}
-regression_data_uncorrelated_genes <- 
-  cbind(
-    Health_status = 
-          as.numeric(
-            c(
-              0,
-              0,
-              0,
-              0,
-              0,
-              1,
-              1,
-              1,
-              1,
-              1
-              )
-            ), 
-        as.data.frame(t(regression_data))
-        )
-regression_model_uncorrelated_genes <- 
+regression_data_uncorrelated_genes <-
+  cbind(Health_status =
+          as.numeric(c(0,
+                       0,
+                       0,
+                       0,
+                       0,
+                       1,
+                       1,
+                       1,
+                       1,
+                       1)),
+        as.data.frame(t(regression_data)))
+regression_model_uncorrelated_genes <-
   glm(
-    formula = Health_status ~ ., 
-    family = binomial(link = "logit"), 
-    data = regression_data_uncorrelated_genes, 
+    formula = Health_status ~ .,
+    family = binomial(link = "logit"),
+    data = regression_data_uncorrelated_genes,
     maxit = 4
-    )
+  )
 
 summary(regression_model_uncorrelated_genes)
-summ(regression_model_uncorrelated_genes, confint = TRUE, digits = 3, ci.width = .9)
+summ(
+  regression_model_uncorrelated_genes,
+  confint = TRUE,
+  digits = 3,
+  ci.width = .9
+)
 ```
 
-The error "did not converge" gave a first impression of our model. It is pretty bad. Non of our remaining genes are significant as further predictors. Moreover, we obtained high standard errors which underline unperfect model creation. We had to reduce iterations to 4 to prevent error message "fitted probabilities numerically 0 or 1 occurred". This indicated that both data are seperated in two sides. On the one side (cancer(1)) and on the other side (healthy(0)). Without cross validation, we tried to test this model on the same data again. 
+The error "did not converge" gave a first impression of our model. It is really bad. None of our remaining genes are significant as further predictors. Moreover, we obtained high standard errors which underline unperfect model creation. We had to reduce iterations to 4 to prevent error message "fitted probabilities numerically 0 or 1 occurred". This indicated that both data were seperated in two sides. On the one side (cancer(1)) and on the other side (healthy(0)). Without cross validation, we tried to test this model on the same data again. 
 Moreover, we calculated the value of χ-squared of our model and its p-value. Because of sufficient data it seemed that our model is good enough (p = 0.055) and fitted our needs (if we set α-level to e.g. α = 0.05 and therfore not rejecting our H0-hypothesis). 
-Furthermore, when analyzing data with a logistic regression, an equivalent statistic to R-squared does not exist. However, to evaluate the goodness-of-fit of logistic models, several pseudo R-squareds have been developed. These are “pseudo” R-squareds because they look like R-squared in the sense that they are on a similar scale, ranging from 0 to 1 (though some pseudo R-squareds never achieve 0 or 1) with higher values indicating better model fit, but they cannot be interpreted as one would interpret an OLS R-squared and different pseudo R-squareds can arrive at very different values. Our logistic regression model had pretty good pseudo R-squared values (0.997 and 0.994) with two different methods. Thus, we estimated that our model has a good goodness-of-fit.
+Furthermore, when analyzing data with a logistic regression, an equivalent statistic to R-squared does not exist. However, to evaluate the goodness-of-fit of logistic models, several pseudo R-squareds have been developed. These are “pseudo” R-squareds because they look like R-squared in the sense that they are on a similar scale, ranging from 0 to 1 (though some pseudo R-squareds never achieve 0 or 1) with higher values indicating better model fit, but they can not be interpreted as one would interpret an OLS R-squared and different pseudo R-squareds can appear at very different values. Our logistic regression model had pretty good pseudo R-squared values (0.997 and 0.994) with two different methods. Thus, we estimated that our model has a good goodness-of-fit.
 
 ```{r warning=FALSE}
-predict(regression_model_uncorrelated_genes, newdata = regression_data_uncorrelated_genes, type = "response")
+predict(regression_model_uncorrelated_genes,
+        newdata = regression_data_uncorrelated_genes,
+        type = "response")
 ```
 
 We were able to predict samples of patients which we used to model the regression model. Thankfully, predictions were correct and we were able to go on with cross validation.
 
-Here can be seen the cross validation:
+Here the cross validation can be seen:
 
 ```{r warning=FALSE}
-control <-  
+control <-
   which(regression_data_uncorrelated_genes$Health_status == "0")
-control.train <- 
+control.train <-
   sample(control, floor(0.75 * length(control)))
-cancer <- 
+cancer <-
   which(regression_data_uncorrelated_genes$Health_status == "1")
-cancer.train <- 
+cancer.train <-
   sample(cancer, floor(0.75 * length(cancer)))
-train <- 
+train <-
   c(control.train, cancer.train)
-train.set <- 
-  regression_data_uncorrelated_genes[train, ]
-test.set <- 
-  regression_data_uncorrelated_genes[-train, ]
+train.set <-
+  regression_data_uncorrelated_genes[train,]
+test.set <-
+  regression_data_uncorrelated_genes[-train,]
 
-regression_model_cross_validation <- 
-  glm(formula = Health_status ~ ., family = binomial(link = "logit"), data = train.set, maxit = 4)
+regression_model_cross_validation <-
+  glm(
+    formula = Health_status ~ .,
+    family = binomial(link = "logit"),
+    data = train.set,
+    maxit = 4
+  )
 
-predict(regression_model_cross_validation, newdata = test.set, type = "response")
+predict(regression_model_cross_validation,
+        newdata = test.set,
+        type = "response")
 
 summ(regression_model_cross_validation)
 ```
@@ -1828,57 +1820,50 @@ ENSG00000244433 | piggyBac transposable element derived 4 pseudogene 7: short in
 ENSG00000279415 | Uncategorized gene, and is affiliated with the lncRNA class.(Safran et al., 2010)
 ENSG00000270336 | Protein Phosphatase 2, Catalytic Subunit, Beta Isozyme (PPP2CB) Pseudogene: Has been reported to code fo the catalytic subunit of theThis gene encodes the phosphatase 2A catalytic subunit. This phosphatase has been involved in the negative control of cell growth and division.(Safran et al., 2010) (Götz, J., 1998)
 
-After all those analyse steps, we can conclude that the data, on which our analysis is based, is not proficient enough for our downstream analysis. We can in no way guarantee that this genes are relevant for mantle cell lymphoma.
+After all those analyse steps, we can conclude that the data, on which our analysis is based, is not proficient enough for our analysis. We can in no way guarantee that these genes are relevant for mantle cell lymphoma.
 
 For the sake of completeness, the following logistic regression model included all of the genes after evaluating through t-test and p-adjustment.
 
 ```{r}
-regression_data_all_genes_before_uncorrelation <- cbind(
-  Health_status = as.numeric(
-    c(
-  0,
-  0,
-  0,
-  0,
-  0,
-  1,
-  1,
-  1,
-  1,
-  1
-)), as.data.frame(t(clustering_data)))
-regression_model_all_genes_after_ttest <- 
-  glm(
-    formula = Health_status ~ ., 
-    family = binomial(link = "logit"), 
-    data = regression_data_all_genes_before_uncorrelation
-    )
+regression_data_all_genes_before_uncorrelation <-
+  cbind(Health_status = as.numeric(c(0,
+                                     0,
+                                     0,
+                                     0,
+                                     0,
+                                     1,
+                                     1,
+                                     1,
+                                     1,
+                                     1)), as.data.frame(t(clustering_data)))
+regression_model_all_genes_after_ttest <-
+  glm(formula = Health_status ~ .,
+      family = binomial(link = "logit"),
+      data = regression_data_all_genes_before_uncorrelation)
 
 summary(regression_model_all_genes_after_ttest)$coefficients
 ```
 
-As previous mentioned, this model is as bad as it possibly can be. We faced with alot of NA values (only 10 variables with coefficients) based on highly correlated data on the one and on the other hand we had to deal with values of approximately 1. We rejected this model and did some extra work to create a better model shown above.
+As previously mentioned, this model is as bad as it possibly can be. We faced a lot of NA values (only 10 variables with coefficients) based on highly correlated data on the one hand and on the other we had to deal with values of approximately 1. We rejected this model and did some extra work to create a better model shown above.
 
 Last but not least, we tried to use our previous researched, relevant genes for MCL to create a logistic regression model.
 
 ```{r warning=FALSE}
-rownames(important_genes) <- important_genes[,1]
+rownames(important_genes) <- important_genes[, 1]
 m_values_pp <-  m_values[c(rownames(important_genes)),]
 
-regression_data_researched_important_genes <- cbind(Health_status = as.numeric(c(0,
-                                                      0,
-                                                      0,
-                                                      0,
-                                                      0,
-                                                      1,
-                                                      1,
-                                                      1,
-                                                      1,
-                                                      1)
-                                                     ), 
-                          as.data.frame(t(m_values_pp)
-                                        )
-                          )
+regression_data_researched_important_genes <-
+  cbind(Health_status = as.numeric(c(0,
+                                     0,
+                                     0,
+                                     0,
+                                     0,
+                                     1,
+                                     1,
+                                     1,
+                                     1,
+                                     1)),
+        as.data.frame(t(m_values_pp)))
 
 regression_model_researched_important_genes <-
   glm(
@@ -1889,13 +1874,15 @@ regression_model_researched_important_genes <-
   )
 
 summary(regression_model_researched_important_genes)
-predict(regression_model_researched_important_genes, newdata = regression_data_researched_important_genes, type = "response")
+predict(regression_model_researched_important_genes,
+        newdata = regression_data_researched_important_genes,
+        type = "response")
 ```
 
-This summary showed us, that we could not generate a regression model through this data. Again we faced a lot of NA's and a model which seems to predict correctly but this was not true as can be seen in the summary.
+This summary showed us, that we could not generate a regression model with this data. Again we got a lot of NA's and a model which seems to predict correctly but this was not true as can be seen in the summary.
 
 # Conclusion
-As a final conclusion, we faced different problems through this downstream analysis and at the end we were not fully able to create a full functional and good regression model to predict MCL in given samples. Our previous researched genes cannot be confirmed as different methylated in gene coding region. But we did not test for different methylated regions (DMRs) in other coding and non-coding regions of our samples. It could be possible that these genes are DMRs e.g. in promotor region.</div>
+As a final conclusion, we faced different problems throughout this analysis and at the end we were not fully able to create a completely functional and good regression model to predict MCL in given samples. Our previous researched genes can not be confirmed as differentially methylated in gene coding regions. But we did not test for differentially methylated regions (DMRs) in other coding and non-coding genome regions of our samples. It could be possible that these genes are DMRs e.g. in promotor region.</div>
 $$~$$
 
 # References
