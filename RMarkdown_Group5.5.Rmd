@@ -2,7 +2,12 @@
 title: "Are differentially methylated regions within genes associated with mantle cell lymphoma?"
 author: "Pascal Lafrenz, Mari Hambardzumyan, Lea Herzel, Franziska Lam"
 output:
-  html_document: default
+  html_document: 
+      hightlight: monochrome
+      number_sections: no
+      theme: yeti
+      toc: yes
+      toc_depth: 3
   pdf_document: default
   word_document: default
 ---
@@ -12,6 +17,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ---
+<div style="text-align: justify">
 The alterations in cancer cell DNA methylation pattern have long been detected (Vogelstein and Feinberg, 1983). In many cancer types methylation level has also been shown to have effects on gene deregulation,  (Melnick, 2013). But not much research has been done associated with methylation in *mantle cell lymphoma* (MCL) cells. Therefore in the following project we want to address the following question.
 $$~$$
 
@@ -1866,7 +1872,7 @@ predict(regression_model_researched_important_genes, newdata = regression_data_r
 This summary showed us, that we could not generate a regression model through this data. Again we faced a lot of NA's and a model which seems to predict correctly but this was not true as can be seen in the summary.
 
 ## Conclusion
-As a final conclusion, we faced different problems through this downstream analysis and at the end we were not fully able to create a full functional and good regression model to predict MCL in given samples. Our previous researched genes cannot be confirmed as different methylated in gene coding region. But we did not test for different methylated regions (DMRs) in other coding and non-coding regions of our samples. It could be possible that these genes are DMRs e.g. in promotor region.
+As a final conclusion, we faced different problems through this downstream analysis and at the end we were not fully able to create a full functional and good regression model to predict MCL in given samples. Our previous researched genes cannot be confirmed as different methylated in gene coding region. But we did not test for different methylated regions (DMRs) in other coding and non-coding regions of our samples. It could be possible that these genes are DMRs e.g. in promotor region.</div>
 $$~$$
 
 # References
